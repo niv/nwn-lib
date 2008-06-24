@@ -1,7 +1,8 @@
 bytes = IO.read(ARGV.shift)
 require 'gff'
 require 'pp'
+require 'yaml'
 
 g = Gff::Reader.new(bytes)
 
-pp g.hash
+y g.hash

@@ -1,7 +1,9 @@
 class GffError < Exception; end
 module Gff; end
 
-class Gff::Element < Struct.new(:type, :label)
+class Gff::Element < Hash # < Struct.new(:type, :label, :value)
+end
+class Gff::Struct < Gff::Element
 end
 
 class Gff::Reader
@@ -47,7 +49,7 @@ class Gff::Reader
 
 	# This iterates through a struct and reads all fields into a hash, which it returns.
 	def read_struct index
-		gff = {}
+		struct = Gff::Struct.new # gff = {}
 
 		type = @structs[index * 3]
 		data_or_offset = @structs[index * 3 + 1]
@@ -57,24 +59,29 @@ class Gff::Reader
 			index * 3 + 3 > @structs.size + 1
 
 		if count == 1
-			gff.merge! read_field(data_or_offset)
+			lbl, vl = * read_field(data_or_offset)
+			struct[lbl] = vl
 		else
 			return 1 if count == 0
 			raise GffError, "Struct index not divisable by 4" if
 				data_or_offset % 4 != 0
 			data_or_offset /= 4
 			for i in data_or_offset...(data_or_offset+count)
-				gff.merge! read_field(@field_indices[i])
+				lbl, vl = * read_field(@field_indices[i])
+				struct[lbl] = vl
 			end
 		end
 
-		gff
+		struct.merge! :type => type
+		struct
 	end
 
-	# Reads the field at +index+ and returns a GFF::Element
+	# Reads the field at +index+ and returns [label_name, Gff::Element]
 	def read_field index
 		gff = {}
-		puts "read_field(#{index})"
+
+		field = Gff::Element.new
+
 		index *= 3
 		type = @fields[index]
 		label_index = @fields[index + 1]
@@ -97,13 +104,13 @@ class Gff::Reader
 			when 2 #word
 				data_or_offset & 0xffff
 			when 3 #short
-				[(data_or_offset & 0xffff)].pack("S").unpack("s")
+				[(data_or_offset & 0xffff)].pack("S").unpack("s")[0]
 			when 4 #dword
 				data_or_offset
 			when 5 #int
-				[data_or_offset].pack("I").unpack("i")
+				[data_or_offset].pack("I").unpack("i")[0]
 			when 8 #float
-				[data_or_offset].pack("V").unpack("f")
+				[data_or_offset].pack("V").unpack("f")[0]
 			when 14 #struct
 				read_struct data_or_offset
 				# raise "substruct: #{str.inspect}"
@@ -142,10 +149,10 @@ class Gff::Reader
 						v1 * (2**32) + v2
 					when 7 #int64
 						len = 8
-						@field_data[data_or_offset, len].unpack("q")
+						@field_data[data_or_offset, len].unpack("q")[0]
 					when 9 #double
 						len = 8
-						@field_data[data_or_offset, len].unpack("d")
+						@field_data[data_or_offset, len].unpack("d")[0]
 					when 10 #cexostring
 						len = @field_data[data_or_offset, 4].unpack("V")[0]
 						@field_data[data_or_offset + 1, len]
@@ -155,12 +162,15 @@ class Gff::Reader
 					when 12 #cexolocstring
 						size, str_ref, str_count =
 							@field_data[data_or_offset, 12].unpack("VVV")
-						str = @field_data[data_or_offset + 12, size - 8].unpack("VV/a")
+						field['_str_ref'] = str_ref
+						str = @field_data[data_or_offset + 12, size - 8].
+							unpack("VV/a" * str_count)
 						len = size + 4
 						str
 					when 13 #void
 						len = @field_data[data_or_offset, 4].unpack("V")
-						@field_data[data_or_offset + 4, len].unpack("H*")
+						void = @field_data[data_or_offset + 4, len].unpack("H*")
+						raise "void: #{void.inspect}"
 				end
 
 				raise GffError, "Field data overflows from the field data block area\
@@ -169,9 +179,8 @@ class Gff::Reader
 
 				inner_value
 		end
+		field.merge! :type => type, :value => value
 
-		gff[label] = value
-
-		gff
+		[label, field]  #::Gff::Element.new(type,label,value)
 	end
 end
