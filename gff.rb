@@ -1,6 +1,3 @@
-class GffError < Exception; end
-module Gff; end
-
 module NWN
   module Gff
     class GffError < Exception; end
@@ -299,4 +296,191 @@ class NWN::Gff::Reader
 
     [label, field]  #::Gff::Element.new(type,label,value)
   end
+end
+
+
+class NWN::Gff::Writer
+  include NWN::Gff
+
+  def initialize(gff)
+    @gff = gff
+
+    @structs = []
+    @fields = []
+    @labels = []
+    @field_indices = []
+    @list_indices = []
+    @field_data = ""
+  end
+
+  # Takes a NWN::Gff::Gff object and dumps it as raw bytes,
+  # including the header.
+  def self.dump(gff)
+    self.new(gff).write_all
+  end
+
+  def get_label_id_for_label str
+    @labels << str unless @labels.index(str)
+    @labels.index(str)
+  end
+
+  def add_data_field type, label, content
+    label_id = get_label_id_for_label label
+    @fields.push Types.index(type), label_id, content
+    (@fields.size - 1) / 3
+  end
+
+  def write_all
+    data = []
+    write_struct @gff.root_struct
+
+    c_offset = 0
+    data << [
+      @gff.type,
+      @gff.version,
+
+      # Offset of Struct array as bytes from the beginning of the file
+      c_offset += 56,
+      # Number of elements in Struct array
+      @structs.size / 3,
+
+      # Offset of Field array as bytes from the beginning of the file
+      fields_start = c_offset += @structs.size / 3 * 12,
+      # Number of elements in Field array
+      @fields.size / 3,
+
+      # Offset of Label array as bytes from the beginning of the file
+      c_offset += @fields.size / 3 * 12,
+      # Number of elements in Label array
+      @labels.size,
+
+      # Offset of Field Data as bytes from the beginning of the file
+      c_offset += @labels.size * 16,
+      # Number of bytes in Field Data block
+      @field_data.size,
+
+      # Offset of Field Indices array as bytes from the beginning of the file
+      c_offset += @field_data.size,
+      # Number of bytes in Field Indices array
+      @field_indices.size * 4,
+
+      # Offset of List Indices array as bytes from the beginning of the file
+      c_offset += @field_indices.size * 4,
+      # Number of bytes in List Indices array
+      @list_indices.size * 4
+
+    ].pack("a4a4 VV VV VV VV VV VV")
+
+    data << @structs.pack("V*")
+    data << @fields.pack("V*")
+    data << @labels.pack("a16" * @labels.size)
+    data << @field_data
+    data << @field_indices.pack("V*")
+    data << @list_indices.pack("V*")
+
+    data.join("")
+  end
+
+  def write_struct struct
+    raise GffError, "struct invalid: #{struct.inspect}" unless struct.is_a?(Gff::Struct)
+    raise GffError, "struct_id missing from struct" unless struct.struct_id
+
+    # This holds all field label ids this struct has as a member
+    fields_of_this_struct = []
+
+    # This will hold the index of this struct
+    index = @structs.size / 3
+
+    @structs.push struct.struct_id, 0, 0
+
+    struct.sort.each {|k,v|
+      raise GffError, "Empty label." if !k || k == ""
+
+      case v.type
+        # simple data types
+        when :byte, :char, :word, :short, :dword, :int, :float
+          format = Formats[v.type]
+          # puts "converting simple data type #{v.type} from #{v.value.inspect} to #{format}"
+          fields_of_this_struct << add_data_field(v.type, k, [v.value].pack(format).unpack("V")[0])
+
+        # complex data types
+        when :dword64, :int64, :double, :void
+          raise GffError, "unhandled complex datatype #{v.type}"
+
+
+        when :struct
+          raise GffError, "structs untested"
+          puts "converting substruct: #{v.value.struct_id}"
+          raise GffError, "type = struct, but value not a hash" unless
+            v.value.is_a?(Gff::Struct)
+
+          puts "Packing struct: #{k}"
+          fields_of_this_struct << add_data_field(v.type, k, write_struct(v.value))
+
+        when :list
+          raise GffError, "type = list, but value not an array" unless
+            v.value.is_a?(Array)
+
+          fields_of_this_struct << add_data_field(v.type, k, 4 * @list_indices.size)
+
+          count = v.value.size
+          tmp = @list_indices.size
+          @list_indices << count
+          count.times {
+            @list_indices << 0
+          }
+
+          v.value.each_with_index do |kk, idx|
+            vv = write_struct(kk)
+            @list_indices[ idx + tmp + 1 ] = vv
+          end
+
+        when :resref
+          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
+          @field_data << [v.value.size, v.value].pack("Ca*")
+
+        when :cexostr
+          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
+          @field_data << [v.value.size, v.value].pack("Va*")
+
+        when :cexolocstr
+          raise GffError, "type = cexolocstr, but value not an array" unless
+            v.value.is_a?(Array)
+
+          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
+
+          # total size (4), str_ref (4), str_count (4)
+          total_size = 8 + v.value.inject(0) {|t,x| t + x.text.size + 8}
+          @field_data << [
+            total_size,
+            v._str_ref,
+            v.value.size
+          ].pack("VVV")
+
+          v.value.each {|s|
+            @field_data << [s.language, s.text.size, s.text].pack("VVa*")
+          }
+
+
+        else
+          raise GffError, "Unknown data type: #{v.type}"
+      end
+    }
+
+    # id/type, data_or_offset, nr_of_fields
+    @structs[3 * (index) + 2] = fields_of_this_struct.size
+
+    if fields_of_this_struct.size < 1
+    elsif fields_of_this_struct.size == 1
+      @structs[3 * (index) + 1] = fields_of_this_struct[0]
+    else
+      # Offset into field_indices starting where are number of nr_of_fields
+      # dwords as indexes into @fields
+      @structs[3 * (index) + 1] = 4 * (@field_indices.size)
+      @field_indices.push *fields_of_this_struct
+    end
+
+    index
+  end
+
 end
