@@ -32,12 +32,10 @@ module NWN
       :short => 'sxx',
       :dword => 'I',
       :int => 'i',
-      #:dword64 => 'Q',
-      #:int64 => '*q',
+      :dword64 => 'II',
+      :int64 => 'q',
       :float => 'f',
-      #:double => 'd',
-      #:cexostr => '*a*',
-      #:resref => '*a*',
+      :double => 'd',
       #:void => '*HV/a*',
     }.freeze
   end
@@ -400,13 +398,27 @@ class NWN::Gff::Writer
         # simple data types
         when :byte, :char, :word, :short, :dword, :int, :float
           format = Formats[v.type]
-          # puts "converting simple data type #{v.type} from #{v.value.inspect} to #{format}"
           fields_of_this_struct << add_data_field(v.type, k, [v.value].pack(format).unpack("V")[0])
 
         # complex data types
         when :dword64, :int64, :double, :void
-          raise GffError, "unhandled complex datatype #{v.type}"
+          $stderr.puts "Warning: complex datatypes dword64, int64, double and void are untested."
 
+          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
+          format = Formats[v.type]
+          @field_data << case v.type
+            when :dword64
+              [
+                ( v.value / (2**32) ) & 0xffffffff,
+                v.value % (2**32)
+              ].pack("II")
+            when :void
+              [ v.value.size, v.value ].pack("VH*")
+            else
+              [v.value].pack(format)
+          end
+
+          raise GffError, "unhandled complex datatype #{v.type}"
 
         when :struct
           raise GffError, "type = struct, but value not a hash" unless
