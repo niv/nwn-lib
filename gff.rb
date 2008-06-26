@@ -409,12 +409,9 @@ class NWN::Gff::Writer
 
 
         when :struct
-          raise GffError, "structs untested"
-          puts "converting substruct: #{v.value.struct_id}"
           raise GffError, "type = struct, but value not a hash" unless
             v.value.is_a?(Gff::Struct)
 
-          puts "Packing struct: #{k}"
           fields_of_this_struct << add_data_field(v.type, k, write_struct(v.value))
 
         when :list
