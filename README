@@ -1,0 +1,29 @@
+== A gff library for Neverwinter Nights 1/2 GFF files
+
+This package provides a library for reading, changing, and writing GFF files that are found with NWN[http://nwn.bioware.com/], a Bioware game.
+
+They should work with NWN2 just as well, since the file format specifications did not change.
+
+There are various things included in this distribution:
+* some binaries under bin/
+* the actual library under lib/nwn
+
+== Quickstart
+
+It is easiest to just use the gem.
+
+  require 'rubygems'
+  require 'nwn/gff'
+
+  # Read a GFF file
+  o = NWN::Gff::Reader.read(IO.read('/tmp/test-creature.gff'))
+
+  # Do some modifications to it
+  o['/Tag'] = 'testtag'
+
+  # And write it somewhere else
+  bytes = NWN::Gff::Writer.dump(o)
+
+  File.open('/tmp/test-creature-2.gff', 'w') {|f| f.write(bytes) }
+
+Modification API is fairly limited, for now, but will improve soon.
