@@ -27,3 +27,25 @@ It is easiest to just use the gem.
   File.open('/tmp/test-creature-2.gff', 'w') {|f| f.write(bytes) }
 
 Modification API is fairly limited, for now, but will improve soon.
+
+== GFF data structures: Quick Intro
+
+Ruby GFF data structures are nearly a 1:1 wrapper around the known format.
+
+Each GFF object has a root structure with a +struct_id+ of 0.
+
+=== Label
+A Label is a string of up to 16 bytes, and occurs as keys in Structs.
+
+=== Struct
+A struct is a hash. It is a unordered collection of key => value pairs.
+Keys are Labels, values are either:
+* Structs
+* Lists
+* Elements
+
+=== List
+A list is an *ordered* array of Structs.
+
+=== Element
+A Element is a distinct value of a given type. For all possible types, see the +Types+ hash in the NWN::Gff module.
