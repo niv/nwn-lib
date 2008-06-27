@@ -8,11 +8,11 @@ include FileUtils
 ##############################################################################
 # Configuration
 ##############################################################################
-NAME = "nwn-gff"
+NAME = "nwn-lib"
 VERS = "0.1"
 CLEAN.include ["**/.*.sw?", "pkg", ".config", "rdoc", "coverage"]
 RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
-  'nwn-gff: a ruby library for accessing NWN gff files', \
+  'nwn-lib: a ruby library for accessing NWN resource files', \
   '--main', 'README']
 
 Rake::RDocTask.new do |rdoc|
@@ -21,22 +21,22 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.add ["README", "COPYING", "doc/*.rdoc", "lib/**/*.rb"]
 end
 
-desc "Packages up nwn-gff"
+desc "Packages up nwn-lib"
 task :package => [:clean]
 
 spec = Gem::Specification.new do |s|
   s.name = NAME
-  s.rubyforge_project = 'nwn-gff'
+  s.rubyforge_project = 'nwn-lib'
   s.version = VERS
   s.platform = Gem::Platform::RUBY
   s.has_rdoc = true
   s.extra_rdoc_files = ["README", "COPYING"] + Dir["doc/*.rdoc"]
   s.rdoc_options += RDOC_OPTS + ["--exclude", "^(examples|extras)\/"]
-  s.summary = "a ruby library for accessing Neverwinter Nights gff files"
+  s.summary = "a ruby library for accessing Neverwinter Nights resouce files files"
   s.description = s.summary
   s.author = "Bernhard Stoeckner"
   s.email = "elven@swordcoast.net"
-  s.homepage = "http://nwn-gff.elv.es"
+  s.homepage = "http://nwn-lib.elv.es"
   s.executables = ["nwn-gff-print"]
   s.required_ruby_version = ">= 1.8.4"
   s.files = %w(COPYING README Rakefile) + Dir.glob("{bin,doc,spec,lib}/**/*")
@@ -49,28 +49,28 @@ Rake::GemPackageTask.new(spec) do |p|
   p.gem_spec = spec
 end
 
-desc "Install nwn-gff gem"
+desc "Install nwn-lib gem"
 task :install do
   sh %{rake package}
   sh %{sudo gem install pkg/#{NAME}-#{VERS}}
 end
 
-desc "Install nwn-gff gem without docs"
+desc "Install nwn-lib gem without docs"
 task :install_no_docs do
   sh %{rake package}
   sh %{sudo gem install pkg/#{NAME}-#{VERS} --no-rdoc --no-ri}
 end
 
-desc "Uninstall nwn-gff gem"
+desc "Uninstall nwn-lib gem"
 task :uninstall => [:clean] do
   sh %{sudo gem uninstall #{NAME}}
 end
 
-desc "Upload nwn-gff gem to rubyforge"
+desc "Upload nwn-lib gem to rubyforge"
 task :release => [:package] do
   sh %{rubyforge login}
-  sh %{rubyforge add_release nwn-gff #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.tgz}
-  sh %{rubyforge add_file nwn-gff #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.gem}
+  sh %{rubyforge add_release nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.tgz}
+  sh %{rubyforge add_file nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.gem}
 end
 
 require "spec/rake/spectask"

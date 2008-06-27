@@ -1,6 +1,6 @@
-== A gff library for Neverwinter Nights 1/2 GFF files
+== A library for Neverwinter Nights 1/2 resource files
 
-This package provides a library for reading, changing, and writing GFF files that are found with NWN[http://nwn.bioware.com/], a Bioware game.
+This package provides a library for reading, changing, and writing common file formats that are found with NWN[http://nwn.bioware.com/], a Bioware game.
 
 They should work with NWN2 just as well, since the file format specifications did not change.
 
@@ -8,9 +8,14 @@ There are various things included in this distribution:
 * some binaries under bin/
 * the actual library under lib/nwn
 
+== Supplied binaries
+* nwn-gff-print
+
 == Quickstart
 
-It is easiest to just use the gem.
+It is easiest to just use the gem, which is available through rubyforge (<tt>sudo gem install nwn-lib</tt>).
+
+As an alternative, fetch the latest development files with git[http://git.swordcoast.net/?p=nwn/nwn-lib.git;a=summary].
 
   require 'rubygems'
   require 'nwn/gff'
