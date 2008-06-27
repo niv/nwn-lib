@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-
+require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
 require 'yaml'
@@ -7,7 +7,7 @@ require 'yaml'
 format = nil
 
 OptionParser.new do |o|
-  o.banner = "Usage: nwn-gff-print [options] file | -"
+  o.banner = "Usage: nwn-gff-print [options] file/- [path]"
   o.on "-y", "--yaml", "Dump as yaml" do
     format = :yaml
   end
@@ -20,6 +20,9 @@ file = ARGV.shift or begin
   $stderr.puts "Required argument: filename to process, or - for stdin (try -h)."
   exit 1
 end
+
+path = ARGV.shift
+
 if file == "-"
   bytes = $stdin.read
 else
@@ -28,11 +31,31 @@ end
 
 g = NWN::Gff::Reader.read(bytes)
 
+if path
+  begin
+    g = g[path]
+  rescue Exception => e
+    $stderr.puts "Error: " + e.to_s
+    exit 1
+  end
+end
+
 def k_format_struct s, prefix = "/", &block
+  if s.is_a?(NWN::Gff::Gff)
+    s = NWN::Gff::Element.new("", :struct, s.root_struct)
+  end
+  if s.is_a?(Array)
+    v = NWN::Gff::Element.new("(unlabeled list)", :list, s)
+  end
+  if s.is_a?(NWN::Gff::Struct)
+    s = NWN::Gff::Element.new("(unlabeled struct)", :struct, s)
+  end
   case s.type
     when :struct
-      s.each {|k,v|
-        yield(prefix + k, v)
+      s.value.each {|k,v|
+    k_format_struct v, prefix + s.label + (s.label == "" ? "" : "/") do |l,v|
+          yield(l, v)
+    end
       }
     when :cexolocstr
       s.value.each {|vv|  
@@ -56,11 +79,9 @@ case format
   when :yaml
     y g
   when :kivinen
-    g.root_struct.each {|rk,rv|
-      k_format_struct rv do |label, value|
-        puts "%s:\t%s" % [label, value]
-      end
-    }
+    k_format_struct g do |label, value|
+      puts "%s:\t%s" % [label, value]
+    end
   else
     puts "Unknown format; try -h"
 end

@@ -172,8 +172,8 @@ class NWN::Gff::Element
   attr_accessor :label, :type, :value
   attr_accessor :_str_ref
 
-  def initialize
-    # @label, @type, @value = label, type, value
+  def initialize label = nil, type = nil, value = nil
+    @label, @type, @value = label, type, value
   end
 end
 
