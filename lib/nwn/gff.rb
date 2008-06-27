@@ -1,7 +1,20 @@
 module NWN
   module Gff
+    # This error gets thrown if reading or writing fails.
     class GffError < Exception; end
 
+    # This error gets thrown if a supplied value does not
+    # fit into the given data type.
+    #
+    # Example: You're trying to pass a value greater than 2**32
+    # into a int.
+    class GffFieldWidthError < Exception; end
+
+    # Gets raised if you are trying to access a path that does
+    # not exist.
+    class GffPathInvalidError < Exception; end
+
+    # This hash lists all possible NWN::Gff::Element types.
     Types = {
       0 => :byte,
       1 => :char,
@@ -21,9 +34,13 @@ module NWN
       15 => :list,
     }.freeze
 
+#:stopdoc:
+# Used internally to figure out if a field is stored directly
+# or by reference.
     ComplexTypes = [6, 7, 9, 10, 11, 12, 13, 14, 15].freeze
     SimpleTypes = (Types.keys - ComplexTypes)
     SimpleTypes.freeze
+#:startdoc:
 
     Formats = {
       :byte => "Cxxx",
@@ -36,42 +53,121 @@ module NWN
       :int64 => 'q',
       :float => 'f',
       :double => 'd',
-      #:void => '*HV/a*',
     }.freeze
   end
 end
 
+# A GFF object encapsulates a whole GFF identity, with a type,
+# version, and a root structure.
+# This object also provides easy accessors for labels and values.
 class NWN::Gff::Gff
   include NWN::Gff
 
   attr_accessor :type
   attr_accessor :version
 
-  def initialize hash, type, version = "V3.2"
-    @hash = hash
+  # Create a new GFF object from the given +struct+.
+  # This is normally not needed unless you are creating
+  # GFF objects entirely from hand.
+  #
+  # See NWN::Gff::Reader.
+  def initialize struct, type, version = "V3.2"
+    @hash = struct
     @type = type
     @version = version
   end
 
+  # Return the root struct of this GFF.
   def root_struct
     @hash
   end
 
+  # A simple accessor that can be used to
+  # retrieve GFF::Elements, delimited by slash.
+  #
+  # Will raise a GffPathInvalidError if the given path cannot be found.
+  #
+  # Examples (with an item):
+  #  gff['/Tag']
+  #    will retrieve the Tag of the given object
+  #  gff['/PropertiesList']
+  #    will retrieve an array of Elements
+  #  gff['/PropertiesList[1]']
+  #    will yield element 2 in the list
   def [] k
-    h = @hash
+    h = self.root_struct
+    path = []
+    current_value = nil
+
     k.split('/').each {|v|
-      vv = h[v]
-      h = vv
-      return vv
+      next if v == ""
+      path << v
+
+      if current_value.is_a?(Gff::Element) && current_value.type == :list # && v =~ /\[(\d+)\]$/
+        puts "value = #{$1}"
+        current_value = current_value.value[$1.to_i]
+      end
+
+      if h.is_a?(Gff::Element)
+        case h.type
+          when :cexolocstr
+            current_value = h.value.select {|vx| vx.language.to_i == v.to_i}
+            current_value = current_value[0] != nil ? current_value[0].text : ''
+
+          when :list
+            raise GffPathInvalidError, "List-selector access not implemented yet."
+
+          else
+            raise GffPathInvalidError,
+              "Tried to access sub-label of a non-complex field: /#{path.join('/')}"
+
+          end
+      elsif h.is_a?(Gff::Struct)
+
+        if v =~ /^(.+?)\[(\d+)\]$/
+          current_value = h[$1.to_s]
+          if current_value.is_a?(Gff::Element) && !current_value.type == :list
+            raise GffPathInvalidError, "Tried to access list-index of a non-list at /#{path.join('/')}"
+          end
+          current_value = current_value.value[$2.to_i]
+        else
+          current_value = h[v]
+        end
+      else
+        raise GffPathInvalidError, "Unknown sub-field type #{h.class.to_s} at /#{path.join('/')}"
+      end
+
+      h = current_value
+
+      raise GffPathInvalidError,
+        "Cannot find path: /#{path.join('/')}" if current_value.nil?
     }
+
+    current_value
   end
 
-  def []= k, v
-    # super
-  end
+  #def []= k, v
+  #  # super
+  #end
+
+  # Convert this GFF object to XML.
+  #def to_xml
+  #end
+
+  # Convert XML to a GFF object.
+  #def self.from_xml
+  #end
 
 end
 
+# A Element wraps a GFF label->value pair,
+# provides a +.type+ and, optionally,
+# a +._str_ref+ for CExoLocStrings.
+#
+# Fields:
+# [+label+]  The label of this element, for reference.
+# [+type+]   The type of this element. (See NWN::Gff)
+# [+value+]  The value of this element.
 class NWN::Gff::Element
   attr_accessor :label, :type, :value
   attr_accessor :_str_ref
@@ -81,6 +177,8 @@ class NWN::Gff::Element
   end
 end
 
+# A Gff::Struct is a hash of label->Element pairs,
+# with an added +.struct_id+.
 class NWN::Gff::Struct < Hash
   attr_accessor :struct_id
   def initialize *a
@@ -89,21 +187,34 @@ class NWN::Gff::Struct < Hash
   end
 end
 
+# A CExoLocString is a localised CExoString.
+#
+# Attributes:
+# [+language+] The language ID
+# [+text+]     The text for this language.
+#
+# ExoLocStrings in the wild are usually arrays of NWN::Gff:CExoLocString
+# (one for each language supplied).
+# Note that a CExoLocString is NOT a GFF list, although both are
+# represented as arrays.
 class NWN::Gff::CExoLocString < Struct.new(:language, :text)
 end
 
+# A class that parses binary GFF bytes into ruby-friendly data structures.
 class NWN::Gff::Reader
   include NWN::Gff
 
   attr_reader :hash
   attr_reader :gff
 
+  # Create a new Reader with the given +bytes+ and immediately parse it.
+  # This is not needed usually; use Reader.read instead.
   def initialize bytes
     @bytes = bytes
     read_all
   end
 
-  # Reads +bytes+ as gff data and returns a Gff:Gff object
+  # Reads +bytes+ as gff data and returns a NWN::Gff:Gff object.
   def self.read bytes
     self.new(bytes).gff
   end
@@ -316,6 +427,8 @@ class NWN::Gff::Writer
   def self.dump(gff)
     self.new(gff).write_all
   end
+
+private
 
   def get_label_id_for_label str
     @labels << str unless @labels.index(str)
