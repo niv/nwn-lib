@@ -4,11 +4,12 @@ module NWN
     class GffError < Exception; end
 
     # This error gets thrown if a supplied value does not
-    # fit into the given data type.
+    # fit into the given data type, or you are trying to assign
+    # a type to something that does not hold type.
     #
     # Example: You're trying to pass a value greater than 2**32
     # into a int.
-    class GffFieldWidthError < Exception; end
+    class GffTypeError < Exception; end
 
     # Gets raised if you are trying to access a path that does
     # not exist.
@@ -83,20 +84,30 @@ class NWN::Gff::Gff
   end
 
   # A simple accessor that can be used to
-  # retrieve GFF::Elements, delimited by slash.
+  # retrieve or set properties in the struct, delimited by slashes.
   #
-  # Will raise a GffPathInvalidError if the given path cannot be found.
+  # Will raise a GffPathInvalidError if the given path cannot be found,
+  # and GffTypeError if some type fails to validate.
   #
-  # Examples (with an item):
+  # Examples (with +gff+ assumed to be a item):
   #  gff['/Tag']
   #    will retrieve the Tag of the given object
+  #  gff['/Tag'] = 'Test'
+  #    Set the Tag to 'Test'
   #  gff['/PropertiesList']
-  #    will retrieve an array of Elements
+  #    will retrieve an array of Gff::Elements
   #  gff['/PropertiesList[1]']
   #    will yield element 2 in the list
-  def [] k
+  #  gff['/'] = NWN::Gff::Element.new('Property', :byte, 14)
+  #    will add a new property at the root struct with the name of 'Property', or
+  #    overwrite an existing one with the same label.
+  #  gff['/PropertiesList[0]'] = 'Test'
+  #    This will raise an error (obviously)
+  def get_or_set k, new_value = nil, new_type = nil, new_label = nil, new_str_ref = nil
+    puts "get_or_set(#{k} = #{new_value})"
     h = self.root_struct
     path = []
+    value_path = [h]
     current_value = nil
 
     k.split('/').each {|v|
@@ -137,26 +148,85 @@ class NWN::Gff::Gff
         raise GffPathInvalidError, "Unknown sub-field type #{h.class.to_s} at /#{path.join('/')}"
       end
 
+      value_path << current_value
       h = current_value
 
       raise GffPathInvalidError,
-        "Cannot find path: /#{path.join('/')}" if current_value.nil?
+        "Cannot find path: /#{path.join('/')}" if current_value.nil? && !new_value.is_a?(Gff::Element)
     }
 
-    current_value
+    if path.size == 0
+      if new_value.is_a?(Gff::Element)
+        value_path << h
+      else
+        raise GffPathInvalidError, "Do not operate on the root struct unless through adding items."
+      end
+    end
+
+    old_value = current_value.nil? ? nil : current_value.dup
+
+    if new_value.is_a?(Gff::Element)
+      new_value.validate
+      value_path[-2].delete(current_value)
+      value_path[-2][new_value.label] = new_value
+    else
+
+      if !new_label.nil?
+        # Set a new label
+        value_path[-2].delete(current_value.label)
+        current_value.label = new_label
+        value_path[-2][new_label] = current_value
+      end
+
+      if !new_type.nil?
+        # Set a new datatype
+        raise GffTypeError, "Cannot set a type on a non-element." unless current_value.is_a?(Gff::Element)
+        test = current_value.dup
+        test.type = new_type
+        test.validate
+
+        current_value.type = new_type
+
+      end
+
+      if !new_str_ref.nil?
+        # Set a new str_ref
+        raise GffTypeError, "specified path is not a CExoStr" unless current_value.is_a?(Gff::CExoString)
+        current_value._str_ref = new_str_ref.to_i
+      end
+
+      if !new_value.nil?
+
+        case current_value
+          when Gff::Element
+            test = current_value.dup
+            test.value = new_value
+            test.validate
+            current_value.value = new_value
+
+          when String #means: cexolocstr assignment
+            if value_path[-2].is_a?(Gff::Element) && value_path[-2].type == :cexolocstr
+              value_path[-2].value.select{|xy| xy.language == path[-1].to_i }[0].text = new_value
+            else
+              raise GffPathInvalidError, "Dont know how to set #{new_value.class} on #{path.inspect}."
+            end
+          else
+            raise GffPathInvalidError, "Don't know what to do with #{current_value.class} -> #{new_value.class} at /#{path.join('/')}"
+        end
+
+      end
+    end
+
+    old_value
   end
 
-  #def []= k, v
-  #  # super
-  #end
+  def [] k
+    get_or_set k
+  end
 
-  # Convert this GFF object to XML.
-  #def to_xml
-  #end
-
-  # Convert XML to a GFF object.
-  #def self.from_xml
-  #end
+  def []= k, v
+    get_or_set k, v
+  end
 
 end
 
@@ -175,6 +245,57 @@ class NWN::Gff::Element
   def initialize label = nil, type = nil, value = nil
     @label, @type, @value = label, type, value
   end
+  
+  def validate path_prefix = "/"
+    raise NWN::Gff::GffTypeError, "#{path_prefix}#{self.label}: New value #{self.value} is not compatible with the current type #{self.type}" unless
+      self.class.valid_for?(self.value, self.type)
+  end
+
+#       0 => :byte,
+#       1 => :char,
+#       2 => :word,
+#       3 => :short,
+#       4 => :dword,
+#       5 => :int,
+#       6 => :dword64,
+#       7 => :int64,
+#       8 => :float,
+#       9 => :double,
+#       10 => :cexostr,
+#       11 => :resref,
+#       12 => :cexolocstr,
+#       13 => :void,
+#       14 => :struct,
+#       15 => :list,
+
+  # Validate if +value+ is within bounds of +type+.
+  def self.valid_for? value, type
+    case type
+      when :char, :byte
+        value.is_a?(Fixnum)
+      when :short, :word
+        value.is_a?(Fixnum)
+      when :int, :dword
+        value.is_a?(Fixnum)
+      when :int64, :dword64
+        value.is_a?(Fixnum)
+      when :float, :double
+        value.is_a?(Float)
+      when :resref
+        value.is_a?(String) && (1..16).member?(value.size)
+      when :cexostr
+        value.is_a?(String)
+      when :cexolocstr
+        value.is_a?(Array)
+      when :struct, :list
+        value.is_a?(Array)
+      when :void
+        true
+      else
+        false
+    end
+  end
+
 end
 
 # A Gff::Struct is a hash of label->Element pairs,
