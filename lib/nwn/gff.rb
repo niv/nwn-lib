@@ -532,6 +532,8 @@ end
 class NWN::Gff::Writer
   include NWN::Gff
 
+  attr_reader :bytes
+
   def initialize(gff)
     @gff = gff
 
@@ -541,12 +543,14 @@ class NWN::Gff::Writer
     @field_indices = []
     @list_indices = []
     @field_data = ""
+
+    write_all
   end
 
   # Takes a NWN::Gff::Gff object and dumps it as raw bytes,
   # including the header.
   def self.dump(gff)
-    self.new(gff).write_all
+    self.new(gff).bytes
   end
 
 private
@@ -610,7 +614,7 @@ private
     data << @field_indices.pack("V*")
     data << @list_indices.pack("V*")
 
-    data.join("")
+    @bytes = data.join("")
   end
 
   def write_struct struct
