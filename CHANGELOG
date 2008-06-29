@@ -1,0 +1,8 @@
+=== 0.2
+
+* Add TwoDA reading/writing support.
+* nwn-gff-print supports kivinen-style ____type printing.
+=== 0.1
+
+* Add basic functionality for reading and writing arbitary gff files.
+* Binaries: nwn-gff-print for simple display of gff files.
