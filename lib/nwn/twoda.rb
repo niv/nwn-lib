@@ -5,22 +5,40 @@ module NWN
     class Table
 
       # An array of all column names present in this 2da table.
-      attr_reader :columns
+      attr_accessor :columns
 
       # An array of row arrays, without headers.
-      attr_reader :rows
+      attr_accessor :rows
 
-
-      # Creates a new Table object from a given file.
-      #
-      # [+file+] A readable, valid .2da file.
-      def self.new_from_file file
-        self.new IO.read(file)
+      # Create a new, empty 2da table.
+      def initialize
+        @columns = []
+        @rows = []
       end
 
+      # Creates a new Table object from a given IO source.
+      #
+      # [+file+] A IO object pointing to a 2da file.
+      def self.read_from io
+        self.parse io.read()
+      end
+
+      # Dump this table to a IO object.
+      def write_to io
+        io.write(self.to_2da)
+      end
+
+      # Parse a existing string containing a full 2da table.
+      # Returns a TwoDA::Table.
+      def self.parse bytes
+        obj = self.new
+        obj.parse bytes
+        obj
+      end
 
       # Parses a string that represents a valid 2da definition.
-      def initialize bytes
+      # Replaces any content this table may already have.
+      def parse bytes
         magic, empty, header, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
         raise ArgumentError, "Not valid 2da: No valid header found" if
