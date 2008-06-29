@@ -21,7 +21,7 @@ module NWN
 
       # Parses a string that represents a valid 2da definition.
       def initialize bytes
-        magic, empty, header, *data = *bytes.split("\n").map {|v| v.strip }
+        magic, empty, header, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
         raise ArgumentError, "Not valid 2da: No valid header found" if
           magic != "2DA V2.0"
