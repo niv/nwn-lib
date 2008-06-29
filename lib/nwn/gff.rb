@@ -55,7 +55,61 @@ module NWN
       :float => 'f',
       :double => 'd',
     }.freeze
+
+    # Parses +s+ as an arbitary GFF object and yields for each field found,
+    # with the proper prefix.
+    def self.kivinen_format s, prefix = "/", types_too = false, &block
+      if s.is_a?(NWN::Gff::Gff)
+        if types_too
+          yield("/ ____file_type", s.type)
+          yield("/ ____file_version", s.version)
+        end
+        s = NWN::Gff::Element.new("", :struct, s.root_struct)
+      end
+
+      if s.is_a?(Array)
+        v = NWN::Gff::Element.new("(unlabeled list)", :list, s)
+      end
+
+      if s.is_a?(NWN::Gff::Struct)
+        yield(prefix + " ____struct_type", s.struct_id) if types_too
+        s = NWN::Gff::Element.new("(unlabeled struct)", :struct, s)
+      end
+
+      case s.type
+        when :struct
+          yield(prefix + " ____struct_type", s.value.struct_id) if types_too
+          s.value.each {|k,v|
+            kivinen_format v, prefix + s.label + (s.label == "" ? "" : "/"), types_too do |l,v|
+              yield(l, v)
+            end
+          }
+
+        when :cexolocstr
+
+          s.value.each {|vv|
+            yield(prefix + s.label + "/" + vv.language.to_s, vv.text)
+          }
+          yield(prefix + s.label + ". ___string_ref", s._str_ref)
+
+        when :list
+          s.value.each_with_index {|vv, idx|
+            vv.each {|kkk, vvv|
+              kivinen_format vvv, prefix + s.label + "[#{idx}]/", types_too do |l,v|
+                yield(l,v)
+              end
+            }
+          }
+        else
+          yield(prefix + s.label, s.value)
+      end
+
+      if types_too && s.label != ""
+        yield(prefix + s.label + ". ____type", Types.index(s.type).to_s)
+      end
+    end
   end
+
 end
 
 # A GFF object encapsulates a whole GFF identity, with a type,

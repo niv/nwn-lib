@@ -5,6 +5,7 @@ require 'nwn/gff'
 require 'yaml'
 
 format = nil
+types_too = false
 
 OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-print [options] file/- [path]"
@@ -13,6 +14,9 @@ OptionParser.new do |o|
   end
   o.on "-k", "--kivinen", "Dump as kivinens dump format (like the perl tools)" do
     format = :kivinen
+  end
+  o.on "-t", "--types", "Dump types as well (only applies to -k, for now)" do
+    types_too = true
   end
 end.parse!
 
@@ -40,46 +44,11 @@ if path
   end
 end
 
-def k_format_struct s, prefix = "/", &block
-  if s.is_a?(NWN::Gff::Gff)
-    s = NWN::Gff::Element.new("", :struct, s.root_struct)
-  end
-  if s.is_a?(Array)
-    v = NWN::Gff::Element.new("(unlabeled list)", :list, s)
-  end
-  if s.is_a?(NWN::Gff::Struct)
-    s = NWN::Gff::Element.new("(unlabeled struct)", :struct, s)
-  end
-  case s.type
-    when :struct
-      s.value.each {|k,v|
-    k_format_struct v, prefix + s.label + (s.label == "" ? "" : "/") do |l,v|
-          yield(l, v)
-    end
-      }
-    when :cexolocstr
-      s.value.each {|vv|  
-        yield(prefix + s.label + "/" + vv.language.to_s, vv.text)
-      }
-      yield(prefix + s.label + ". ___string_ref", s._str_ref)
-    when :list
-      s.value.each_with_index {|vv, idx|
-        vv.each {|kkk, vvv|
-          k_format_struct vvv, prefix + s.label + "[#{idx}]/" do |l,v|
-            yield(l,v)
-          end
-        }
-      }
-    else
-      yield(prefix + s.label, s.value)
-  end
-end
-
 case format
   when :yaml
     y g
   when :kivinen
-    k_format_struct g do |label, value|
+    NWN::Gff.kivinen_format g, "/", types_too do |label, value|
       puts "%s:\t%s" % [label, value]
     end
   else
