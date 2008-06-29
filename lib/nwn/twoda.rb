@@ -87,6 +87,18 @@ module NWN
         end
       end
 
+      # Returns this table as a valid 2da to be written to a file.
+      def to_2da
+        ret = []
+        ret << "2DA V2.0"
+        ret << ""
+        ret << @columns.join("\t")
+        @rows.each_with_index {|row, idx|
+          ret << [idx].concat(row).join("\t")
+        }
+        ret.join("\r\n")
+      end
+
     end
   end
 end
