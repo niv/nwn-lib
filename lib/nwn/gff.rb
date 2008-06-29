@@ -274,10 +274,12 @@ class NWN::Gff::Gff
     old_value
   end
 
+  # A alias for get_or_set(key).
   def [] k
     get_or_set k
   end
 
+  # A alias for get_or_set(key, value).
   def []= k, v
     get_or_set k, v
   end
