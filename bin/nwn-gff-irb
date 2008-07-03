@@ -1,0 +1,44 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'optparse'
+require 'nwn/gff'
+require 'nwn/twoda'
+require 'yaml'
+require 'irb'
+
+OptionParser.new do |o|
+  o.banner = "Usage: nwn-gff-irb file"
+end.parse!
+
+file = ARGV.shift or begin
+  $stderr.puts "Required argument: filename to process, or - for stdin (try -h)."
+  exit 1
+end
+
+if file == "-"
+  bytes = $stdin.read
+else
+  bytes = IO.read(file)
+end
+$file = File.expand_path(file)
+
+GFF = NWN::Gff::Reader.read(bytes)
+
+def save destination = nil
+  destination ||= $file
+  puts "Saving to ´#{destination}' .."
+  bytes = NWN::Gff::Writer.dump(GFF)
+  File.open(destination, "w") {|f|
+    f.write(bytes)
+  }
+  puts "saved."
+end
+
+include NWN::Gff
+
+puts "Your GFF file is in `GFF' (type: #{GFF.type.inspect})."
+puts "Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving)."
+puts "To save to a different location, type `save \"path/to/new/location.ext\"'."
+puts ""
+
+IRB.start

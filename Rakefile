@@ -37,7 +37,7 @@ spec = Gem::Specification.new do |s|
   s.author = "Bernhard Stoeckner"
   s.email = "elven@swordcoast.net"
   s.homepage = "http://nwn-lib.elv.es"
-  s.executables = ["nwn-gff-print"]
+  s.executables = ["nwn-gff-print", "nwn-gff-irb"]
   s.required_ruby_version = ">= 1.8.4"
   s.files = %w(COPYING CHANGELOG README Rakefile) + Dir.glob("{bin,doc,spec,lib}/**/*")
   s.require_path = "lib"
