@@ -460,13 +460,14 @@ class NWN::Gff::Reader
       lbl, vl = * read_field(data_or_offset)
       struct[lbl] = vl
     else
-      return 1 if count == 0
-      raise GffError, "struct index not divisable by 4" if
-        data_or_offset % 4 != 0
-      data_or_offset /= 4
-      for i in data_or_offset...(data_or_offset+count)
-        lbl, vl = * read_field(@field_indices[i])
-        struct[lbl] = vl
+      if count > 0
+        raise GffError, "struct index not divisable by 4" if
+          data_or_offset % 4 != 0
+        data_or_offset /= 4
+        for i in data_or_offset...(data_or_offset+count)
+          lbl, vl = * read_field(@field_indices[i])
+          struct[lbl] = vl
+        end
       end
     end
 
