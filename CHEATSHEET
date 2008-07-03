@@ -1,3 +1,29 @@
 ==== Extract item from creature inventory
 
  nwn-gff-print --type UTI -k -t creature.bic 'ItemList[12]' | gffencode.pl -o item.uti
+
+==== Quick-edit a item
+ 
+ your/prompt$ nwn-gff-irb my_item.uti
+ Your GFF file is in `GFF' (type: "UTI ").
+ Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving).
+ To save to a different location, type `save "path/to/new/location.ext"'.
+
+ irb(main):001:0> GFF.root_struct.keys
+ => ["ModelPart2", "Cursed", "ModelPart3", "Cost", "StackSize", "Charges", "Comment", "PaletteID", "BaseItem", "Tag", "DescIdentified", "Identified", "Plot", "TemplateResRef", "PropertiesList", "AddCost", "Stolen", "Description", "LocalizedName", "ModelPart1"]
+
+ irb(main):002:0> GFF['LocalizedName/4']
+ => "Mundane Feuerpfeile (aus Eibe)"
+
+ irb(main):003:0> GFF['LocalizedName/4'] = 'New Name'
+ => "New Name"
+
+ irb(main):004:0> GFF['LocalizedName']
+ => #<NWN::Gff::Element:0xb790641c @type=:cexolocstr, @value=[#<struct NWN::Gff::CExoLocString language=4, text="New Name">, #<struct NWN::Gff::CExoLocString language=0, text="Pfeil">], @_str_ref=1517, @label="LocalizedName">
+
+ irb(main):005:0> save
+ Saving to `/home/elven/code/nwn/nwn-lib.git/my_item.uti' ..
+ saved.
+ => nil
+
+ irb(main):006:0> exit
