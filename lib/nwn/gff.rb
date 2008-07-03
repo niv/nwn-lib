@@ -1,7 +1,7 @@
 module NWN
   module Gff
     # This error gets thrown if reading or writing fails.
-    class GffError < Exception; end
+    class GffError < RuntimeError; end
 
     # This error gets thrown if a supplied value does not
     # fit into the given data type, or you are trying to assign
@@ -9,11 +9,11 @@ module NWN
     #
     # Example: You're trying to pass a value greater than 2**32
     # into a int.
-    class GffTypeError < Exception; end
+    class GffTypeError < RuntimeError; end
 
     # Gets raised if you are trying to access a path that does
     # not exist.
-    class GffPathInvalidError < Exception; end
+    class GffPathInvalidError < RuntimeError; end
 
     # This hash lists all possible NWN::Gff::Element types.
     Types = {
