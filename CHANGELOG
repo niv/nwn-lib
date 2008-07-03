@@ -1,3 +1,10 @@
+=== 0.2.2
+
+* Binary: nwn-gff-irb: interactive gff inspection/editing shell
+* Gff: Errors are now RuntimeErrors instead of Exceptions
+* Gff::Reader: properly read structures with no labels inside
+* Gff::Reader: void datatype support
+
 === 0.2.1
 
 * TwoDA allows creation of tables and proper writing, HAS NEW API. (sorry!)
