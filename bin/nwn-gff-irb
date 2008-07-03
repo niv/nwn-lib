@@ -5,6 +5,7 @@ require 'nwn/gff'
 require 'nwn/twoda'
 require 'yaml'
 require 'irb'
+require 'irb/completion'
 
 OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-irb file"
@@ -34,7 +35,16 @@ def save destination = nil
   puts "saved."
 end
 
+if __cache_location = ENV['NWN2DAHOME']
+  require 'nwn/helpers'
+  puts "Setting up 2da cache at #{__cache_location} .."
+  NWN::TwoDA::Cache.setup __cache_location
+else
+  puts "Warning: Environment variable `NWN2DAHOME' is not available, not using 2da cache (helpers not available)."
+end
+
 include NWN::Gff
+include NWN::TwoDA
 
 puts "Your GFF file is in `GFF' (type: #{GFF.type.inspect})."
 puts "Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving)."
