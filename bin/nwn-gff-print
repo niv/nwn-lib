@@ -6,6 +6,9 @@ require 'yaml'
 
 format = nil
 types_too = false
+full = false
+file_type = nil
+struct_id = nil
 
 OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-print [options] file/- [path]"
@@ -15,8 +18,23 @@ OptionParser.new do |o|
   o.on "-k", "--kivinen", "Dump as kivinens dump format (like the perl tools)" do
     format = :kivinen
   end
+  o.on "-f", "--kivinen-full-path", "Print the full path (implies -k)" do
+  format = :kivinen
+    full = true
+  end
   o.on "-t", "--types", "Dump types as well (only applies to -k, for now)" do
     types_too = true
+  end
+  o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
+    if t.size != 3
+      $stderr.puts "Invalid type #{t} passwd."
+      exit 1
+    end
+    file_type = t.upcase + " "
+    struct_id = 0xffffffff
+  end
+  o.on "--struct id", "Override struct id (as hex, please)" do |s|
+    struct_id = s.hex
   end
 end.parse!
 
@@ -48,7 +66,7 @@ case format
   when :yaml
     y g
   when :kivinen
-    NWN::Gff.kivinen_format g, "/", types_too do |label, value|
+    NWN::Gff.kivinen_format g, "/", types_too, full, file_type, struct_id do |label, value|
       puts "%s:\t%s" % [label, value]
     end
   else

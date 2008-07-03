@@ -58,14 +58,25 @@ module NWN
 
     # Parses +s+ as an arbitary GFF object and yields for each field found,
     # with the proper prefix.
-    def self.kivinen_format s, prefix = "/", types_too = false, add_prefix = true, &block
+    #
+    # [+s+]          The gff object to yield pairs for; can be one of NWN::Gff::Gff, NWN::Gff::Struct, Array (for lists), or NWN::Gff::Element.
+    # [+prefix+]     Supply a prefix to add to the output.
+    # [+types_too+]  Yield type definitions as well (gffprint.pl -t).
+    # [+add_prefix+] Add a prefix <tt>(unknown type)</tt> of no type information can be derived from the input.
+    # [+file_type+]  File type override. If non-null, add a global struct header with the given file type (useful for passing to gffencode.pl)
+    # [+struct_id+]  Provide a struct_id override (if printing a struct).
+    def self.kivinen_format s, prefix = "/", types_too = false, add_prefix = true, file_type = nil, struct_id = nil, &block
       if s.is_a?(NWN::Gff::Gff)
         if types_too
           yield("/", "")
-          yield("/ ____file_type", s.type)
+          yield("/ ____file_type", file_type.nil? ? s.type : file_type)
           yield("/ ____file_version", s.version)
         end
         s = NWN::Gff::Element.new("", :struct, s.root_struct)
+      elsif file_type != nil
+        yield("/", "")
+        yield("/ ____file_type", file_type)
+        yield("/ ____file_version", "V3.2")
       end
 
       if s.is_a?(Array)
@@ -73,13 +84,12 @@ module NWN
       end
 
       if s.is_a?(NWN::Gff::Struct)
-        yield(prefix + " ____struct_type", s.struct_id) if types_too
         s = NWN::Gff::Element.new(add_prefix ? "(unlabeled struct)" : "", :struct, s)
       end
 
       case s.type
         when :struct
-          yield(prefix + " ____struct_type", s.value.struct_id) if types_too
+          yield(prefix + " ____struct_type", struct_id.nil? ? s.value.struct_id : struct_id) if types_too
           s.value.each {|k,v|
             kivinen_format v, prefix + s.label + (s.label == "" ? "" : "/"), types_too do |l,v|
               yield(l, v)
@@ -89,7 +99,7 @@ module NWN
         when :cexolocstr
 
           s.value.each {|vv|
-            yield(prefix + s.label + "/" + vv.language.to_s, vv.text)
+            yield(prefix + s.label + "/" + vv.language.to_s, vv.text.gsub(/([\000-\037\177-\377%])/) {|v| "%" + v.unpack("H2")[0] })
           }
           yield(prefix + s.label + ". ____string_ref", s._str_ref)
 
@@ -105,6 +115,8 @@ module NWN
               end
             }
           }
+        when :cexostr
+          yield(prefix + s.label, s.value.gsub(/([\000-\037\177-\377%])/) {|v| "%" + v.unpack("H2")[0] })
         else
           yield(prefix + s.label, s.value)
       end
