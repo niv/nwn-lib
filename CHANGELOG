@@ -1,7 +1,17 @@
+=== 0.2.1
+
+* TwoDA allows creation of tables and proper writing, HAS NEW API. (sorry!)
+* NWN::Gff.kivinen_print takes more options, compatibility updates.
+* nwn-gff-print takes option --type: override file type, prints a custom header.
+* nwn-gff-print takes option -f: print full path. (formerly -k)
+* nwn-gff-print takes option --struct: override struct id
+* Added CHEATSHEET
+
 === 0.2
 
 * Add TwoDA reading/writing support.
 * nwn-gff-print supports kivinen-style ____type printing.
+
 === 0.1
 
 * Add basic functionality for reading and writing arbitary gff files.
