@@ -53,6 +53,10 @@ module NWN
           Shellwords.shellwords(line.strip)
         }
 
+        data.reject! {|line|
+          line.size == 0
+        }
+
         data.each_with_index {|row, idx|
           raise ArgumentError, "2da non-continoous: row #{idx} has a non-matching ID #{row[0]}." if idx != row[0].to_i
           # [1..-1]: Strip off the ID
