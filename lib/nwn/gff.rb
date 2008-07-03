@@ -58,9 +58,10 @@ module NWN
 
     # Parses +s+ as an arbitary GFF object and yields for each field found,
     # with the proper prefix.
-    def self.kivinen_format s, prefix = "/", types_too = false, &block
+    def self.kivinen_format s, prefix = "/", types_too = false, add_prefix = true, &block
       if s.is_a?(NWN::Gff::Gff)
         if types_too
+          yield("/", "")
           yield("/ ____file_type", s.type)
           yield("/ ____file_version", s.version)
         end
@@ -68,12 +69,12 @@ module NWN
       end
 
       if s.is_a?(Array)
-        v = NWN::Gff::Element.new("(unlabeled list)", :list, s)
+        v = NWN::Gff::Element.new(add_prefix ? "(unlabeled list)" : "", :list, s)
       end
 
       if s.is_a?(NWN::Gff::Struct)
         yield(prefix + " ____struct_type", s.struct_id) if types_too
-        s = NWN::Gff::Element.new("(unlabeled struct)", :struct, s)
+        s = NWN::Gff::Element.new(add_prefix ? "(unlabeled struct)" : "", :struct, s)
       end
 
       case s.type
@@ -90,10 +91,14 @@ module NWN
           s.value.each {|vv|
             yield(prefix + s.label + "/" + vv.language.to_s, vv.text)
           }
-          yield(prefix + s.label + ". ___string_ref", s._str_ref)
+          yield(prefix + s.label + ". ____string_ref", s._str_ref)
 
         when :list
           s.value.each_with_index {|vv, idx|
+            if types_too
+              yield(prefix + s.label + "[#{idx}]/", prefix + s.label + "[#{idx}]")
+              yield(prefix + s.label + "[#{idx}]/" + " ____struct_type", 0)
+            end
             vv.each {|kkk, vvv|
               kivinen_format vvv, prefix + s.label + "[#{idx}]/", types_too do |l,v|
                 yield(l,v)
@@ -158,7 +163,6 @@ class NWN::Gff::Gff
   #  gff['/PropertiesList[0]'] = 'Test'
   #    This will raise an error (obviously)
   def get_or_set k, new_value = nil, new_type = nil, new_label = nil, new_str_ref = nil
-    puts "get_or_set(#{k} = #{new_value})"
     h = self.root_struct
     path = []
     value_path = [h]
@@ -301,7 +305,7 @@ class NWN::Gff::Element
   def initialize label = nil, type = nil, value = nil
     @label, @type, @value = label, type, value
   end
-  
+
   def validate path_prefix = "/"
     raise NWN::Gff::GffTypeError, "#{path_prefix}#{self.label}: New value #{self.value} is not compatible with the current type #{self.type}" unless
       self.class.valid_for?(self.value, self.type)
