@@ -1,0 +1,3 @@
+==== Extract item from creature inventory
+
+ nwn-gff-print --type UTI -k -t creature.bic 'ItemList[12]' | gffencode.pl -o item.uti

@@ -18,7 +18,7 @@ RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = "rdoc"
   rdoc.options += RDOC_OPTS
-  rdoc.rdoc_files.add ["README", "CHANGELOG", "COPYING", "doc/*.rdoc", "lib/**/*.rb"]
+  rdoc.rdoc_files.add ["README", "CHEATSHEET", "CHANGELOG", "COPYING", "doc/*.rdoc", "lib/**/*.rb"]
 end
 
 desc "Packages up nwn-lib"
