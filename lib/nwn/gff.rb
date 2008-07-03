@@ -556,9 +556,8 @@ class NWN::Gff::Reader
         r
 
       when :void
-        len = @field_data[data_or_offset, 4].unpack("V")
-        void = @field_data[data_or_offset + 4, len].unpack("H*")
-        raise "void: #{void.inspect}"
+        len = @field_data[data_or_offset, 4].unpack("V")[0]
+        @field_data[data_or_offset + 4, len].unpack("H*")[0]
 
       when :struct
         read_struct data_or_offset
