@@ -65,7 +65,22 @@ module NWN
         }
       end
 
+      def self.resolve_or_match_partial name_spec, list #:nodoc:
+        name_spec = name_spec.downcase
 
+        list.each {|l|
+          return l if l.downcase == name_spec
+        }
+
+        substrings = list.select {|l| l.downcase.index(name_spec) }
+        if substrings.size == 1
+          return substrings[0]
+        elsif substrings.size > 1
+          raise ArgumentError, "Cannot resolve #{name_spec}. Partial matches: #{substrings.inspect}."
+        end
+
+        raise ArgumentError, "Cannot resolve #{name_spec}."
+      end
 
       # This creates a NWN::Gff::Struct describing the item property in question.
       #
@@ -76,33 +91,47 @@ module NWN
       # [+chance+]  The iprp appearance chance (whats this?)
       #
       # Depends on the 2da cache set up correctly.
+      #
+      # Note that the given arguments can be resolved with partial matches as well, as long
+      # as they are unique. (<tt>Fir -> Fire</tt>)
+      #
+      # Arguments are case-insensitive.
       def self.item_property name, subtype = nil, value = nil, param1 = nil, chance_appear = 100
         self._ip_cache_setup
 
         struct = NWN::Gff::Struct.new
 
+        name = resolve_or_match_partial name, @properties.by_col('Label')
         index = @properties.by_col('Label').index(name)
         raise ArgumentError, "Cannot find property #{name}" unless index
-        raise ArgumentError, "Property #{name} needs subtype, but none given." if
+
+        raise ArgumentError, "Property #{name} needs subtype of type #{NWN::TwoDA::Cache.get('itempropdef').by_col('SubTypeResRef', index)}, but none given." if
           @subtypes[index] && !subtype
         raise ArgumentError, "Property #{name} does not need subtype, but subtype given." if
           !@subtypes[index] && subtype
 
-        subindex = @subtypes[index].by_col('Label').index(subtype) if subtype
+        subindex = 255
 
-        raise ArgumentError, "Cannot find subtype #{subtype} for property #{name}" unless
-          subindex
+        if subtype
+          subtype = resolve_or_match_partial subtype, @subtypes[index].by_col('Label')
 
-        raise ArgumentError, "Property #{name} requires a cost value of type #{@costtable_index.by_row(@prop_id_to_costtable[index], 'Name')}, but none given" if
-          !value && @prop_id_to_costtable[index]
-        raise ArgumentError, "Property #{name} does not require a cost value, but value given" if
-          value && !@prop_id_to_costtable[index]
+          subindex = @subtypes[index].by_col('Label').index(subtype)
+          raise ArgumentError, "Cannot find subtype #{subtype} for property #{name}" unless
+            subindex
+
+          raise ArgumentError, "Property #{name} requires a cost value of type #{@costtable_index.by_row(@prop_id_to_costtable[index], 'Name')}, but none given" if
+            !value && @prop_id_to_costtable[index]
+          raise ArgumentError, "Property #{name} does not require a cost value, but value given" if
+            value && !@prop_id_to_costtable[index]
+        end
 
         _cost = 255
         _cost_value = 0
 
         if value
           ct = @prop_id_to_costtable[index]
+          value = resolve_or_match_partial value, @costtables[ct.to_i].by_col('Label')
+
           costvalue = @costtables[ct.to_i].by_col('Label').index(value)
           raise ArgumentError, "Cannot find CostValue for #{value}" unless costvalue
           _cost = ct
@@ -124,6 +153,8 @@ module NWN
 
         if param1
           pt = @prop_id_to_param1[index]
+          param1 = resolve_or_match_partial param1, @paramtables[pt.to_i].by_col('Label')
+
           param1value = @paramtables[pt.to_i].by_col('Label').index(param1)
           raise ArgumentError, "Cannot find Param1 for #{param1}" unless param1value
           _param1 = pt

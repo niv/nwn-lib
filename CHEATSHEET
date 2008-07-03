@@ -27,3 +27,24 @@
  => nil
 
  irb(main):006:0> exit
+
+==== Add a item property, the semi-human way
+
+ irb(main):001:0> Helpers.item_property('Cast_Spell')
+ ArgumentError: Property Cast_Spell needs subtype of type IPRP_SPELLS, but none given.
+ from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:108:in `item_property'
+ from (irb):1
+
+ irb(main):002:0> Helpers.item_property('Cast_Spell', 'Invisib')
+ ArgumentError: Cannot resolve invisib. Partial matches: ["Improved_Invisibility", "Invisibility", "Invisibility_Purge", "Invisibility_Sphere", "See_Invisibility"].
+ from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:79:in `resolve_or_match_partial'
+ from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:116:in `item_property'
+ from (irb):2
+
+ irb(main):003:0> Helpers.item_property('Cast_Spell', 'Invisibility')
+ ArgumentError: Property Cast_Spell requires a cost value of type IPRP_CHARGECOST, but none given
+ from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:122:in `item_property'
+ from (irb):3
+
+ irb(main):004:0> Helpers.item_property('Cast_Spell', 'Invisibility', 'Unlimi')
+ => {"PropertyName"=>#<NWN::Gff::Element:0xb75f4e68 ..
