@@ -98,8 +98,8 @@ module NWN
 
         when :cexolocstr
 
-          s.value.each {|vv|
-            yield(prefix + s.label + "/" + vv.language.to_s, vv.text.gsub(/([\000-\037\177-\377%])/) {|v| "%" + v.unpack("H2")[0] })
+          s.value.each {|kk,vv|
+            yield(prefix + s.label + "/" + kk.to_s, vv.gsub(/([\000-\037\177-\377%])/) {|v| "%" + v.unpack("H2")[0] })
           }
           yield(prefix + s.label + ". ____string_ref", s._str_ref)
 
@@ -381,16 +381,36 @@ class NWN::Gff::Struct < Hash
 end
 
 # A CExoLocString is a localised CExoString.
-#
-# Attributes:
-# [+language+] The language ID
-# [+text+]     The text for this language.
-#
-# ExoLocStrings in the wild are usually arrays of NWN::Gff:CExoLocString
-# (one for each language supplied).
-# Note that a CExoLocString is NOT a GFF list, although both are
-# represented as arrays.
-class NWN::Gff::CExoLocString < Struct.new(:language, :text)
+# It contains pairs of language => text pairs,
+# where language is a language_id as specified in the GFF
+# documentation pdf.
+class NWN::Gff::CExoLocString
+  attr_reader :languages
+  def initialize
+    @languages = {}
+  end
+
+  # Retrieve the text for a given language.
+  # Returns "" if no text is set for the given
+  # language.
+  def [] language_id
+    @languages[language_id.to_i] || ""
+  end
+
+  # Sets a new language text.
+  def []= language_id, text
+    @languages[language_id.to_i] = text
+  end
+
+  def size
+    @languages.reject {|k,v| v == ""}.size
+  end
+
+  def each
+    @languages.reject {|k,v| v == ""}.each {|k,v|
+      yield k, v
+    }
+  end
 end
 
 # A class that parses binary GFF bytes into ruby-friendly data structures.
@@ -540,20 +560,20 @@ class NWN::Gff::Reader
         @field_data[data_or_offset + 1, len]
 
       when :cexolocstr
+        exostr = Gff::CExoLocString.new
         total_size, str_ref, str_count =
           @field_data[data_or_offset, 12].unpack("VVV")
         all = @field_data[data_or_offset + 12, total_size]
         field._str_ref = str_ref
 
-        r = []
         str_count.times {
           id, len = all.unpack("VV")
           str = all[8, len].unpack("a*")[0]
           all = all[(8 + len)..-1]
-          r << Gff::CExoLocString.new(id, str)
+          exostr[id] = str
         }
         len = total_size + 4
-        r
+        exostr
 
       when :void
         len = @field_data[data_or_offset, 4].unpack("V")[0]
@@ -763,23 +783,25 @@ private
           @field_data << [v.value.size, v.value].pack("Va*")
 
         when :cexolocstr
-          raise GffError, "type = cexolocstr, but value not an array" unless
-            v.value.is_a?(Array)
+          raise GffError, "type = cexolocstr, but value not a exolocstr" unless
+            v.value.is_a?(NWN::Gff::CExoLocString)
 
           fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
 
           # total size (4), str_ref (4), str_count (4)
-          total_size = 8 + v.value.inject(0) {|t,x| t + x.text.size + 8}
+          total_size = 8
+          v.value.each {|kk,vv|
+            total_size += vv.size + 8
+          }
           @field_data << [
             total_size,
             v._str_ref,
             v.value.size
           ].pack("VVV")
 
-          v.value.each {|s|
-            @field_data << [s.language, s.text.size, s.text].pack("VVa*")
+          v.value.each {|k,v|
+            @field_data << [k, v.size, v].pack("VVa*")
           }
-
 
         else
           raise GffError, "Unknown data type: #{v.type}"
