@@ -44,9 +44,12 @@ module NWN
         raise ArgumentError, "Not valid 2da: No valid header found" if
           magic != "2DA V2.0"
 
-        raise ArgumentError,
-          "Not avalid 2da: Second line should be empty."  unless
-            empty == ""
+
+        if empty != ""
+          $stderr.puts "Warning: second line of 2da not empty, continuing anyways."
+          data = [header].concat(data)
+          header = empty
+        end
 
         header = Shellwords.shellwords(header.strip)
         data.map! {|line|
@@ -58,12 +61,12 @@ module NWN
         }
 
         data.each_with_index {|row, idx|
-          raise ArgumentError, "2da non-continoous: row #{idx} has a non-matching ID #{row[0]}." if idx != row[0].to_i
+          raise ArgumentError, "2da non-continoous: row #{idx} has a non-matching ID #{row[0]} (while parsing #{row[0,3].join(' ')})." if idx != row[0].to_i
           # [1..-1]: Strip off the ID
           data[idx] = row = row[1..-1]
 
           raise ArgumentError,
-            "Row #{idx} does not have the appropriate amount of cells (has: #{row.size}, want: #{header.size})." if
+            "Row #{idx} does not have the appropriate amount of cells (has: #{row.size}, want: #{header.size}) (while parsing #{row[0,3].join(' ')})." if
               row.size != header.size
         }
 
