@@ -372,11 +372,18 @@ end
 
 # A Gff::Struct is a hash of label->Element pairs,
 # with an added +.struct_id+.
-class NWN::Gff::Struct < Hash
+class NWN::Gff::Struct
   attr_accessor :struct_id
-  def initialize *a
+  attr_accessor :hash
+
+  def initialize
     @struct_id = 0
+    @hash = {}
     super
+  end
+
+  def method_missing meth, *a
+    @hash.method(meth).call(*a)
   end
 end
 
