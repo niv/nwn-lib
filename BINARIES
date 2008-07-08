@@ -1,0 +1,35 @@
+== nwn-gff-print
+
+ Usage: nwn-gff-print [options] file/- [path]
+    -y, --yaml                       Dump as yaml
+    -k, --kivinen                    Dump as kivinens dump format (like the perl tools)
+    -f, --kivinen-full-path          Print the full path (implies -k)
+    -m, --marshal                    Native ruby marshalling. Warning: raw bytes
+    -t, --types                      Dump types as well (only applies to -k, for now)
+        --type filetype              Override the file type (implies --struct 0xffffffff)
+        --struct id                  Override struct id (as hex, please)
+
+This prints out the given file (or stdin, if -) as the specified format (-k, -f, -y, -m).
+[-k] is the same as gffprint.pl
+[-f] is the same as gffprint.pl -t
+[-m] is the native ruby marshal format (_Marshal.dump(obj)_)
+[-y] is standard YAML
+
+== nwn-gff-import
+
+ Usage: nwn-gff-import [options] file/- outfile/-
+    -y, --yaml                       Import as yaml
+    -m, --marshal                    Import as native ruby marshal data
+
+This is the equivalent to gffencode.pl, and takes all output formats that nwn-gff-print
+provides. This can be used to transform marshalled gff data back into gff binary data.
+
+Example (save to run on a shell, prints out hex data):
+
+ nwn-gff-print -y my_item.uti | nwn-gff-import.rb -y - - | xxd
+
+== nwn-gff-irb
+
+ Usage: nwn-gff-irb file
+
+nwn-gff-irb allows interactive editing of gff files. There are some examples on the CHEATSHEET.

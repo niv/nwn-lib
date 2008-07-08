@@ -5,11 +5,8 @@ This package provides a library for reading, changing, and writing common file f
 They should work with NWN2 just as well, since the file format specifications did not change.
 
 There are various things included in this distribution:
-* some binaries under bin/
+* some binaries under bin/ (see BINARIES)
 * the actual library under lib/nwn
-
-== Supplied binaries
-* nwn-gff-print
 
 == Quickstart
 

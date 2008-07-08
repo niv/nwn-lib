@@ -1,3 +1,12 @@
+=== 0.3.0
+
+* Binary: nwn-gff-import
+* Binary: nwn-gff-print supports -m, ruby marshalling
+* helper: NWN::Gff::Helpers.item_property
+* TwoDA: Cache, more compatibility to slightly broken 2da files
+* CExoLocString: now has its own proper class for a more convenient API
+* Gff::Struct: has changed its internal API (transparent to the outside)
+
 === 0.2.2
 
 * Binary: nwn-gff-irb: interactive gff inspection/editing shell
