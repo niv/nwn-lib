@@ -2,6 +2,7 @@
 require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
+require 'nwn/helpers'
 require 'yaml'
 
 format = nil
@@ -19,8 +20,11 @@ OptionParser.new do |o|
     format = :kivinen
   end
   o.on "-f", "--kivinen-full-path", "Print the full path (implies -k)" do
-  format = :kivinen
+    format = :kivinen
     full = true
+  end
+  o.on "-m", "--marshal", "Native ruby marshalling. Warning: raw bytes" do
+    format = :marshal
   end
   o.on "-t", "--types", "Dump types as well (only applies to -k, for now)" do
     types_too = true
@@ -69,6 +73,8 @@ case format
     NWN::Gff.kivinen_format g, "/", types_too, full, file_type, struct_id do |label, value|
       puts "%s:\t%s" % [label, value]
     end
+  when :marshal
+    puts Marshal.dump(g)
   else
     puts "Unknown format; try -h"
 end
