@@ -60,10 +60,15 @@ module NWN
           line.size == 0
         }
 
+        offset = 0
         data.each_with_index {|row, idx|
-          raise ArgumentError, "2da non-continoous: row #{idx} has a non-matching ID #{row[0]} (while parsing #{row[0,3].join(' ')})." if idx != row[0].to_i
+          if (idx + offset) != row[0].to_i
+            $stderr.puts "Warning: row #{idx} has a non-matching ID #{row[0]} (while parsing #{row[0,3].join(' ')})."
+            offset += (row[0].to_i - idx)
+          end
+
           # [1..-1]: Strip off the ID
-          data[idx] = row = row[1..-1]
+          data[row[0].to_i] = row = row[1..-1]
 
           raise ArgumentError,
             "Row #{idx} does not have the appropriate amount of cells (has: #{row.size}, want: #{header.size}) (while parsing #{row[0,3].join(' ')})." if
