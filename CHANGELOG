@@ -1,3 +1,8 @@
+=== 0.3.1
+
+* Bugfix release only
+* Gff: fix struct delegator bug not passing on blocks (yuk!)
+
 === 0.3.0
 
 * Binary: nwn-gff-import
