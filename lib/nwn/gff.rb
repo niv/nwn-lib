@@ -382,8 +382,8 @@ class NWN::Gff::Struct
     super
   end
 
-  def method_missing meth, *a
-    @hash.method(meth).call(*a)
+  def method_missing meth, *a, &block
+    @hash.method(meth).call(*a, &block)
   end
 end
 
