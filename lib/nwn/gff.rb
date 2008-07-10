@@ -87,6 +87,11 @@ module NWN
         s = NWN::Gff::Element.new(add_prefix ? "(unlabeled struct)" : "", :struct, s)
       end
 
+      if s.is_a?(String)
+        yield("(unlabeled string)" + prefix, s)
+        return
+      end
+
       case s.type
         when :struct
           yield(prefix + " ____struct_type", struct_id.nil? ? s.value.struct_id : struct_id) if types_too
@@ -192,8 +197,7 @@ class NWN::Gff::Gff
       if h.is_a?(Gff::Element)
         case h.type
           when :cexolocstr
-            current_value = h.value.select {|vx| vx.language.to_i == v.to_i}
-            current_value = current_value[0] != nil ? current_value[0].text : ''
+            current_value = h.value.languages[v.to_i] || ''
 
           when :list
             raise GffPathInvalidError, "List-selector access not implemented yet."
