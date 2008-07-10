@@ -1,3 +1,8 @@
+=== 0.3.2
+
+* Gff: fix reading some type fields raising an exception in rare conditions
+* Add NWN::Gff::Struct#set for easy label setting
+
 === 0.3.1
 
 * Bugfix release only
