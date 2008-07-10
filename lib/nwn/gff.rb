@@ -549,13 +549,13 @@ class NWN::Gff::Reader
     raise GffError, "Label index #{label_index} outside of label array" if
       label_index > @labels.size
 
-    raise GffError, "Field data offset #{data_or_offset} outside of field data block (#{@field_data.size})" if
-      ComplexTypes.index(type) && data_or_offset > @field_data.size
+    label = @labels[label_index]
 
     raise GffError, "Unknown field type #{type}." unless Types[type]
     type = Types[type]
 
-    label = @labels[label_index]
+    raise GffError, "Field '#{label}' (type: #{type} )data offset #{data_or_offset} outside of field data block (#{@field_data.size})" if
+      ComplexTypes.index(type) && data_or_offset > @field_data.size
 
     value = case type
       when :byte, :char
