@@ -68,6 +68,8 @@ module NWN
       def self.resolve_or_match_partial name_spec, list #:nodoc:
         name_spec = name_spec.downcase
 
+        raise ArgumentError, "?-expand: #{list.inspect}" if name_spec == '?'
+
         list.each {|l|
           return l if l.downcase == name_spec
         }
