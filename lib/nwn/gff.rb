@@ -280,7 +280,7 @@ class NWN::Gff::Gff
 
           when String #means: cexolocstr assignment
             if value_path[-2].is_a?(Gff::Element) && value_path[-2].type == :cexolocstr
-              value_path[-2].value.select{|xy| xy.language == path[-1].to_i }[0].text = new_value
+              value_path[-2].value[path[-1].to_i] = new_value
             else
               raise GffPathInvalidError, "Dont know how to set #{new_value.class} on #{path.inspect}."
             end
