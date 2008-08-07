@@ -6,49 +6,65 @@ require 'nwn/helpers'
 require 'yaml'
 
 format = nil
+postfix = nil
+outfile = nil
 
 OptionParser.new do |o|
-  o.banner = "Usage: nwn-gff-import [options] file/- outfile/-"
+  o.banner = "Usage: nwn-gff-import [options] file/- [file, file, file]"
+
   o.on "-y", "--yaml", "Import as yaml" do
     format = :yaml
   end
   o.on "-m", "--marshal", "Import as native ruby marshal data" do
     format = :marshal
   end
+
+  o.on "-o", "--outfile F", "Write to outfile instead of stdout" do |out|
+    outfile = out
+  end
+
+  o.on "--postfix P", "Strip the given postfix from file and write to that instead of stdout (overrides -o)" do |p|
+    postfix = p
+  end
+
 end.parse!
 
-infile = ARGV.shift or begin
+ARGV.size > 0 or begin
   $stderr.puts "Required argument: filename to read, or - for stdin (try -h)."
   exit 1
 end
-outfile = ARGV.shift or begin
-  $stderr.puts "Required argument: filename to write, or - for stdout (try -h)."
-  exit 1
-end
 
-if infile == "-"
-  inbytes = $stdin.read
-else
+ARGV.each do |infile|
+  data = nil
+
+  if !postfix && !outfile
+    outfile = $stdout
+  elsif postfix && outfile
+    outfile = outfile.gsub(/#{Regexp.escape(postfix)}$/, "")
+    outfile = File.new(outfile, "w")
+  elsif outfile && !postfix
+    outfile = File.new(outfile, "w")
+  end
+
+  infile = $stdin if infile == "-"
   inbytes = IO.read(infile)
-end
 
-data = nil
+  case format
+    when :yaml
+      data = YAML.load(inbytes)
+    when :marshal
+      data = Marshal.load(inbytes)
+    else
+      raise ArgumentError, "Unknown format; try -h"
+  end
 
-case format
-  when :yaml
-    data = YAML.load(inbytes)
-  when :marshal
-    data = Marshal.load(inbytes)
-  else
-    raise ArgumentError, "Unknown format; try -h"
-end
+  raise ArgumentError, "Input stream is NOT a valid gff object" unless
+    data.is_a?(NWN::Gff::Gff)
 
-raise ArgumentError, "Input stream is NOT a valid gff object" unless
-  data.is_a?(NWN::Gff::Gff)
+  outbytes = NWN::Gff::Writer.dump(data)
 
-outbytes = NWN::Gff::Writer.dump(data)
-if outfile == "-"
-  puts outbytes
-else
-  File.open(outfile, "w") {|f| f.write(outbytes) }
+
+  outfile.write(outbytes)
+
+  outfile.close
 end
