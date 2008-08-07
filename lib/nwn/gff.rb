@@ -798,8 +798,6 @@ private
 
         # complex data types
         when :dword64, :int64, :double, :void
-          $stderr.puts "Warning: complex datatypes dword64, int64, double and void are untested."
-
           fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
           format = Formats[v.type]
           @field_data << case v.type
@@ -809,12 +807,10 @@ private
                 v.value % (2**32)
               ].pack("II")
             when :void
-              [ v.value.size, v.value ].pack("VH*")
+              [ v.value.size / 2, v.value ].pack("VH*")
             else
               [v.value].pack(format)
           end
-
-          raise GffError, "unhandled complex datatype #{v.type}"
 
         when :struct
           raise GffError, "type = struct, but value not a hash" unless
