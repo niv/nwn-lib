@@ -3,7 +3,6 @@ require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
 require 'nwn/helpers'
-require 'nwn/yaml'
 require 'yaml'
 
 format = nil
@@ -11,25 +10,45 @@ types_too = false
 full = false
 file_type = nil
 struct_id = nil
+path = nil
+prefix = :none
+postfix = nil
+verbose = false
 
 OptionParser.new do |o|
-  o.banner = "Usage: nwn-gff-print [options] file/- [path]"
+  o.banner = "Usage: nwn-gff-print [options] file/- [file, file, ..]"
+
   o.on "-y", "--yaml", "Dump as yaml" do
     format = :yaml
   end
+
   o.on "-k", "--kivinen", "Dump as kivinens dump format (like the perl tools)" do
     format = :kivinen
   end
-  o.on "-f", "--kivinen-full-path", "Print the full path (implies -k)" do
+  o.on "--kivinen-full-path", "Print the full path (implies -k)" do
     format = :kivinen
     full = true
   end
+
+  o.on "-b", "--print-basename", "Prefix the file basename to the output" do |b|
+    prefix = :base
+  end
+  o.on "-f", "--print-filename", "Prefix the full filename to the output" do |b|
+    prefix = :full
+  end
+
+  o.on "-t", "--print-types", "Print types as well" do
+    types_too = true
+  end
+
   o.on "-m", "--marshal", "Native ruby marshalling. Warning: raw bytes" do
     format = :marshal
   end
-  o.on "-t", "--types", "Dump types as well (only applies to -k, for now)" do
-    types_too = true
+
+  o.on "--postfix P", "Write output to file postfixed with P instead of stdout" do |p|
+    postfix = p
   end
+
   o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
     if t.size != 3
       $stderr.puts "Invalid type #{t} passwd."
@@ -38,44 +57,67 @@ OptionParser.new do |o|
     file_type = t.upcase + " "
     struct_id = 0xffffffff
   end
+
   o.on "--struct id", "Override struct id (as hex, please)" do |s|
     struct_id = s.hex
   end
+  o.on "-p=path", "--path path", "Only print the given path" do |p|
+    path = p
+  end
+
+  o.on "-v" "--verbose", "Be verbose" do
+    verbose = true
+  end
 end.parse!
 
-file = ARGV.shift or begin
-  $stderr.puts "Required argument: filename to process, or - for stdin (try -h)."
+ARGV.size > 0 or begin
+  $stderr.puts "Required argument: filename to read, or - for stdin (try -h)."
   exit 1
 end
 
-path = ARGV.shift
+ARGV.each {|file|
 
-if file == "-"
-  bytes = $stdin.read
-else
-  bytes = IO.read(file)
-end
-
-g = NWN::Gff::Reader.read(bytes)
-
-if path
-  begin
-    g = g[path]
-  rescue Exception => e
-    $stderr.puts "Error: " + e.to_s
-    exit 1
-  end
-end
-
-case format
-  when :yaml
-    y g
-  when :kivinen
-    NWN::Gff.kivinen_format g, "/", types_too, full, file_type, struct_id do |label, value|
-      puts "%s:\t%s" % [label, value]
-    end
-  when :marshal
-    puts Marshal.dump(g)
+  if file == "-"
+    bytes = $stdin.read
   else
-    puts "Unknown format; try -h"
-end
+    bytes = IO.read(file)
+  end
+
+  g = NWN::Gff::Reader.read(bytes)
+
+  if path
+    begin
+      g = g[path]
+    rescue Exception => e
+      $stderr.puts "Error: " + e.to_s
+      exit 1
+    end
+  end
+
+  my_prefix = case prefix
+    when :none
+      ""
+    when :base
+      File.basename(file) + ": "
+    when :full
+      File.expand_path(file) + ": "
+  end
+
+  write_to = postfix ? File.new(file + postfix, "w") : $stdout
+  $stderr.puts "Processing `#{file}`" if verbose
+  case format
+    when :yaml
+      write_to.puts g.to_yaml.split("\n").map {|ln| my_prefix + ln }.join("\n")
+    when :kivinen
+      NWN::Gff.kivinen_format g, my_prefix + "/", types_too, full, file_type, struct_id do |label, value|
+        write_to.puts "%s:\t%s" % [label, value]
+      end
+    when :marshal
+      write_to.print Marshal.dump(g)
+    else
+      $stderr.puts "Unknown format; try -h"
+      exit 1
+  end
+
+  write_to.close if postfix
+}
