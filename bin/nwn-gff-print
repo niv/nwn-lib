@@ -3,6 +3,7 @@ require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
 require 'nwn/helpers'
+require 'nwn/yaml'
 require 'yaml'
 
 format = nil

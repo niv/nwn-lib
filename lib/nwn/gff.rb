@@ -106,7 +106,7 @@ module NWN
           s.value.each {|kk,vv|
             yield(prefix + s.label + "/" + kk.to_s, vv.gsub(/([\000-\037\177-\377%])/) {|v| "%" + v.unpack("H2")[0] })
           }
-          yield(prefix + s.label + ". ____string_ref", s._str_ref)
+          yield(prefix + s.label + ". ____string_ref", s.str_ref)
 
         when :list
           s.value.each_with_index {|vv, idx|
@@ -142,6 +142,10 @@ class NWN::Gff::Gff
 
   attr_accessor :type
   attr_accessor :version
+
+  def to_yaml_properties
+    [ '@type', '@version', '@hash' ]
+  end
 
   # Create a new GFF object from the given +struct+.
   # This is normally not needed unless you are creating
@@ -179,7 +183,7 @@ class NWN::Gff::Gff
   #    overwrite an existing one with the same label.
   #  gff['/PropertiesList[0]'] = 'Test'
   #    This will raise an error (obviously)
-  def get_or_set k, new_value = nil, new_type = nil, new_label = nil, new_str_ref = nil
+  def get_or_set k, new_value = nil, new_type = nil, new_label = nil, newstr_ref = nil
     h = self.root_struct
     path = []
     value_path = [h]
@@ -263,10 +267,10 @@ class NWN::Gff::Gff
 
       end
 
-      if !new_str_ref.nil?
+      if !newstr_ref.nil?
         # Set a new str_ref
         raise GffTypeError, "specified path is not a CExoStr" unless current_value.is_a?(Gff::CExoString)
-        current_value._str_ref = new_str_ref.to_i
+        current_value.str_ref = new_str_ref.to_i
       end
 
       if !new_value.nil?
@@ -308,18 +312,34 @@ end
 
 # A Element wraps a GFF label->value pair,
 # provides a +.type+ and, optionally,
-# a +._str_ref+ for CExoLocStrings.
+# a +.str_ref+ for CExoLocStrings.
 #
 # Fields:
 # [+label+]  The label of this element, for reference.
 # [+type+]   The type of this element. (See NWN::Gff)
 # [+value+]  The value of this element.
 class NWN::Gff::Element
-  attr_accessor :label, :type, :value
-  attr_accessor :_str_ref
+  NonInline = [:struct, :list, :cexolocstr]
+
+  attr_accessor :label, :type, :value, :str_ref
+
+  def to_yaml_properties
+    [ '@label', '@type', '@value', '@str_ref' ]
+  end
 
   def initialize label = nil, type = nil, value = nil
     @label, @type, @value = label, type, value
+  end
+
+  def to_yaml( opts = {} )
+    YAML::quick_emit( self, opts ) do |out|
+      out.map( taguri, to_yaml_style ) do |map|
+        map.style = :inline unless NonInline.index(self.type)
+        to_yaml_properties.sort.each do |m|
+          map.add( m[1..-1], instance_variable_get( m ) ) unless instance_variable_get( m ).nil?
+        end
+      end
+    end
   end
 
   def validate path_prefix = "/"
@@ -379,6 +399,10 @@ end
 class NWN::Gff::Struct
   attr_accessor :struct_id
   attr_accessor :hash
+
+  def to_yaml_properties
+    [ '@struct_id', '@hash' ]
+  end
 
   def initialize
     @struct_id = 0
@@ -606,7 +630,7 @@ class NWN::Gff::Reader
         total_size, str_ref, str_count =
           @field_data[data_or_offset, 12].unpack("VVV")
         all = @field_data[data_or_offset + 12, total_size]
-        field._str_ref = str_ref
+        field.str_ref = str_ref
 
         str_count.times {
           id, len = all.unpack("VV")
@@ -837,7 +861,7 @@ private
           }
           @field_data << [
             total_size,
-            v._str_ref,
+            v.str_ref,
             v.value.size
           ].pack("VVV")
 
