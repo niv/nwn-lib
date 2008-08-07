@@ -1,44 +1,77 @@
-=== 0.3.2
-
-* Gff: fix reading some type fields raising an exception in rare conditions
-* Add NWN::Gff::Struct#set for easy label setting
-
-=== 0.3.1
-
-* Bugfix release only
-* Gff: fix struct delegator bug not passing on blocks (yuk!)
-
-=== 0.3.0
-
-* Binary: nwn-gff-import
-* Binary: nwn-gff-print supports -m, ruby marshalling
-* helper: NWN::Gff::Helpers.item_property
-* TwoDA: Cache, more compatibility to slightly broken 2da files
-* CExoLocString: now has its own proper class for a more convenient API
-* Gff::Struct: has changed its internal API (transparent to the outside)
-
-=== 0.2.2
-
-* Binary: nwn-gff-irb: interactive gff inspection/editing shell
-* Gff: Errors are now RuntimeErrors instead of Exceptions
-* Gff::Reader: properly read structures with no labels inside
-* Gff::Reader: void datatype support
-
-=== 0.2.1
-
-* TwoDA allows creation of tables and proper writing, HAS NEW API. (sorry!)
-* NWN::Gff.kivinen_print takes more options, compatibility updates.
-* nwn-gff-print takes option --type: override file type, prints a custom header.
-* nwn-gff-print takes option -f: print full path. (formerly -k)
-* nwn-gff-print takes option --struct: override struct id
-* Added CHEATSHEET
+=== 0.1
+Bernhard Stoeckner <elven@swordcoast.net> (15):
+      Add proper struct support, fix some values
+      Suspected to be fully-working Gff::Reader
+      Add working rudimentary Gff::Writer
+      Add substruct support
+      Add untested support for complex datatypes
+      add gff_to_yaml.rb
+      Add COPYING, LICENCE, README, Rakefile, spec/
+      Update README
+      add nwn-gff-print.rb binary, update gff lib
+      rename nwn-gff-print.rb to nwn-gff-print
+      nwn-gff-print: allow proper printing of sub-structs/lists
+      Add proper get/set support for Gff, add Element validations
+      Rakefile/gem: add nwn-gff-print to binary list
+      Rename project to nwn-lib
+      Fix Writer method scope
 
 === 0.2
+Bernhard Stoeckner <elven@swordcoast.net> (6):
+      Fix stupid typo in Rakefile
+      Add a basic 2da parser
+      twoda: Read windows-linebreaks as well.
+      Twoda: add .to_2da
+      nwn-gff-print/Gff: kivinen_format is now a member of the Gff module and supports printing types
+      0.2-rel, add CHANGELOG
 
-* Add TwoDA reading/writing support.
-* nwn-gff-print supports kivinen-style ____type printing.
+=== 0.2.1
+Bernhard Stoeckner <elven@swordcoast.net> (6):
+      TwoDA: Update API for new schema
+      Gff: minor documentation update
+      Gff/kivinen_print: be more compatible
+      Gff/kivinen_format: add filetype-override for custom headers, add documentation
+      Add cheatsheet
+      Version 0.2.1-rel
 
-=== 0.1
+=== 0.3.0
+Bernhard Stoeckner <elven@swordcoast.net> (16):
+      Gff::Reader: Fix reading structs with no subvalues
+      Gff::Reader: void datatype support
+      add nwn-gff-irb
+      Gff: raise RuntimeError instead of generic Exceptions
+      Update CHEATSHEET for gff-irb
+      0.2.2-rel
+      TwoDA: Do not parse empty lines
+      Add global, optional, 2da cache, add NWN::Gff.item_property helper
+      item_property: resolve unique partial matches
+      CExoLocString: more comfortable class to manage (API change)
+      compatibility fixes: allow non-empty-line-2das, be slightly more verbose
+      Gff::Struct is a delegator to Hash to allow seamless YAML marshalling
+      nwn-gff-print: -m: add support for native ruby marshalling
+      Binary: add nwn-gff-import
+      TwoDA: compatibility fixes (just warn on double ID assignments)
+      0.3.0-rel
 
-* Add basic functionality for reading and writing arbitary gff files.
-* Binaries: nwn-gff-print for simple display of gff files.
+=== 0.3.1
+Bernhard Stoeckner <elven@swordcoast.net> (2):
+      Gff: fix struct delegator bug not passing on blocks (yuk!)
+      0.3.1-rel
+
+=== 0.3.2
+Bernhard Stoeckner <elven@swordcoast.net> (3):
+      Add NWN::Gff::Struct#set for easy label setting
+      Gff: fix reading some type fields raising an exception in rare conditions
+      0.3.2-rel
+
+=== 0.3.3
+Bernhard Stoeckner <elven@swordcoast.net> (8):
+      Gff#get_or_set: fix addressing exolocstr languages (/Description/0)
+      Helpers.item_property: ? expands the full list
+      fix private method `select' called while accessing ExoLocStr/Language
+      add support for sorted and cleaned-up yaml output
+      writer: void written properly
+      nwn-gff-print: add support for multiple files
+      nwn-gff-import: add support for multiple files
+      0.3.3-rel
+
