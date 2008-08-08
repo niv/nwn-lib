@@ -4,6 +4,7 @@ require 'optparse'
 require 'nwn/gff'
 require 'nwn/helpers'
 require 'yaml'
+require 'nwn/yaml'
 
 format = nil
 types_too = false
