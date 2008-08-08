@@ -2,6 +2,31 @@
 
  nwn-gff-print --type UTI -k -t creature.bic 'ItemList[12]' | gffencode.pl -o item.uti
 
+==== Convert all item files in the current directory to yaml
+
+ nwn-gff-print -v -y --postfix .yml *.uti
+
+==== Convert all yaml item files back to their gff counterpart
+
+ nwn-gff-import -y --postfix .yml *.uti.yml
+
+==== Makefile rules for building resources from yml files
+
+ postfix := uti
+
+ objects := $(basename $(wildcard *.$(postfix).yml))
+
+ all: $(objects)
+
+ $(objects) : %.$(postfix) : %.$(postfix).yml
+     nwn-gff-import -y -o $@ $<
+
+ clean:
+     -@rm $(objects)
+
+This ruleset will automatically rebuild changed ymls to their respective .uti counterparts.
+This only serves as an example on how to do it; it does not constitute a complete build environment.
+
 ==== Quick-edit a item
  
  your/prompt$ nwn-gff-irb my_item.uti
