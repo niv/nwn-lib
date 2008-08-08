@@ -469,13 +469,17 @@ class NWN::Gff::CExoLocString
   end
 
   def size
-    @languages.reject {|k,v| v == ""}.size
+    @languages.size
   end
 
   def each
-    @languages.reject {|k,v| v == ""}.each {|k,v|
+    @languages.each {|k,v|
       yield k, v
     }
+  end
+
+  def compact
+    @languages.compact.reject {|k,v| "" == v}
   end
 end
 
