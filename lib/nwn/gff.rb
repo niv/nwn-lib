@@ -404,6 +404,22 @@ class NWN::Gff::Struct
     [ '@struct_id', '@hash' ]
   end
 
+  def to_yaml( opts = {} )
+    YAML::quick_emit( nil, opts ) do |out|
+      out.map( taguri, to_yaml_style ) do |map|
+        # Inline certain structs that are small enough.
+        map.style = :inline if hash.size <= 1 &&
+          hash.values.select {|x|
+            NWN::Gff::Element::NonInline.index(x.type)
+          }.size == 0
+
+        to_yaml_properties.sort.each do |m|
+          map.add( m[1..-1], instance_variable_get( m ) ) # unless instance_variable_get( m ).nil?
+        end
+      end
+    end
+  end
+
   def initialize
     @struct_id = 0
     @hash = {}
