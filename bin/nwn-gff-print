@@ -66,7 +66,7 @@ OptionParser.new do |o|
     path = p
   end
 
-  o.on "-v" "--verbose", "Be verbose" do
+  o.on "-v", "--verbose", "Be verbose" do
     verbose = true
   end
 end.parse!
