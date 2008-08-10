@@ -194,7 +194,6 @@ class NWN::Gff::Gff
       path << v
 
       if current_value.is_a?(Gff::Element) && current_value.type == :list # && v =~ /\[(\d+)\]$/
-        puts "value = #{$1}"
         current_value = current_value.value[$1.to_i]
       end
 
