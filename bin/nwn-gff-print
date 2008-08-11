@@ -113,7 +113,11 @@ ARGV.each {|file|
   $stderr.puts "Processing `#{file}`" if verbose
   case format
     when :yaml
-      write_to.puts g.to_yaml.split("\n").map {|ln| my_prefix + ln }.join("\n")
+      if prefix == :none
+        write_to.puts g.to_yaml
+      else
+        write_to.puts g.to_yaml.split("\n").map {|ln| my_prefix + ln }.join("\n")
+      end
     when :kivinen
       NWN::Gff.kivinen_format g, my_prefix + "/", types_too, full, file_type, struct_id do |label, value|
         write_to.puts "%s:\t%s" % [label, value]
