@@ -95,7 +95,7 @@ module NWN
       case s.type
         when :struct
           yield(prefix + " ____struct_type", struct_id.nil? ? s.value.struct_id : struct_id) if types_too
-          s.value.each {|k,v|
+          s.value.sort.each {|k,v|
             kivinen_format v, prefix + s.label + (s.label == "" ? "" : "/"), types_too do |l,v|
               yield(l, v)
             end
