@@ -46,8 +46,7 @@ ARGV.each do |infile|
     outfile = File.new(outfile, "w")
   end
 
-  infile = $stdin if infile == "-"
-  inbytes = IO.read(infile)
+  inbytes = infile == "-" ? $stdin.read : IO.read(infile)
 
   case format
     when :yaml
