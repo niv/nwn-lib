@@ -15,6 +15,7 @@ path = nil
 prefix = :none
 postfix = nil
 verbose = false
+options = {}
 
 OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-print [options] file/- [file, file, ..]"
@@ -48,6 +49,10 @@ OptionParser.new do |o|
 
   o.on "--postfix P", "Write output to file postfixed with P instead of stdout" do |p|
     postfix = p
+  end
+
+  o.on "--float_rounding F", "Round floating point numbers to the specified number of righthand digits" do |fr|
+    options[:float_rounding] = fr.to_i
   end
 
   o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
@@ -84,7 +89,7 @@ ARGV.each {|file|
     bytes = IO.read(file)
   end
 
-  g = NWN::Gff::Reader.read(bytes)
+  g = NWN::Gff::Reader.read(bytes, options)
 
   if path
     begin

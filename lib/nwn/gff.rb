@@ -505,16 +505,31 @@ class NWN::Gff::Reader
   attr_reader :hash
   attr_reader :gff
 
+  # This is a hash containing the following options:
+  # [+float_rounding+]
+  #  Round floating numbers to this many righthand positions.
+  #  Defaults to nil (for no rounding). This can be set to prevent
+  #  minor toolset fiddlings from showing up in diffs.
+  #  Note that this is somewhat experimental and may introduce
+  #  accumulating rounding errors over periods of time.
+  #  Suggested values:
+  #   *.git: 4
+  attr_accessor :options
+
   # Create a new Reader with the given +bytes+ and immediately parse it.
   # This is not needed usually; use Reader.read instead.
-  def initialize bytes
+  def initialize bytes, options = {}
     @bytes = bytes
+    @options = {
+      :float_rounding => nil,
+    }.merge(options)
+
     read_all
   end
 
   # Reads +bytes+ as gff data and returns a NWN::Gff:Gff object.
-  def self.read bytes
-    self.new(bytes).gff
+  def self.read bytes, options = {}
+    self.new(bytes, options).gff
   end
 
   private
@@ -621,7 +636,8 @@ class NWN::Gff::Reader
         [data_or_offset].pack("I").unpack("i")[0]
 
       when :float
-        [data_or_offset].pack("V").unpack("f")[0]
+        vsx = [data_or_offset].pack("V").unpack("f")[0]
+        @options[:float_rounding] ? ("%.#{@options[:float_rounding]}f" % vsx).to_f : vsx
 
       when :dword64
         len = 8
