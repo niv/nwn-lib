@@ -84,3 +84,12 @@ Bernhard Stoeckner <elven@swordcoast.net> (7):
       struct to yaml: inline small structs
       CHEATSHEET: add some hints for nwn-gff-import
       0.3.4-rel
+
+=== 0.3.5
+Bernhard Stoeckner <elven@swordcoast.net> (6):
+      NWN::Gff::Gff.get_or_set: remove stray debug puts
+      add option for fp precision to Gff::Reader, add cli opt to nwn-gff-print
+      nwn-gff-print: minor speedup when dumping to yaml without prefixes
+      doc: update BINARIES, CHEATSHEET
+      nwn-gff-import: fix reading stdin as -
+      0.3.5-rel
