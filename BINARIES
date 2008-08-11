@@ -1,28 +1,38 @@
 == nwn-gff-print
 
- Usage: nwn-gff-print [options] file/- [path]
-    -y, --yaml                       Dump as yaml
-    -k, --kivinen                    Dump as kivinens dump format (like the perl tools)
-    -f, --kivinen-full-path          Print the full path (implies -k)
-    -m, --marshal                    Native ruby marshalling. Warning: raw bytes
-    -t, --types                      Dump types as well (only applies to -k, for now)
-        --type filetype              Override the file type (implies --struct 0xffffffff)
-        --struct id                  Override struct id (as hex, please)
+ Usage: nwn-gff-print [options] file/- [file, file, ..]
+     -y, --yaml                       Dump as yaml
+     -k, --kivinen                    Dump as kivinens dump format (like the perl tools)
+         --kivinen-full-path          Print the full path (implies -k)
+     -b, --print-basename             Prefix the file basename to the output
+     -f, --print-filename             Prefix the full filename to the output
+     -t, --print-types                Print types as well
+     -m, --marshal                    Native ruby marshalling. Warning: raw bytes
+         --postfix P                  Write output to file postfixed with P instead of stdout
+         --float_rounding F           Round floating point numbers to the specified number of righthand digits
+         --type filetype              Override the file type (implies --struct 0xffffffff)
+         --struct id                  Override struct id (as hex, please)
+     -p, --path path                  Only print the given path
+     -v, --verbose                    Be verbose
 
-This prints out the given file (or stdin, if -) as the specified format (-k, -f, -y, -m).
+This prints out the given file(s) (or stdin, if -) as the specified format (-y, -k, -m)
 [-k] is the same as gffprint.pl
-[-f] is the same as gffprint.pl -t
-[-m] is the native ruby marshal format (_Marshal.dump(obj)_)
+[-kt] is the same as gffprint.pl -t
+[-m] is the native ruby marshal format (see Marshal.dump(obj))
 [-y] is standard YAML
+[--postfix] will write out each processed file to the same directory as the infile, with the given postfix appended
+[--float_rounding] can be used to truncate FPs to the given precision.
+[-p] will print out a given path within the GFF data (for example <tt>/ItemList[2]</tt>)
 
 == nwn-gff-import
 
- Usage: nwn-gff-import [options] file/- outfile/-
-    -y, --yaml                       Import as yaml
-    -m, --marshal                    Import as native ruby marshal data
+ Usage: nwn-gff-import [options] file/- [file, file, file]
+     -y, --yaml                       Import as yaml
+     -m, --marshal                    Import as native ruby marshal data
+     -o, --outfile F                  Write to outfile instead of stdout
+         --postfix P                  Strip the given postfix from file and write to that instead of stdout (overrides -o)
 
-This is the equivalent to gffencode.pl, and takes all output formats that nwn-gff-print
-provides. This can be used to transform marshalled gff data back into gff binary data.
+This is the equivalent to gffencode.pl. This can be used to transform marshalled gff data back into gff binary data.
 
 Example (save to run on a shell, prints out hex data):
 

@@ -1,6 +1,6 @@
 ==== Extract item from creature inventory
 
- nwn-gff-print --type UTI -k -t creature.bic 'ItemList[12]' | gffencode.pl -o item.uti
+ nwn-gff-print --type UTI -kt -p 'ItemList[12]' creature.bic | gffencode.pl -o item.uti
 
 ==== Convert all item files in the current directory to yaml
 
