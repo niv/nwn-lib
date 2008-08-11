@@ -412,7 +412,7 @@ class NWN::Gff::Struct
             NWN::Gff::Element::NonInline.index(x.type)
           }.size == 0
 
-        to_yaml_properties.sort.each do |m|
+        to_yaml_properties.each do |m|
           map.add( m[1..-1], instance_variable_get( m ) ) # unless instance_variable_get( m ).nil?
         end
       end
