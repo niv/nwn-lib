@@ -122,9 +122,9 @@ module NWN
         ret = []
         ret << "2DA V2.0"
         ret << ""
-        ret << @columns.join("\t")
+        ret << "    " + @columns.join("    ")
         @rows.each_with_index {|row, idx|
-          ret << [idx].concat(row).join("\t")
+          ret << [idx].concat(row).join("    ")
         }
         ret.join("\r\n")
       end
