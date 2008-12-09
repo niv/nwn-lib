@@ -23,12 +23,20 @@ else
 end
 $file = File.expand_path(file)
 
-GFF = NWN::Gff::Reader.read(bytes)
+if File.extname($file) == ".yml"
+  GFF = YAML.load(bytes)
+else
+  GFF = NWN::Gff::Reader.read(bytes)
+end
 
 def save destination = nil
   destination ||= $file
   puts "Saving to ´#{destination}' .."
-  bytes = NWN::Gff::Writer.dump(GFF)
+  if File.extname($file) == ".yml"
+    bytes = GFF.to_yaml
+  else
+    bytes = NWN::Gff::Writer.dump(GFF)
+  end
   File.open(destination, "w") {|f|
     f.write(bytes)
   }
