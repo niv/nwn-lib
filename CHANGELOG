@@ -93,3 +93,15 @@ Bernhard Stoeckner <elven@swordcoast.net> (6):
       doc: update BINARIES, CHEATSHEET
       nwn-gff-import: fix reading stdin as -
       0.3.5-rel
+
+=== 0.3.6
+Bernhard Stoeckner <elven@swordcoast.net> (5):
+      NWN::Gff::Struct: do not sort yaml_properties
+      kivinen_format: print out structs in sorted order
+      nwn-gff-irb: support for reading/writing .yml files
+      NWN::Gff::Gff: do not sort yaml_properties
+      Rakefile: use gem1.8 instead of gem
+      0.3.6-rel
+
+Stuart Coyle <stuart.coyle@gmail.com> (1):
+      TwoDA: use four spaces for field separation instead of tabs, indent columns
