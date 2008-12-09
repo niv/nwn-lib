@@ -52,18 +52,18 @@ end
 desc "Install nwn-lib gem"
 task :install do
   sh %{rake package}
-  sh %{sudo gem install pkg/#{NAME}-#{VERS}}
+  sh %{sudo gem1.8 install pkg/#{NAME}-#{VERS}}
 end
 
 desc "Install nwn-lib gem without docs"
 task :install_no_docs do
   sh %{rake package}
-  sh %{sudo gem install pkg/#{NAME}-#{VERS} --no-rdoc --no-ri}
+  sh %{sudo gem1.8 install pkg/#{NAME}-#{VERS} --no-rdoc --no-ri}
 end
 
 desc "Uninstall nwn-lib gem"
 task :uninstall => [:clean] do
-  sh %{sudo gem uninstall #{NAME}}
+  sh %{sudo gem1.8 uninstall #{NAME}}
 end
 
 desc "Upload nwn-lib gem to rubyforge"
