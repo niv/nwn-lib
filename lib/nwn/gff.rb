@@ -163,6 +163,16 @@ class NWN::Gff::Gff
     @hash
   end
 
+  def to_yaml( opts = {} )
+    YAML::quick_emit( self, opts ) do |out|
+      out.map( taguri, to_yaml_style ) do |map|
+        to_yaml_properties.each do |m|
+          map.add( m[1..-1], instance_variable_get( m ) )
+        end
+      end
+    end
+  end
+
   # A simple accessor that can be used to
   # retrieve or set properties in the struct, delimited by slashes.
   #
