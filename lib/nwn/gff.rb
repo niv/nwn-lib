@@ -150,7 +150,7 @@ class NWN::Gff::Gff
   # See NWN::Gff::Reader.
   def initialize struct, type, version = "V3.2"
     @hash = struct
-    @type = type
+    @type = type.strip
     @version = version
   end
 
@@ -759,7 +759,7 @@ private
       # Number of bytes in List Indices array
       @list_indices.size * 4
 
-    ].pack("a4a4 VV VV VV VV VV VV")
+    ].pack("A4a4 VV VV VV VV VV VV")
 
     data << @structs.pack("V*")
     data << @fields.pack("V*")
