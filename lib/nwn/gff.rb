@@ -333,7 +333,7 @@ class NWN::Gff::Element
   attr_accessor :label, :type, :value, :str_ref
 
   def to_yaml_properties
-    [ '@label', '@type', '@value', '@str_ref' ]
+    [ '@type', '@value', '@str_ref' ]
   end
 
   def initialize label = nil, type = nil, value = nil
