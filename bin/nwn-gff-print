@@ -55,6 +55,10 @@ OptionParser.new do |o|
     options[:float_rounding] = fr.to_i
   end
 
+  o.on "--float_is_unsigned", "Convert all floating point types to unsigned" do |fr|
+    options[:float_is_unsigned] = true
+  end
+
   o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
     if t.size != 3
       $stderr.puts "Invalid type #{t} passwd."

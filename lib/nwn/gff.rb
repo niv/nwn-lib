@@ -475,6 +475,14 @@ class NWN::Gff::Reader
   #  accumulating rounding errors over periods of time.
   #  Suggested values:
   #   *.git: 4
+  # [+float_is_unsigned]
+  #  Converts all floating point values to unsigned.
+  #  This is an experimentatl feature, and as such may induce
+  #  unexpected data mangling/precision loss. Use at own risk.
+  #  Defaults to false.
+  #  Suggested values:
+  #   true for all files that only contain orientation values. (like *.git)
+  #   Note that this may pose problems with lvars.
   attr_accessor :options
 
   # Create a new Reader with the given +bytes+ and immediately parse it.
@@ -483,6 +491,7 @@ class NWN::Gff::Reader
     @bytes = bytes
     @options = {
       :float_rounding => nil,
+      :float_is_unsigned => false,
     }.merge(options)
 
     read_all
@@ -598,7 +607,8 @@ class NWN::Gff::Reader
 
       when :float
         vsx = [data_or_offset].pack("V").unpack("f")[0]
-        @options[:float_rounding] ? ("%.#{@options[:float_rounding]}f" % vsx).to_f : vsx
+        vsx = @options[:float_rounding] ? ("%.#{@options[:float_rounding]}f" % vsx).to_f : vsx
+        @options[:float_is_unsigned] ? vsx.abs : vsx
 
       when :dword64
         len = 8
