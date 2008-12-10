@@ -333,7 +333,7 @@ class NWN::Gff::Element
   attr_accessor :label, :type, :value, :str_ref
 
   def to_yaml_properties
-    [ '@type', '@value', '@str_ref' ]
+    [ '@type', '@str_ref', '@value' ]
   end
 
   def initialize label = nil, type = nil, value = nil
@@ -344,7 +344,7 @@ class NWN::Gff::Element
     YAML::quick_emit( self, opts ) do |out|
       out.map( taguri, to_yaml_style ) do |map|
         map.style = :inline unless NonInline.index(self.type)
-        to_yaml_properties.sort.each do |m|
+        to_yaml_properties.each do |m|
           map.add( m[1..-1], instance_variable_get( m ) ) unless instance_variable_get( m ).nil?
         end
       end
