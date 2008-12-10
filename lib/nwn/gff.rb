@@ -244,6 +244,9 @@ class NWN::Gff::Element
 
   attr_accessor :label, :type, :value, :str_ref
 
+  # The parent struct
+  attr_accessor :parent
+
   def initialize label = nil, type = nil, value = nil
     @label, @type, @value = label, type, value
   end
@@ -482,6 +485,7 @@ class NWN::Gff::Reader
         data_or_offset /= 4
         for i in data_or_offset...(data_or_offset+count)
           lbl, vl = * read_field(@field_indices[i])
+          vl.parent = struct
           struct[lbl] = vl
         end
       end
