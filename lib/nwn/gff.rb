@@ -143,10 +143,6 @@ class NWN::Gff::Gff
   attr_accessor :type
   attr_accessor :version
 
-  def to_yaml_properties
-    [ '@type', '@version', '@hash' ]
-  end
-
   # Create a new GFF object from the given +struct+.
   # This is normally not needed unless you are creating
   # GFF objects entirely from hand.
@@ -161,16 +157,6 @@ class NWN::Gff::Gff
   # Return the root struct of this GFF.
   def root_struct
     @hash
-  end
-
-  def to_yaml( opts = {} )
-    YAML::quick_emit( self, opts ) do |out|
-      out.map( taguri, to_yaml_style ) do |map|
-        to_yaml_properties.each do |m|
-          map.add( m[1..-1], instance_variable_get( m ) )
-        end
-      end
-    end
   end
 
   # A simple accessor that can be used to
@@ -332,23 +318,8 @@ class NWN::Gff::Element
 
   attr_accessor :label, :type, :value, :str_ref
 
-  def to_yaml_properties
-    [ '@type', '@str_ref', '@value' ]
-  end
-
   def initialize label = nil, type = nil, value = nil
     @label, @type, @value = label, type, value
-  end
-
-  def to_yaml( opts = {} )
-    YAML::quick_emit( self, opts ) do |out|
-      out.map( taguri, to_yaml_style ) do |map|
-        map.style = :inline unless NonInline.index(self.type)
-        to_yaml_properties.each do |m|
-          map.add( m[1..-1], instance_variable_get( m ) ) unless instance_variable_get( m ).nil?
-        end
-      end
-    end
   end
 
   def validate path_prefix = "/"
@@ -408,26 +379,6 @@ end
 class NWN::Gff::Struct
   attr_accessor :struct_id
   attr_accessor :hash
-
-  def to_yaml_properties
-    [ '@struct_id', '@hash' ]
-  end
-
-  def to_yaml( opts = {} )
-    YAML::quick_emit( nil, opts ) do |out|
-      out.map( taguri, to_yaml_style ) do |map|
-        # Inline certain structs that are small enough.
-        map.style = :inline if hash.size <= 1 &&
-          hash.values.select {|x|
-            NWN::Gff::Element::NonInline.index(x.type)
-          }.size == 0
-
-        to_yaml_properties.each do |m|
-          map.add( m[1..-1], instance_variable_get( m ) ) # unless instance_variable_get( m ).nil?
-        end
-      end
-    end
-  end
 
   def initialize
     @struct_id = 0

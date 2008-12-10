@@ -3,7 +3,7 @@ require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
 require 'nwn/twoda'
-require 'yaml'
+require 'nwn/yaml'
 require 'irb'
 require 'irb/completion'
 
