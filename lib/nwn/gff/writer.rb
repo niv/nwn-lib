@@ -41,8 +41,8 @@ private
 
     c_offset = 0
     data << [
-      @gff.type,
-      @gff.version,
+      @gff.data_type,
+      @gff.data_version,
 
       # Offset of Struct array as bytes from the beginning of the file
       c_offset += 56,

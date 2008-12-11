@@ -45,9 +45,9 @@ module NWN::Gff::Struct
       if types_too
         yield(prefix, "")
 
-        ftype = file_type.nil? ? self.type : file_type
+        ftype = file_type.nil? ? self.data_type : file_type
         yield(prefix + " ____file_type", ftype) if ftype
-        yield(prefix + " ____file_version", self.version) if self.version
+        yield(prefix + " ____file_version", self.data_version) if self.data_version
 
         yield(prefix + " ____struct_type", self.struct_id)
       end

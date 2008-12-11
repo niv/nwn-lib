@@ -68,14 +68,11 @@ class NWN::Gff::Reader
     @field_data = @bytes[field_data_offset, field_data_count]
     @field_indices = @bytes[field_indices_offset, field_indices_count].unpack("V*")
     @list_indices = @bytes[list_indices_offset, list_indices_count].unpack("V*")
-    # puts "FieldDataOffset = #{field_data_offset}, Count = #{field_data_count}"
-    @root_struct = read_struct 0
-    @root_struct.type = type.strip
-    @root_struct.version = version
+    @root_struct = read_struct 0, type.strip, version
   end
 
   # This iterates through a struct and reads all fields into a hash, which it returns.
-  def read_struct index
+  def read_struct index, file_type = nil, file_version = nil
     struct = {}
     struct.extend(NWN::Gff::Struct)
 
@@ -86,8 +83,12 @@ class NWN::Gff::Reader
     raise GffError, "struct index #{index} outside of struct_array" if
       index * 3 + 3 > @structs.size + 1
 
+    struct.struct_id = type
+    struct.data_type = file_type
+    struct.data_version = file_version
+
     if count == 1
-      lbl, vl = * read_field(data_or_offset)
+      lbl, vl = * read_field(data_or_offset, struct)
       struct[lbl] = vl
     else
       if count > 0
@@ -95,19 +96,17 @@ class NWN::Gff::Reader
           data_or_offset % 4 != 0
         data_or_offset /= 4
         for i in data_or_offset...(data_or_offset+count)
-          lbl, vl = * read_field(@field_indices[i])
-          vl.parent = struct
+          lbl, vl = * read_field(@field_indices[i], struct)
           struct[lbl] = vl
         end
       end
     end
 
-    struct.struct_id = type
     struct
   end
 
   # Reads the field at +index+ and returns [label_name, Gff::Field]
-  def read_field index
+  def read_field index, parent_of
     gff = {}
 
     field = {}

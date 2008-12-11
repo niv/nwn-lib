@@ -26,7 +26,7 @@ end
 
 module NWN::Gff::Struct
   def to_yaml_properties
-    [ '@type', '@version', '@struct_id' ]
+    [ '@data_type', '@data_version', '@struct_id' ]
   end
 
   def to_yaml_type
@@ -75,12 +75,12 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
 
   # The metadata
   struct.struct_id = hash.delete('__struct_id')
-  struct.type = hash.delete('__type')
-  struct.version = hash.delete('__version')
+  struct.data_type = hash.delete('__data_type')
+  struct.data_version = hash.delete('__data_version')
 
   hash.each {|label,element|
-    raise NWN::Gff::GffError, "Type nil for label #{element.label} in #{struct.type}/#{struct.version}." if
-      element['type'].nil?
+     raise NWN::Gff::GffError, "Type nil for label #{label} while parsing struct-id #{struct.struct_id}." if
+       element['type'].nil?
 
     element.extend(NWN::Gff::Field)
 
@@ -93,6 +93,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
         element.extend(NWN::Gff::CExoLocString)
     end
 
+    element.field_label = label
     element.parent = struct
     struct[label] = element
   }
