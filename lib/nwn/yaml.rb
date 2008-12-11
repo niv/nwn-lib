@@ -3,6 +3,13 @@ require 'yaml'
 # See http://www.taguri.org/ for the exact meaning of this.
 NWN::YAML_DOMAIN = "nwn-lib.elv.es,2008-12"
 
+class Array
+  attr_accessor :to_yaml_style
+end
+class Hash
+  attr_accessor :to_yaml_style
+end
+
 class Hash
   # Replacing the to_yaml function so it'll serialize hashes sorted (by their keys)
   # Original function is in /usr/lib/ruby/1.8/yaml/rubytypes.rb
@@ -17,30 +24,9 @@ class Hash
   end
 end
 
-
-class NWN::Gff::Gff
+module NWN::Gff::Struct
   def to_yaml_properties
-    [ '@type', '@version', '@hash' ]
-  end
-
-  def to_yaml_type
-    "!#{NWN::YAML_DOMAIN}/gff"
-  end
-
-  def to_yaml(opts = {})
-    YAML::quick_emit(self, opts) do |out|
-      out.map(taguri, to_yaml_style) do |map|
-        to_yaml_properties.each do |m|
-          map.add(m[1..-1], instance_variable_get(m))
-        end
-      end
-    end
-  end
-end
-
-class NWN::Gff::Struct
-  def to_yaml_properties
-    [ '@struct_id', '@hash' ]
+    [ '@type', '@version', '@struct_id' ]
   end
 
   def to_yaml_type
@@ -51,58 +37,65 @@ class NWN::Gff::Struct
     YAML::quick_emit(nil, opts) do |out|
       out.map(taguri, to_yaml_style) do |map|
         # Inline certain structs that are small enough.
-        map.style = :inline if hash.size <= 1 &&
-          hash.values.select {|x|
-            NWN::Gff::Element::NonInline.index(x.type)
+        map.style = :inline if self.size <= 1 &&
+          self.values.select {|x|
+            NWN::Gff::YAMLNonInlineableFields.index(x['type'])
           }.size == 0
 
         to_yaml_properties.each do |m|
-          map.add(m[1..-1], instance_variable_get(m))
+          map.add('__' + m[1..-1], instance_variable_get(m)) if instance_variable_get(m)
         end
+
+        sort.each {|k,v|
+          map.add(k,v)
+        }
       end
     end
   end
 end
 
-class NWN::Gff::CExoLocString
-  def to_yaml_type
-    "!#{NWN::YAML_DOMAIN}/cexolocstr"
-  end
-end
-
-class NWN::Gff::Element
-  def to_yaml_properties
-    [ '@type', '@str_ref', '@value' ]
-  end
-
-  def to_yaml_type
-    "!#{NWN::YAML_DOMAIN}/element"
-  end
-
+module NWN::Gff::Field
   def to_yaml(opts = {})
-    YAML::quick_emit(self, opts) do |out|
+    YAML::quick_emit(nil, opts) do |out|
       out.map(taguri, to_yaml_style) do |map|
-        map.style = :inline unless NonInline.index(self.type)
-        to_yaml_properties.each do |m|
-          map.add(m[1..-1], instance_variable_get(m)) unless instance_variable_get(m).nil?
-        end
+        map.style = :inline unless NWN::Gff::YAMLNonInlineableFields.index(self['type'])
+        map.add('type', self['type'])
+        map.add('str_ref', self['str_ref']) if self.has_str_ref?
+        map.add('value', self['value'])
       end
     end
   end
 end
 
-YAML.add_domain_type(NWN::YAML_DOMAIN,'element') {|t,v|
-  YAML.object_maker(NWN::Gff::Element, v)
-}
 
-YAML.add_domain_type(NWN::YAML_DOMAIN,'cexolocstr') {|t,v|
-  YAML.object_maker(NWN::Gff::CExoLocString, v)
-}
+# This parses the struct and extends all fields with their proper type.
+YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
+  struct = {}
+  struct.extend(NWN::Gff::Struct)
 
-YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,v|
-  YAML.object_maker(NWN::Gff::Struct, v)
-}
+  # The metadata
+  struct.struct_id = hash.delete('__struct_id')
+  struct.type = hash.delete('__type')
+  struct.version = hash.delete('__version')
 
-YAML.add_domain_type(NWN::YAML_DOMAIN,'gff') {|t,v|
-  YAML.object_maker(NWN::Gff::Gff, v)
+  hash.each {|label,element|
+    raise NWN::Gff::GffError, "Type nil for label #{element.label} in #{struct.type}/#{struct.version}." if
+      element['type'].nil?
+
+    element.extend(NWN::Gff::Field)
+
+    case element['type']
+      when :list
+        element.extend(NWN::Gff::List)
+      when :struct
+        element.extend(NWN::Gff::Struct)
+      when :cexolocstr
+        element.extend(NWN::Gff::CExoLocString)
+    end
+
+    element.parent = struct
+    struct[label] = element
+  }
+
+  struct
 }

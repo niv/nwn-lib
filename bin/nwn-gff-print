@@ -5,7 +5,7 @@ require 'nwn/gff'
 require 'nwn/helpers'
 require 'yaml'
 require 'nwn/yaml'
-
+require 'nwn/kivinen'
 format = nil
 types_too = false
 full = false
@@ -61,7 +61,7 @@ OptionParser.new do |o|
 
   o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
     if t.size != 3
-      $stderr.puts "Invalid type #{t} passwd."
+      $stderr.puts "Invalid type #{t} passed."
       exit 1
     end
     file_type = t.upcase + " "
@@ -123,7 +123,7 @@ ARGV.each {|file|
         write_to.puts g.to_yaml.split("\n").map {|ln| my_prefix + ln }.join("\n")
       end
     when :kivinen
-      NWN::Gff.kivinen_format g, my_prefix + "/", types_too, full, file_type, struct_id do |label, value|
+      g.kivinen_format my_prefix + "/", types_too, full, file_type, struct_id do |label, value|
         write_to.puts "%s:\t%s" % [label, value]
       end
     when :marshal

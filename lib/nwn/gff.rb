@@ -15,7 +15,7 @@ module NWN
     # not exist.
     class GffPathInvalidError < RuntimeError; end
 
-    # This hash lists all possible NWN::Gff::Element types.
+    # This hash lists all possible NWN::Gff::Field types.
     Types = {
       0 => :byte,
       1 => :char,
@@ -56,13 +56,15 @@ module NWN
       :double => 'd',
     }.freeze
 
+    # These field types can never be inlined in YAML.
+    YAMLNonInlineableFields = [:struct, :list]
   end
 
 end
 
-require 'nwn/gff/gff'
 require 'nwn/gff/struct'
-require 'nwn/gff/element'
+require 'nwn/gff/field'
+require 'nwn/gff/list'
 require 'nwn/gff/cexolocstr'
 require 'nwn/gff/reader'
 require 'nwn/gff/writer'

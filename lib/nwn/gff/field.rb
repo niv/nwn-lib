@@ -1,44 +1,51 @@
-# A Element wraps a GFF label->value pair,
-# provides a +.type+ and, optionally,
+# A Field wraps a GFF label->value pair,
+# provides a +.field_type+ and, optionally,
 # a +.str_ref+ for CExoLocStrings.
 #
 # Fields:
 # [+label+]  The label of this element, for reference.
 # [+type+]   The type of this element. (See NWN::Gff)
 # [+value+]  The value of this element.
-class NWN::Gff::Element
-  NonInline = [:struct, :list, :cexolocstr]
+module NWN::Gff::Field
+  DEFAULT_STR_REF = 0xffffffff
 
-  attr_accessor :label, :type, :value, :str_ref
-
-  # The parent struct
+  # The parent struct.
+  # This is set internally by Gff::Reader on load.
   attr_accessor :parent
 
-  def initialize label = nil, type = nil, value = nil
-    @label, @type, @value = label, type, value
+  def field_type
+    self['type']
+  end
+  def field_type= t
+    self['type'] = t
+  end
+  def field_value
+    self['value']
+  end
+  def field_value= v
+    self['value'] = v
   end
 
-  def validate path_prefix = "/"
-    raise NWN::Gff::GffTypeError, "#{path_prefix}#{self.label}: New value #{self.value} is not compatible with the current type #{self.type}" unless
-      self.class.valid_for?(self.value, self.type)
+#:stopdoc:
+# Used internally, usually.
+  def field_label
+    self['label']
+  end
+  def field_label= l
+    self['label']= l
+  end
+#:startdoc:
+
+  def str_ref
+    self['str_ref'] || DEFAULT_STR_REF
+  end
+  def str_ref= s
+    self['str_ref'] = s.to_i
   end
 
-#       0 => :byte,
-#       1 => :char,
-#       2 => :word,
-#       3 => :short,
-#       4 => :dword,
-#       5 => :int,
-#       6 => :dword64,
-#       7 => :int64,
-#       8 => :float,
-#       9 => :double,
-#       10 => :cexostr,
-#       11 => :resref,
-#       12 => :cexolocstr,
-#       13 => :void,
-#       14 => :struct,
-#       15 => :list,
+  def has_str_ref?
+    str_ref != DEFAULT_STR_REF
+  end
 
   # Validate if +value+ is within bounds of +type+.
   def self.valid_for? value, type

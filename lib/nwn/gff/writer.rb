@@ -37,7 +37,7 @@ private
 
   def write_all
     data = []
-    write_struct @gff.root_struct
+    write_struct @gff
 
     c_offset = 0
     data << [
@@ -87,7 +87,7 @@ private
   end
 
   def write_struct struct
-    raise GffError, "struct invalid: #{struct.inspect}" unless struct.is_a?(Gff::Struct)
+    raise GffError, "struct invalid: #{struct.inspect}" unless struct.is_a?(NWN::Gff::Struct)
     raise GffError, "struct_id missing from struct" unless struct.struct_id
 
     # This holds all field label ids this struct has as a member
@@ -101,83 +101,83 @@ private
     struct.sort.each {|k,v|
       raise GffError, "Empty label." if !k || k == ""
 
-      case v.type
+      case v.field_type
         # simple data types
         when :byte, :char, :word, :short, :dword, :int, :float
-          format = Formats[v.type]
-          fields_of_this_struct << add_data_field(v.type, k, [v.value].pack(format).unpack("V")[0])
+          format = Formats[v.field_type]
+          fields_of_this_struct << add_data_field(v.field_type, k, [v.field_value].pack(format).unpack("V")[0])
 
         # complex data types
         when :dword64, :int64, :double, :void
-          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
-          format = Formats[v.type]
-          @field_data << case v.type
+          fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
+          format = Formats[v.field_type]
+          @field_data << case v.field_type
             when :dword64
               [
-                ( v.value / (2**32) ) & 0xffffffff,
-                v.value % (2**32)
+                ( v.field_value / (2**32) ) & 0xffffffff,
+                v.field_value % (2**32)
               ].pack("II")
             when :void
-              [ v.value.size / 2, v.value ].pack("VH*")
+              [ v.field_value.size / 2, v.field_value ].pack("VH*")
             else
-              [v.value].pack(format)
+              [v.field_value].pack(format)
           end
 
         when :struct
           raise GffError, "type = struct, but value not a hash" unless
-            v.value.is_a?(Gff::Struct)
+            v.field_value.is_a?(Gff::Struct)
 
-          fields_of_this_struct << add_data_field(v.type, k, write_struct(v.value))
+          fields_of_this_struct << add_data_field(v.field_type, k, write_struct(v.field_value))
 
         when :list
           raise GffError, "type = list, but value not an array" unless
-            v.value.is_a?(Array)
+            v.field_value.is_a?(Array)
 
-          fields_of_this_struct << add_data_field(v.type, k, 4 * @list_indices.size)
+          fields_of_this_struct << add_data_field(v.field_type, k, 4 * @list_indices.size)
 
-          count = v.value.size
+          count = v.field_value.size
           tmp = @list_indices.size
           @list_indices << count
           count.times {
             @list_indices << 0
           }
 
-          v.value.each_with_index do |kk, idx|
+          v.field_value.each_with_index do |kk, idx|
             vv = write_struct(kk)
             @list_indices[ idx + tmp + 1 ] = vv
           end
 
         when :resref
-          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
-          @field_data << [v.value.size, v.value].pack("Ca*")
+          fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
+          @field_data << [v.field_value.size, v.field_value].pack("Ca*")
 
         when :cexostr
-          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
-          @field_data << [v.value.size, v.value].pack("Va*")
+          fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
+          @field_data << [v.field_value.size, v.field_value].pack("Va*")
 
         when :cexolocstr
-          raise GffError, "type = cexolocstr, but value not a exolocstr" unless
-            v.value.is_a?(NWN::Gff::CExoLocString)
+          raise GffError, "type = cexolocstr, but value not a hash (#{v.field_value.class})" unless
+            v.field_value.is_a?(Hash)
 
-          fields_of_this_struct << add_data_field(v.type, k, @field_data.size)
+          fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
 
           # total size (4), str_ref (4), str_count (4)
           total_size = 8
-          v.value.each {|kk,vv|
+          v.field_value.each {|kk,vv|
             total_size += vv.size + 8
           }
           @field_data << [
             total_size,
             v.str_ref,
-            v.value.size
+            v.field_value.size
           ].pack("VVV")
 
-          v.value.each {|k,v|
+          v.field_value.each {|k,v|
             @field_data << [k, v.size, v].pack("VVa*")
           }
 
         else
-          raise GffError, "Unknown data type: #{v.type}"
+          raise GffError, "Unknown data type: #{v.field_type}"
       end
     }
 

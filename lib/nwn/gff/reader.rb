@@ -2,8 +2,7 @@
 class NWN::Gff::Reader
   include NWN::Gff
 
-  attr_reader :hash
-  attr_reader :gff
+  attr_reader :root_struct
 
   # This is a hash containing the following options:
   # [+float_rounding+]
@@ -38,7 +37,7 @@ class NWN::Gff::Reader
 
   # Reads +bytes+ as gff data and returns a NWN::Gff:Gff object.
   def self.read bytes, options = {}
-    self.new(bytes, options).gff
+    self.new(bytes, options).root_struct
   end
 
   private
@@ -70,13 +69,15 @@ class NWN::Gff::Reader
     @field_indices = @bytes[field_indices_offset, field_indices_count].unpack("V*")
     @list_indices = @bytes[list_indices_offset, list_indices_count].unpack("V*")
     # puts "FieldDataOffset = #{field_data_offset}, Count = #{field_data_count}"
-    @hash = read_struct 0
-    @gff = Gff.new(@hash, type, version)
+    @root_struct = read_struct 0
+    @root_struct.type = type.strip
+    @root_struct.version = version
   end
 
   # This iterates through a struct and reads all fields into a hash, which it returns.
   def read_struct index
-    struct = Gff::Struct.new
+    struct = {}
+    struct.extend(NWN::Gff::Struct)
 
     type = @structs[index * 3]
     data_or_offset = @structs[index * 3 + 1]
@@ -105,19 +106,18 @@ class NWN::Gff::Reader
     struct
   end
 
-  # Reads the field at +index+ and returns [label_name, Gff::Element]
+  # Reads the field at +index+ and returns [label_name, Gff::Field]
   def read_field index
     gff = {}
 
-    field = Element.new
+    field = {}
+    field.extend(NWN::Gff::Field)
 
     index *= 3
     type = @fields[index]
     label_index = @fields[index + 1]
     data_or_offset = @fields[index + 2]
-    # puts "Reading field #{index}"
-    # puts "Label_index = #{label_index}, label = #{@labels[label_index]}"
-    # puts "type = #{type}, data_or_offset = #{data_or_offset}"
+
     raise GffError, "Label index #{label_index} outside of label array" if
       label_index > @labels.size
 
@@ -172,7 +172,8 @@ class NWN::Gff::Reader
         @field_data[data_or_offset + 1, len]
 
       when :cexolocstr
-        exostr = Gff::CExoLocString.new
+        exostr = {}
+        exostr.extend(NWN::Gff::CExoLocString)
         total_size, str_ref, str_count =
           @field_data[data_or_offset, 12].unpack("VVV")
         all = @field_data[data_or_offset + 12, total_size]
@@ -196,6 +197,7 @@ class NWN::Gff::Reader
 
       when :list
         list = []
+        list.extend(NWN::Gff::List)
 
         raise GffError, "List index not divisable by 4" unless
           data_or_offset % 4 == 0
@@ -224,10 +226,10 @@ class NWN::Gff::Reader
       offset = #{data_or_offset + len}, len = #{@field_data.size}" if
       len && data_or_offset + len > @field_data.size
 
-    field.label = label
-    field.type = type
-    field.value = value
+    field['value'] = value
+    field['type'] = type
+    field['label'] = label
 
-    [label, field]  #::Gff::Element.new(type,label,value)
+    [label, field]
   end
 end

@@ -58,7 +58,7 @@ ARGV.each do |infile|
   end
 
   raise ArgumentError, "Input stream is NOT a valid gff object" unless
-    data.is_a?(NWN::Gff::Gff)
+    data.is_a?(NWN::Gff::Struct)
 
   outbytes = NWN::Gff::Writer.dump(data)
 
