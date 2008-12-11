@@ -1,0 +1,176 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'optparse'
+require 'nwn/gff'
+require 'nwn/helpers'
+require 'yaml'
+require 'nwn/yaml'
+require 'nwn/kivinen'
+require 'nwn/gff/api'
+
+$options = {
+  :infile => '-',
+  :outfile => '-',
+  :verbose => false,
+  :filters => [],
+  :filter_safe => 4,
+  :inferdatafile => ENV['NWN_LIB_INFER_DATA_FILE'],
+}
+
+FileFormats = [:gff, :yaml, :kivinen, :marshal]
+
+begin OptionParser.new do |o|
+  o.banner = "Usage: nwn-gff-convert <options>"
+
+  o.separator " "
+  o.separator "File selection:"
+
+  o.on "-i", "--infile FILE", "Input file (default: - for stdin)" do |f|
+    $options[:infile] = f
+  end
+  o.on "-l, ""--infile-format FORMAT", FileFormats,
+      "Input format (#{FileFormats.join(', ')})" do |f|
+    $options[:informat] = f
+  end
+
+  o.on "-o", "--outfile FILE", "Output file (default: - for stdout)" do |f|
+    $options[:outfile] = f
+  end
+  o.on "-k", "--outfile-format FORMAT", FileFormats,
+      "Output format (#{FileFormats.join(', ')})" do |f|
+    $options[:outformat] = f
+  end
+
+  o.on "-t", "--types", "Show field types (kivinen format only)" do
+    $options[:types] = true
+  end
+
+  o.on "--infer-data-file FILE", "Specify a .yml containing infer data",
+      "(default: ENV variable NWN_LIB_INFER_DATA_FILE)" do |f|
+    $options[:inferdatafile] = f
+  end
+
+  o.separator " "
+  o.separator "Mangling:"
+
+  o.on "-p", "--path PATH", "Only operate on the given path" do |path|
+    $options[:path] = path
+  end
+  o.on "-f", "--filter FILTER", "Apply filter before writing it out",
+      " FILTER is 'regexp=code',",
+      " where regexp is a regular expression,",
+      " and code is any valid ruby code.",
+      " Examples:",
+      "   -f '/AddCost=self.field_value += 20'",
+      " To see all pathes that would match",
+      " your regular expression, use",
+      "   -f 'your_rx='",
+      " together with -v" do |filter|
+    $options[:filters] << filter
+  end
+  o.on "--filter-safe-level LEVEL", %w{0 1 2 3 4},
+      "Set a custom filter $SAFE level.", "(0 to 4, default: 4)" do |f|
+    $options[:filter_safe] = f.to_i
+  end
+
+  o.separator " "
+  o.separator "Common options:"
+
+  o.on_tail "-h", "--help", "Show this crud" do
+    puts o
+    exit 1
+  end
+
+  o.on_tail "-v", "--verbose", "be verbose" do |v|
+    $options[:verbose] = v
+  end
+end.parse!
+rescue => ee
+  $stderr.puts ee.to_s
+  exit 1
+end
+
+ARGV.size == 0 or begin
+  $stderr.puts "Too many arguments (try -h)."
+  exit 1
+end
+
+def vputs *text
+  $stderr.puts *text if $options[:verbose]
+end
+
+$options[:informat] or fail "No input format specified."
+$options[:outformat] or fail "No output format specified."
+
+if $options[:inferdatafile]
+  vputs "Trying to load infer data file: #{$options[:inferdatafile]}"
+  NWN::Gff.load_struct_defaults($options[:inferdatafile])
+end
+
+vputs "Reading: #{$options[:infile]}"
+data_in = $options[:infile] == '-' ? $stdin.read : IO.read($options[:infile])
+
+data_in = case $options[:informat]
+  when :gff
+    NWN::Gff::Reader.read(data_in)
+
+  when :yaml
+    YAML.load(data_in)
+
+  when :marshal
+    Marshal.load(data_in)
+
+  when :kivinen
+    fail "Reading kivinen-style data is not supported."
+
+  else
+    fail "bug"
+end
+
+# verify that we read a GFF struct
+raise ArgumentError, "Input stream is NOT a valid gff object" unless
+  data_in.is_a?(NWN::Gff::Struct)
+
+if path = $options[:path]
+  vputs "Selecting path: #{path}"
+  data_in = data_in.by_path(path)
+end
+
+$options[:filters].each {|filter|
+  filter_path, filter_code = filter.split('=', 2)
+  filter_rx = Regexp.new('^' + filter_path + '$')
+#  vputs "Applying filter: #{path} = #{code}"
+
+  data_in.each_by_flat_path {|path, field|
+    if path =~ filter_rx
+      vputs "Filter #{filter_path} matches #{path.inspect} .."
+      Thread.new { field.instance_eval {
+        self.taint
+        $SAFE = $options[:filter_safe]
+        eval filter_code
+      } }.join
+    end
+  }
+}
+
+write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
+
+case $options[:outformat]
+  when :gff
+    write_to.print NWN::Gff::Writer.dump(data_in)
+
+  when :yaml
+    write_to.puts data_in.to_yaml
+
+  when :marshal
+    write_to.print Marshal.dump(data_in)
+
+  when :kivinen
+    data_in.kivinen_format "/", $options[:types], nil, nil do |l,v|
+      write_to.puts "%s:\t%s" % [l, v]
+    end
+
+  else
+    fail "bug"
+end
+
