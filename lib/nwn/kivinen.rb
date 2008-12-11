@@ -1,33 +1,3 @@
-module NWN::Gff::Field
-  # Used by NWN::Gff::Struct#kivinen_format to print out data fields.
-  def kivinen_format yield_str_ref = true, yield_type = false
-    case self.field_type
-      when :cexolocstr
-        field_value.sort.each {|lid,str|
-          yield("/" + lid.to_s, str)
-        }
-        yield(". ____string_ref", str_ref.to_s) if yield_str_ref
-
-      when :struct
-        field_value.kivinen_format {|v,x|
-          yield(v, x)
-        }
-
-      when :list
-        field_value.each_with_index {|item, index|
-          item.kivinen_format("/", yield_str_ref, yield_type) {|v, x|
-            yield("[" + index.to_s + "]" + v, x)
-          }
-        }
-
-      else
-        yield("", self.field_value.to_s)
-    end
-
-    yield(". ____type", NWN::Gff::Types.index(field_type).to_s) if yield_type
-  end
-end
-
 module NWN::Gff::Struct
 
     # yield (key, value) for each element, recursing into substructs.
@@ -40,24 +10,42 @@ module NWN::Gff::Struct
     # [+add_prefix+] Add a prefix <tt>(unknown type)</tt> of no type information can be derived from the input.
     # [+file_type+]  File type override. If non-null, add a global struct header with the given file type (useful for passing to gffencode.pl)
     # [+struct_id+]  Provide a struct_id override (if printing a struct).
-    def kivinen_format prefix = "/", types_too = false, add_prefix = true, file_type = nil, struct_id = nil, &block
+    def kivinen_format types_too = false, add_prefix = true, file_type = nil, struct_id = nil, &block
 
       if types_too
-        yield(prefix, "")
+        yield("/", "")
 
-        ftype = file_type.nil? ? self.data_type : file_type
-        yield(prefix + " ____file_type", ftype) if ftype
-        yield(prefix + " ____file_version", self.data_version) if self.data_version
+        ftype = file_type ? file_type : self.data_type
+        yield("/ ____file_type", ftype) if ftype
+        yield("/ ____file_version", self.data_version) if self.data_version
 
-        yield(prefix + " ____struct_type", self.struct_id)
+        yield("/ ____struct_type", self.struct_id)
       end
 
-      # Now dump all members of this struct.
-      self.sort.each {|label, element|
-        element.kivinen_format(true, types_too) {|llabel, lvalue|
-          yield(prefix + label + llabel, lvalue)
-        }
-      }
+      self.each_by_flat_path {|path, field|
+        case field
+          when String
+            yield(path, field)
 
+          when NWN::Gff::Struct
+            yield(path, path)
+            yield(path + " ____struct_type", field.struct_id)
+
+          when NWN::Gff::Field
+            case field.field_type
+              when :list
+              when :struct
+              when :cexolocstr
+              else
+                yield(path, field.field_value)
+            end
+
+            yield(path + ". ____string_ref",field.str_ref) if
+              field.has_str_ref?
+            yield(path + ". ____type", NWN::Gff::Types.index(field.field_type)) if
+              types_too
+
+        end
+      }
     end
 end
