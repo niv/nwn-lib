@@ -59,6 +59,10 @@ OptionParser.new do |o|
     options[:float_is_unsigned] = true
   end
 
+  o.on "--infer-data F", "Specify a .yml containing infer data" do |fr|
+    NWN::Gff.load_struct_defaults(fr)
+  end
+
   o.on "--type filetype", "Override the file type (implies --struct 0xffffffff)" do |t|
     if t.size != 3
       $stderr.puts "Invalid type #{t} passed."

@@ -1,0 +1,199 @@
+# This file contains default infer data for common
+# bioware structs. They're identified by their path,
+# which is usually contained in the yml data file.
+#
+# Values for each label are: [type, default_value, str_ref]
+# If no str_ref is specified, 0xffffffff is assumed (the
+#  bioware default for "no text entered").
+# If a default_value is specified (!= nil), dumping to
+# yaml will omit values which match the default value.
+#
+# Some safe default values have been prepopulated with
+# defaults that nwserver will use as if no GFF field had
+# been specified.
+#
+# You can use regular expressions in pathes, but not in
+# field names.
+---
+
+# Generic structs first.
+'[A-Z]{3}/VarTable':
+  __struct_id: 0
+  Name: :cexostr
+  Type: :dword
+
+UTI:
+  __struct_id: 0xffffffff
+  ActionList: [ :list, [] ]
+  AddCost: :dword
+  BaseItem: :int
+  Charges: [ :byte, 0 ]
+  Cloth1Color: :byte
+  Cloth2Color: :byte
+  Comment: [ :cexostr, "" ]
+  Cost: :dword
+  Cursed: [ :byte, 0 ]
+  DisplayName: :cexostr
+  Dropable: [ :byte, 1 ]
+  EffectList: [ :list, [] ]
+  DescIdentified: [ :cexolocstr, {} ]
+  Description: [ :cexolocstr, {} ]
+  LocalizedName: [ :cexolocstr, {} ]
+  Identified: [ :byte, 0 ]
+  Leather1Color: :byte
+  Leather2Color: :byte
+  Metal1Color: :byte
+  Metal2Color: :byte
+  ModelPart1: :byte
+  ObjectId: :dword
+  PaletteID: :byte
+  Pickpocketable: :byte
+  Plot: [ :byte, 0 ]
+  PropertiesList: [ :list, [] ]
+  StackSize: [ :word, 1 ]
+  Stolen: [ :byte, 0 ]
+  Tag: :resref
+  TemplateResRef: :resref
+  XOrientation: [ :float, 1.0 ]
+  XPosition: [ :float, 0.0 ]
+  YOrientation: [ :float, 0.0 ]
+  YPosition: [ :float, 0.0 ]
+  ZOrientation: [ :float, 0.0 ]
+  ZPosition: [ :float, 0.0 ]
+  VarTable: [ :list, [] ]
+
+UTI/PropertiesList:
+  __struct_id: 0
+  ChanceAppear: :byte
+  CostTable: :byte
+  CostValue: :word
+  Param1: :byte
+  Param1Value: :byte
+  PropertyName: :word
+  Subtype: :word
+
+UTC:
+  __struct_id: 4294967295
+  SkillList: :list
+
+UTC/SkillList:
+  __struct_id: 0
+  Rank: :byte
+
+
+UTP:
+  AnimationState: [ :byte, 0 ]
+  Appearance: :dword
+  AutoRemoveKey: [ :byte, 0 ]
+  BodyBag: [ :byte, 0 ]
+  CloseLockDC: [ :byte, 0 ]
+  Comment: [ :cexostr, "" ]
+  Conversation: [ :resref, "" ]
+  CurrentHP: :short
+  Description: [ :cexolocstr, {} ]
+  DisarmDC: [ :byte, 0 ]
+  Faction: [ :dword, 1 ]
+  Fort: :byte
+  HP: :short
+  Hardness: :byte
+  HasInventory: [ :byte, 0 ]
+  Interruptable: [ :byte, 1 ]
+  KeyName: [ :cexostr, "" ]
+  KeyRequired: [ :byte, 0 ]
+  LocName: [ :cexolocstr, {} ]
+  Lockable: :byte
+  Locked: [ :byte, 0 ]
+  OnClick: [ :resref, "" ]
+  OnClosed: [ :resref, "" ]
+  OnDamaged: [ :resref, "" ]
+  OnDeath: [ :resref, "" ]
+  OnDisarm: [ :resref, "" ]
+  OnHeartbeat: [ :resref, "" ]
+  OnInvDisturbed: [ :resref, "" ]
+  OnLock: [ :resref, "" ]
+  OnMeleeAttacked: [ :resref, "" ]
+  OnOpen: [ :resref, "" ]
+  OnSpellCastAt: [ :resref, "" ]
+  OnTrapTriggered: [ :resref, "" ]
+  OnUnlock: [ :resref, "" ]
+  OnUsed: [ :resref, "" ]
+  OnUserDefined: [ :resref, "" ]
+  OpenLockDC: [ :byte, 0 ]
+  PaletteID: [ :byte, 0 ]
+  Plot: [ :byte, 0 ]
+  PortraitId: [ :word, 0 ]
+  Ref: [ :byte, 0 ]
+  Static: [ :byte, 0 ]
+  Tag: :cexostr
+  TemplateResRef: :resref
+  TrapDetectDC: [ :byte, 0 ]
+  TrapDetectable: :byte
+  TrapDisarmable: :byte
+  TrapFlag: [ :byte, 0 ]
+  TrapOneShot: [ :byte, 1 ]
+  TrapType: [ :byte, 0 ]
+  Type: [ :byte, 0 ]
+  Useable: [ :byte, 0 ]
+  Will: [ :byte, 0 ]
+
+
+IFO:
+  __struct_id: 0xffffffff
+  Expansion_Pack: :word
+  Mod_Area_list: :list
+  Mod_CacheNSSList: :list
+  Mod_Creator_ID: :int
+  Mod_CustomTlk: :cexostr
+  Mod_CutSceneList: [ :list, [] ]
+  Mod_DawnHour: :byte
+  Mod_Description: :cexolocstr
+  Mod_DuskHour: :byte
+  Mod_Entry_Area: :resref
+  Mod_Entry_Dir_X: :float
+  Mod_Entry_Dir_Y: :float
+  Mod_Entry_X: :float,
+  Mod_Entry_Y: :float
+  Mod_Entry_Z: :float
+  Mod_Expan_List: [ :list, [] ]
+  Mod_GVar_List: [ :list, [] ]
+  Mod_HakList: :list
+  Mod_ID: :void
+  Mod_IsSaveGame: [ :byte, 0 ]
+  Mod_MinGameVer: :cexostr
+  Mod_MinPerHour: :byte
+  Mod_Name: :cexolocstr
+  Mod_OnAcquirItem: :resref
+  Mod_OnActvtItem: :resref
+  Mod_OnClientEntr: :resref
+  Mod_OnClientLeav: :resref
+  Mod_OnCutsnAbort: :resref
+  Mod_OnHeartbeat: :resref
+  Mod_OnModLoad: :resref
+  Mod_OnModStart: :resref
+  Mod_OnPlrDeath: :resref
+  Mod_OnPlrDying: :resref
+  Mod_OnPlrEqItm: :resref
+  Mod_OnPlrLvlUp: :resref
+  Mod_OnPlrRest: :resref
+  Mod_OnPlrUnEqItm: :resref
+  Mod_OnSpawnBtnDn: :resref
+  Mod_OnUnAqreItem: :resref
+  Mod_OnUsrDefined: :resref
+  Mod_StartDay: :byte
+  Mod_StartHour: :byte
+  Mod_StartMonth: :byte
+  Mod_StartMovie: :resref
+  Mod_StartYear: :dword
+  Mod_Tag: [ :cexostr, "MODULE" ]
+  Mod_Version: :dword
+  Mod_XPScale: :byte
+  VarTable: [ :list, [] ]
+
+IFO/Mod_Area_list:
+  __struct_id: 6
+  Area_Name: :resref
+
+IFO/Mod_CacheNSSList:
+  __struct_id: 9
+  ResRef: :resref
+

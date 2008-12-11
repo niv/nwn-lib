@@ -9,6 +9,10 @@ require 'irb/completion'
 
 OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-irb file"
+
+  o.on "--infer-data F", "Specify a .yml containing infer data" do |fr|
+    NWN::Gff.load_struct_defaults(fr)
+  end
 end.parse!
 
 file = ARGV.shift or begin

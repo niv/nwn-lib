@@ -1,6 +1,8 @@
 # A Gff::Struct is a hash of label->Element pairs with some
 # meta-information in local variables.
 module NWN::Gff::Struct
+  DEFAULT_DATA_VERSION = "V3.2"
+
   # The file-type this struct represents.
   # This is usually the file extension for root structs,
   # and nil for sub-structs.
@@ -18,10 +20,8 @@ module NWN::Gff::Struct
   # :nil if it is the root struct.
   attr_accessor :element
 
-  # Returns the path to this struct, including elements and
-  # data_type.
-  # For example: UTI/PropertiesList (for a struct inside PropertiesList)
+  # Returns the path to this struct (which is usually __data_type)
   def path
-    (@element ? @element.path : "") + @data_type.to_s
+    @data_type.to_s
   end
 end

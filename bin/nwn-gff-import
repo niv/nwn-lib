@@ -27,6 +27,10 @@ OptionParser.new do |o|
     postfix = p
   end
 
+  o.on "--infer-data F", "Specify a .yml containing infer data" do |fr|
+    NWN::Gff.load_struct_defaults(fr)
+  end
+
 end.parse!
 
 ARGV.size > 0 or begin

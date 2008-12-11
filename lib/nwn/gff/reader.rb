@@ -218,7 +218,7 @@ class NWN::Gff::Reader
         data_or_offset += 1
 
         for i in data_or_offset...(data_or_offset + count)
-          list << read_struct(@list_indices[i])
+          list << read_struct(@list_indices[i], field.path, field.parent.data_version)
         end
 
         list
