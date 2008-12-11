@@ -67,6 +67,23 @@ module NWN::Gff::Field
   end
 end
 
+module NWN::Gff
+#:stopdoc:
+  # This gets called for each parsed struct to set their container element
+  # values (see also gff/reader.rb, line 233-ish).
+  def self.__yaml_postparse parent, struct
+    struct.each {|label,element|
+      case element.field_type
+        when :list, :struct
+          [element.field_value].flatten.each {|item|
+            __yaml_postparse(element, item)
+            item.element = element
+          }
+      end
+    }
+  end
+#:startdoc:
+end
 
 # This parses the struct and extends all fields with their proper type.
 YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
@@ -98,5 +115,6 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     struct[label] = element
   }
 
+  NWN::Gff.__yaml_postparse nil, struct
   struct
 }

@@ -47,6 +47,14 @@ module NWN::Gff::Field
     str_ref != DEFAULT_STR_REF
   end
 
+  # Returns the path to this field, including all parents structs.
+  # For example: UTI/PropertiesList/CostTable
+  def path
+    raise NWN::Gff::GffError, "field not bound to a parent" unless @parent
+    parent_path = @parent.path
+    parent_path + "/" + field_label
+  end
+
   # Validate if +value+ is within bounds of +type+.
   def self.valid_for? value, type
     case type

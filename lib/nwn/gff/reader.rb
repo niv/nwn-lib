@@ -128,6 +128,10 @@ class NWN::Gff::Reader
     raise GffError, "Field '#{label}' (type: #{type} )data offset #{data_or_offset} outside of field data block (#{@field_data.size})" if
       ComplexTypes.index(type) && data_or_offset > @field_data.size
 
+    field['type'] = type
+    field['label'] = label
+    field.parent = parent_of
+
     value = case type
       when :byte, :char
         data_or_offset & 0xff
@@ -225,9 +229,10 @@ class NWN::Gff::Reader
       offset = #{data_or_offset + len}, len = #{@field_data.size}" if
       len && data_or_offset + len > @field_data.size
 
+    [value].compact.flatten.each {|iv|
+      iv.element = field if iv.respond_to?('element=')
+    }
     field['value'] = value
-    field['type'] = type
-    field['label'] = label
 
     [label, field]
   end
