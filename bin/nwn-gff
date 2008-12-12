@@ -1,0 +1,145 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'optparse'
+require 'nwn/all'
+
+Thread.abort_on_exception = true
+
+$options = {
+  :infile => '-',
+  :outfile => '-',
+  :informat => :auto,
+  :outformat => :in,
+  :verbose => false,
+  :run => [],
+  :inferdatafile => ENV['NWN_LIB_INFER_DATA_FILE'],
+}
+
+begin OptionParser.new do |o|
+  o.banner = "Usage: nwn-gff <options>"
+
+  o.separator " "
+  o.separator "File selection:"
+
+  o.on "-i", "--infile FILE", "Input file (default: stdin)" do |f|
+    $options[:infile] = f
+  end
+  o.on "-l, ""--infile-format FORMAT", [:auto] + NWN::Gff::FileFormats,
+      "Input format (#{([:auto] + NWN::Gff::FileFormats).join(', ')})",
+      "(default: auto - try to guess based on extension)" do |f|
+    $options[:informat] = f
+  end
+
+  o.on "-o", "--outfile FILE", "Output file (default: stdout)" do |f|
+    $options[:outfile] = f
+  end
+  o.on "-k", "--outfile-format FORMAT", [:in] + NWN::Gff::FileFormats,
+      "Output format (#{([:in] + NWN::Gff::FileFormats).join(', ')})" do |f|
+    $options[:outformat] = f
+  end
+
+  o.on "-t", "--types", "Show field types (kivinen format only)" do
+    $options[:types] = true
+  end
+
+  o.on "--infer-data-file FILE", "Specify a .yml containing infer data",
+      "(default: ENV variable NWN_LIB_INFER_DATA_FILE)" do |f|
+    $options[:inferdatafile] = f
+  end
+
+  o.separator " "
+  o.separator "Selection, Transformation:"
+
+  o.on "-p", "--path PATH", "Only operate on the given path" do |path|
+    $options[:path] = path
+  end
+  o.on "-r", "--run FILE", "Invoke a filter script",
+        "Please note that running 3rd party scripts is",
+        "  * * * * * * * * ",
+        " D A N G E R O U S",
+        "  * * * * * * * *",
+        "Do NOT RUN code you do not understand.",
+        "Multiple filter scripts will be evaluated",
+        "in the order they were given in." do |path|
+    raise "Specified file (-r) does not exist: #{path}" unless
+      FileTest.file?(path) && FileTest.readable?(path)
+    $options[:run] << path
+  end
+
+  o.separator " "
+  o.separator "Common options:"
+
+  o.on_tail "-h", "--help", "Show this crud" do
+    puts o
+    exit 1
+  end
+
+  o.on_tail "-v", "--verbose", "be verbose" do |v|
+    $options[:verbose] = v
+  end
+end.parse!
+rescue => ee
+  $stderr.puts ee.to_s
+  exit 1
+end
+
+ARGV.size == 0 or begin
+  $stderr.puts "Too many arguments (try -h)."
+  exit 1
+end
+
+def vputs *text
+  $stderr.puts *text if $options[:verbose]
+end
+
+$options[:informat] or fail "No input format specified."
+$options[:outformat] or fail "No output format specified."
+
+if $options[:inferdatafile]
+  vputs "Trying to load infer data file: #{$options[:inferdatafile]}"
+  NWN::Gff.load_struct_defaults($options[:inferdatafile])
+end
+
+
+if :auto == $options[:informat]
+  $options[:informat] = NWN::Gff.guess_file_format($options[:infile])
+  fail "Cannot guess infile format from filename, specify with -l." unless
+    $options[:informat]
+end
+
+$options[:outformat] = $options[:informat] if :in == $options[:outformat]
+
+vputs "Reading: #{$options[:infile]}"
+data_in = $options[:infile] == '-' ? $stdin.read : IO.read($options[:infile])
+data_in = NWN::Gff.read(data_in, $options[:informat])
+
+# verify that we read a GFF struct
+raise ArgumentError, "Input stream is NOT a valid gff struct" unless
+  data_in.is_a?(NWN::Gff::Struct)
+
+if path = $options[:path]
+  vputs "Selecting path: #{path}"
+  data_in = data_in.by_path(path)
+end
+
+original_hash = data_in.hash
+
+$options[:run].each {|file|
+  vputs "Running script file: #{file}"
+  $script = file
+  include NWN
+  include NWN::Gff::Scripting
+  NWN::Gff::Scripting.run_script(IO.read(file), data_in)
+}
+
+modified_hash = data_in.hash
+
+if original_hash == modified_hash && $options[:outformat] == $options[:informat] &&
+  File.expand_path($options[:outfile]) == File.expand_path($options[:infile]) && $options[:outfile] != "-"
+  $stderr.puts "#{$options[:outfile]}: No need to write, data and filename would be the same."
+  exit 0
+end
+
+write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
+
+NWN::Gff.write(write_to, $options[:outformat], data_in)

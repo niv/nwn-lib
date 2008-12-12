@@ -1,1 +1,33 @@
-This be scripting API guide.
+To help you manage your NWN data more efficiently, nwn-lib supports
+user-written, small (or large) scripts that follow the unix principle
+of piping.
+
+=== Filter Scripts
+
+Filter Scripts act as an argument to nwn-gff, and will be invoked
+as a pass-through for data filtering and transformation.
+Filters always depend on self being a Gff element.
+
+An example of a filter script would be a snippet, that truncates
+all floating points to a fixed size before outputting them to yaml.
+
+Filter scripts are usually not executable by themself.
+
+=== Standalone Scripts
+
+Standalone scripts are shell scripts invokable from command line,
+and do not operate on specific files; instead, they get invoked
+with their own (optional) parameters and act independently of
+data sources.
+
+An example for a standalone script would be a script, that asks
+the user for a name and then generates a random item from that.
+
+=== API
+
+There are various helpers available to scripts. See NWN::Gff::Scripting
+for a list of helper methods; additionally you can use all other API
+functions, of course.
+
+There are some examples packaged together with nwn-lib, check the scripts/
+directory with the distribution.

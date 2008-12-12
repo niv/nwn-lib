@@ -1,3 +1,0 @@
-You can write scripts and filters in a $SAFE-levelled domain specific language.
-
-It is basically just a wrapper around your API.

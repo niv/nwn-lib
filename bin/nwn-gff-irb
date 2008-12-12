@@ -1,9 +1,7 @@
 #!/usr/bin/ruby
 require 'rubygems'
 require 'optparse'
-require 'nwn/gff'
-require 'nwn/twoda'
-require 'nwn/yaml'
+require 'nwn/all'
 require 'irb'
 require 'irb/completion'
 

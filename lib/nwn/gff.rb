@@ -58,8 +58,56 @@ module NWN
 
     # These field types can never be inlined in YAML.
     YAMLNonInlineableFields = [:struct, :list, :cexolocstr]
-  end
 
+    FileFormats = [:gff, :yaml, :kivinen, :marshal]
+
+    FileFormatGuesses = {
+      /^ut[cdeimpstw]$/ => :gff,
+      /^(git|are|gic)$/ => :gff,
+      /^(mod|ifo|fac)$/ => :gff,
+      /^(bic)$/ => :gff,
+      /^ya?ml$/ => :yaml,
+      /^marshal$/ => :marshal,
+      /^k(ivinen)?$/ => :kivinen,
+    }
+
+    def self.guess_file_format(filename)
+      extension = File.extname(filename)[1..-1]
+      FileFormatGuesses[FileFormatGuesses.keys.select {|key| extension =~ key}[0]]
+    end
+
+    def self.read(io, format)
+      return case format
+        when :gff
+          NWN::Gff::Reader.read(io)
+        when :yaml
+          YAML.load(io)
+        when :marshal
+          Marshal.load(io)
+        when :kivinen
+          raise NotImplementedError, "Reading kivinen-style data is not supported."
+        else
+          raise NotImplementedError, "Don't know how to read #{format}."
+      end
+    end
+
+    def self.write(io, format, data)
+      case format
+        when :gff
+          io.print NWN::Gff::Writer.dump(data)
+        when :yaml
+          io.puts data.to_yaml
+        when :marshal
+          io.print Marshal.dump(data)
+        when :kivinen
+          data.kivinen_format $options[:types], nil, nil do |l,v|
+            io.puts "%s:\t%s" % [l, v]
+          end
+        else
+          raise NotImplementedError, "Don't know how to write data-format #{format.inspect}"
+      end
+    end
+  end
 end
 
 require 'nwn/gff/struct'
