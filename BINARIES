@@ -1,45 +1,35 @@
-== nwn-gff-print
+== nwn-gff-convert
 
- Usage: nwn-gff-print [options] file/- [file, file, ..]
-     -y, --yaml                       Dump as yaml
-     -k, --kivinen                    Dump as kivinens dump format (like the perl tools)
-         --kivinen-full-path          Print the full path (implies -k)
-     -b, --print-basename             Prefix the file basename to the output
-     -f, --print-filename             Prefix the full filename to the output
-     -t, --print-types                Print types as well
-     -m, --marshal                    Native ruby marshalling. Warning: raw bytes
-         --postfix P                  Write output to file postfixed with P instead of stdout
-         --float_rounding F           Round floating point numbers to the specified number of righthand digits
-         --type filetype              Override the file type (implies --struct 0xffffffff)
-         --struct id                  Override struct id (as hex, please)
-     -p, --path path                  Only print the given path
-     -v, --verbose                    Be verbose
+A generic converter that can be used for converting gff files to and fro from various
+file formats and presentations.
 
-This prints out the given file(s) (or stdin, if -) as the specified format (-y, -k, -m)
-[-k] is the same as gffprint.pl
-[-kt] is the same as gffprint.pl -t
-[-m] is the native ruby marshal format (see Marshal.dump(obj))
-[-y] is standard YAML
-[--postfix] will write out each processed file to the same directory as the infile, with the given postfix appended
-[--float_rounding] can be used to truncate FPs to the given precision.
-[-p] will print out a given path within the GFF data (for example <tt>/ItemList[2]</tt>)
+Type
+  nwn-gff-convert -h
+for help, it should be self-explanatory.
 
-== nwn-gff-import
-
- Usage: nwn-gff-import [options] file/- [file, file, file]
-     -y, --yaml                       Import as yaml
-     -m, --marshal                    Import as native ruby marshal data
-     -o, --outfile F                  Write to outfile instead of stdout
-         --postfix P                  Strip the given postfix from file and write to that instead of stdout (overrides -o)
-
-This is the equivalent to gffencode.pl. This can be used to transform marshalled gff data back into gff binary data.
-
-Example (save to run on a shell, prints out hex data):
-
- nwn-gff-print -y my_item.uti | nwn-gff-import.rb -y - - | xxd
+There are some usage examples on the CHEATSHEET.
 
 == nwn-gff-irb
 
- Usage: nwn-gff-irb file
+nwn-gff-irb allows interactive editing of gff files.
 
-nwn-gff-irb allows interactive editing of gff files. There are some examples on the CHEATSHEET.
+There are some usage examples on the CHEATSHEET.
+
+
+== Things under tools/
+
+These are not added to PATH, you'll have to specify their path explicitly; you can
+find them in your gem repository (/usr/lib/ruby/1.8/gems/ or similar).
+
+=== migrate_03x_to_04x.sh
+
+This can be used to migrate old YAML dumps made with version 0.3.x to the new,
+compacter format of 0.4.x.
+
+Usage is simple: just pass all old .yml files to the script, it will convert them
+in-place.
+
+This uses nwn-gff-convert, so all environment variables are taken into consideration.
+You will want to point NWN_LIB_INFER_DATA_FILE to something useful.
+
+Backup and testing is ADVISED!

@@ -9,16 +9,18 @@ include FileUtils
 # Configuration
 ##############################################################################
 NAME = "nwn-lib"
-VERS = "0.3.6"
+VERS = "0.4.0"
 CLEAN.include ["**/.*.sw?", "pkg", ".config", "rdoc", "coverage"]
 RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
   'nwn-lib: a ruby library for accessing NWN resource files', \
   '--main', 'README']
 
+DOCS = ["README", "BINARIES", "DATA_STRUCTURES", "SCRIPTING", "CHEATSHEET", "CHANGELOG", "COPYING"]
+
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = "rdoc"
   rdoc.options += RDOC_OPTS
-  rdoc.rdoc_files.add ["README", "BINARIES", "CHEATSHEET", "CHANGELOG", "COPYING", "doc/*.rdoc", "lib/**/*.rb"]
+  rdoc.rdoc_files.add DOCS + ["doc/*.rdoc", "lib/**/*.rb"]
 end
 
 desc "Packages up nwn-lib"
@@ -30,16 +32,16 @@ spec = Gem::Specification.new do |s|
   s.version = VERS
   s.platform = Gem::Platform::RUBY
   s.has_rdoc = true
-  s.extra_rdoc_files = ["README", "BINARIES", "CHEATSHEET", "CHANGELOG", "COPYING"] + Dir["doc/*.rdoc"]
+  s.extra_rdoc_files = DOCS + Dir["doc/*.rdoc"]
   s.rdoc_options += RDOC_OPTS + ["--exclude", "^(examples|extras)\/"]
   s.summary = "a ruby library for accessing Neverwinter Nights resource files"
   s.description = s.summary
   s.author = "Bernhard Stoeckner"
   s.email = "elven@swordcoast.net"
   s.homepage = "http://nwn-lib.elv.es"
-  s.executables = ["nwn-gff-print", "nwn-gff-irb", "nwn-gff-import"]
+  s.executables = ["nwn-gff-convert", "nwn-gff-dsl", "nwn-gff-irb"]
   s.required_ruby_version = ">= 1.8.4"
-  s.files = %w(COPYING CHANGELOG README Rakefile) + Dir.glob("{bin,doc,spec,lib}/**/*")
+  s.files = %w(COPYING CHANGELOG README Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts}/**/*")
   s.require_path = "lib"
   s.bindir = "bin"
 end

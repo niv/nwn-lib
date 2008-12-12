@@ -1,75 +1,9 @@
-==== Extract item from creature inventory
+==== Convert all item files in the current directory to yaml and back
 
- nwn-gff-print --type UTI -kt -p 'ItemList[12]' creature.bic | gffencode.pl -o item.uti
+ for x in *.uti; do
+     nwn-gff-convert -i"$x" -o"$x.yml" -lg -ky
+ done
 
-==== Convert all item files in the current directory to yaml
-
- nwn-gff-print -v -y --postfix .yml *.uti
-
-==== Convert all yaml item files back to their gff counterpart
-
- nwn-gff-import -y --postfix .yml *.uti.yml
-
-==== Makefile rules for building resources from yml files
-
- postfix := uti
-
- objects := $(basename $(wildcard *.$(postfix).yml))
-
- all: $(objects)
-
- $(objects) : %.$(postfix) : %.$(postfix).yml
-     nwn-gff-import -y -o $@ $<
-
- clean:
-     -@rm $(objects)
-
-This ruleset will automatically rebuild changed ymls to their respective .uti counterparts.
-This only serves as an example on how to do it; it does not constitute a complete build environment.
-
-==== Quick-edit a item
- 
- your/prompt$ nwn-gff-irb my_item.uti
- Your GFF file is in `GFF' (type: "UTI ").
- Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving).
- To save to a different location, type `save "path/to/new/location.ext"'.
-
- irb(main):001:0> GFF.root_struct.keys
- => ["ModelPart2", "Cursed", "ModelPart3", "Cost", "StackSize", "Charges", "Comment", "PaletteID", "BaseItem", "Tag", "DescIdentified", "Identified", "Plot", "TemplateResRef", "PropertiesList", "AddCost", "Stolen", "Description", "LocalizedName", "ModelPart1"]
-
- irb(main):002:0> GFF['LocalizedName/4']
- => "Mundane Feuerpfeile (aus Eibe)"
-
- irb(main):003:0> GFF['LocalizedName/4'] = 'New Name'
- => "New Name"
-
- irb(main):004:0> GFF['LocalizedName']
- => #<NWN::Gff::Element:0xb790641c @type=:cexolocstr, @value=[#<struct NWN::Gff::CExoLocString language=4, text="New Name">, #<struct NWN::Gff::CExoLocString language=0, text="Pfeil">], @_str_ref=1517, @label="LocalizedName">
-
- irb(main):005:0> save
- Saving to `/home/elven/code/nwn/nwn-lib.git/my_item.uti' ..
- saved.
- => nil
-
- irb(main):006:0> exit
-
-==== Add a item property, the semi-human way
-
- irb(main):001:0> Helpers.item_property('Cast_Spell')
- ArgumentError: Property Cast_Spell needs subtype of type IPRP_SPELLS, but none given.
- from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:108:in `item_property'
- from (irb):1
-
- irb(main):002:0> Helpers.item_property('Cast_Spell', 'Invisib')
- ArgumentError: Cannot resolve invisib. Partial matches: ["Improved_Invisibility", "Invisibility", "Invisibility_Purge", "Invisibility_Sphere", "See_Invisibility"].
- from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:79:in `resolve_or_match_partial'
- from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:116:in `item_property'
- from (irb):2
-
- irb(main):003:0> Helpers.item_property('Cast_Spell', 'Invisibility')
- ArgumentError: Property Cast_Spell requires a cost value of type IPRP_CHARGECOST, but none given
- from /var/lib/gems/1.8/gems/nwn-lib-0.2.3/lib/nwn/helpers.rb:122:in `item_property'
- from (irb):3
-
- irb(main):004:0> Helpers.item_property('Cast_Spell', 'Invisibility', 'Unlimi')
- => {"PropertyName"=>#<NWN::Gff::Element:0xb75f4e68 ..
+ for x in *.uti.yml; do
+     nwn-gff-convert -i"$x" -o"$(basename $x .yml)" -ly -kg
+ done

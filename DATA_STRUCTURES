@@ -1,0 +1,50 @@
+== Internal data representation
+
+All data is representend internally as simple hashes or arrays. On load,
+each structure will be extended by a representing module containing
+the API and some application logic.
+
+* Structs are normal hashes extended by NWN::Gff::Struct
+* Lists are arrays extended by NWN::Gff::List
+* Fields are normal hashes extended by NWN::Gff::Field
+* CExoLocStrings are normal hashes extended by NWN::Gff::CExoLocString
+
+
+=== Struct
+
+Example:
+ "/AddCost" => {"value" => 5, "label" => "AddCost", "type" => :dword}
+
+Also, a NWN::Gff::Struct also has these accessors:
+
+* data_type: A string describing the data type of this struct. (see Data Type)
+* data_version: A string describing the version (usually "V3.2")
+* struct_id: the struct Id of this struct.
+* element: The NWN::Gff::Field which this struct contains. This is nil
+  for root structs.
+
+
+=== Field
+
+Each field is a hash containing two keys:
+ "value": The data contained in this field, depending on
+ "type": The data type. For known data types, see NWN::Gff::Gff.
+
+Additionally, "label" is a key set by the Readers saying its' label name.
+This key, however, will not be written out to YAML (since it would be
+redundant).
+
+Also, each field has a .parent, which is a simple accessor set by
+the various readers pointing to the struct it is member of.
+
+
+=== Data Type
+
+Each Struct has a data_type, which describes the type of data the struct contains.
+For top-level structs, this equals the data type written to the GFF file ("UTI",
+for example); for sub structures, this is usually the top-level data type + the
+field label ("UTI/PropertiesList", for example). This is used by various loaders/writers
+to infer field types and default values.
+
+This also means that inventory items in /ItemList/ structs have a type of "UTI" and
+thus could be exported to item files, or re-attached somewhere else with minimum scripting.
