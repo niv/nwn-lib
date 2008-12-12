@@ -189,6 +189,7 @@ class NWN::Gff::Reader
           exostr[id] = str
         }
         len = total_size + 4
+        exostr.compact!
         exostr
 
       when :void

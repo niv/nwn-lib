@@ -205,7 +205,8 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
       when :struct
         element.extend(NWN::Gff::Struct)
       when :cexolocstr
-        element.extend(NWN::Gff::CExoLocString)
+        element.field_value.extend(NWN::Gff::CExoLocString)
+        element.field_value.compact!
     end
 
     struct[label] = element

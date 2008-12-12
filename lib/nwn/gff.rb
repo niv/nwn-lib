@@ -57,7 +57,7 @@ module NWN
     }.freeze
 
     # These field types can never be inlined in YAML.
-    YAMLNonInlineableFields = [:struct, :list]
+    YAMLNonInlineableFields = [:struct, :list, :cexolocstr]
   end
 
 end
