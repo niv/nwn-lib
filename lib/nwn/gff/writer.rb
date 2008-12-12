@@ -3,8 +3,9 @@ class NWN::Gff::Writer
 
   attr_reader :bytes
 
-  def initialize(gff)
+  def initialize(gff, data_type = nil)
     @gff = gff
+    @data_type = data_type
 
     @structs = []
     @fields = []
@@ -18,8 +19,8 @@ class NWN::Gff::Writer
 
   # Takes a NWN::Gff::Gff object and dumps it as raw bytes,
   # including the header.
-  def self.dump(gff)
-    self.new(gff).bytes
+  def self.dump(gff, data_type = nil)
+    self.new(gff, data_type).bytes
   end
 
 private
@@ -41,7 +42,7 @@ private
 
     c_offset = 0
     data << [
-      @gff.data_type,
+      @data_type || @gff.data_type,
       @gff.data_version,
 
       # Offset of Struct array as bytes from the beginning of the file

@@ -24,4 +24,11 @@ module NWN::Gff::Struct
   def path
     @data_type.to_s
   end
+
+  # Dump this struct as GFF binary data.
+  #
+  # Optionally specify data_type and data_version
+  def to_gff data_type = nil
+    NWN::Gff::Writer.dump(self, data_type)
+  end
 end
