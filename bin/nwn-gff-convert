@@ -3,10 +3,9 @@ require 'rubygems'
 require 'optparse'
 require 'nwn/gff'
 require 'nwn/helpers'
-require 'yaml'
 require 'nwn/yaml'
 require 'nwn/kivinen'
-require 'nwn/gff/api'
+require 'nwn/scripting'
 
 Thread.abort_on_exception = true
 
@@ -18,7 +17,7 @@ $options = {
   :verbose => false,
   :filters => [],
   :run => [],
-  :safelevel => 4,
+  :safelevel => 0,
   :inferdatafile => ENV['NWN_LIB_INFER_DATA_FILE'],
 }
 
@@ -28,6 +27,7 @@ GuessFormats = {
   /^ut[cdeimpstw]$/ => :gff,
   /^(git|are|gic)$/ => :gff,
   /^(mod|ifo|fac)$/ => :gff,
+  /^(bic)$/ => :gff,
   /^ya?ml$/ => :yaml,
   /^marshal$/ => :marshal,
   /^k(ivinen)?$/ => :kivinen,
@@ -39,7 +39,7 @@ begin OptionParser.new do |o|
   o.separator " "
   o.separator "File selection:"
 
-  o.on "-i", "--infile FILE", "Input file (default: - for stdin)" do |f|
+  o.on "-i", "--infile FILE", "Input file (default: stdin)" do |f|
     $options[:infile] = f
   end
   o.on "-l, ""--infile-format FORMAT", [:auto] + FileFormats,
@@ -48,7 +48,7 @@ begin OptionParser.new do |o|
     $options[:informat] = f
   end
 
-  o.on "-o", "--outfile FILE", "Output file (default: - for stdout)" do |f|
+  o.on "-o", "--outfile FILE", "Output file (default: stdout)" do |f|
     $options[:outfile] = f
   end
   o.on "-k", "--outfile-format FORMAT", [:in] + FileFormats,
@@ -88,8 +88,8 @@ begin OptionParser.new do |o|
   o.on "-r", "--run FILE", "Invoke a scriptfile.",
         "A special function 'log' is provided to print",
         "things to stderr." do |path|
-    FileTest.readable?(path) && FileTest.file?(path) or fail
-      "Specified file (-r) does not exist: #{path}"
+    raise "Specified file (-r) does not exist: #{path}" unless
+      FileTest.file?(path) && FileTest.readable?(path)
     $options[:run] << path
   end
 
@@ -167,7 +167,7 @@ data_in = case $options[:informat]
 end
 
 # verify that we read a GFF struct
-raise ArgumentError, "Input stream is NOT a valid gff object" unless
+raise ArgumentError, "Input stream is NOT a valid gff struct" unless
   data_in.is_a?(NWN::Gff::Struct)
 
 if path = $options[:path]
@@ -186,27 +186,36 @@ $options[:filters].each {|filter|
     if path =~ filter_rx
       vputs "Filter #{filter_path} matches #{path.inspect} .."
       t = Thread.new {
-        Thread.current[:stdout] = [].taint
-        def log *argv; Thread.current[:stdout] << [caller[0], argv]; end
+        include NWN
+        include NWN::Gff::Scripting
         $SAFE = $options[:safelevel]
         field.instance_eval filter_code
       }.join
-      t[:stdout].each {|caller, *line| $stderr.puts "#{file} #{caller}: #{line.join("")}" }
     end
   }
 }
 
 $options[:run].each {|file|
-  code = IO.read(file)
-  vputs "Running script file: #{file}"
+  $code = IO.read(file)
+  $script = file
+  vputs "Running script file: #{$script}"
   t = Thread.new {
-    Thread.current[:stdout] = [].taint
-    def log *argv; Thread.current[:stdout] << [caller[0], argv]; end
-    $SAFE = $options[:safelevel]
-    data_in.instance_eval(code)
+    begin
+      include NWN
+      include NWN::Gff::Scripting
+      $SAFE = $options[:safelevel]
+      catch(:exit) { data_in.instance_eval($code) }
+    end
   }.join
-  t[:stdout].each {|caller, *line| $stderr.puts "#{file} #{caller}: #{line.join("")}" }
 }
+
+modified_hash = data_in.hash
+
+if original_hash == modified_hash && $options[:outformat] == $options[:informat] &&
+  File.expand_path($options[:outfile]) == File.expand_path($options[:infile]) && $options[:outfile] != "-"
+  $stderr.puts "#{$options[:outfile]}: No need to write, data and filename would be the same."
+  exit 0
+end
 
 write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
 
@@ -221,7 +230,7 @@ case $options[:outformat]
     write_to.print Marshal.dump(data_in)
 
   when :kivinen
-    data_in.kivinen_format "/", $options[:types], nil, nil do |l,v|
+    data_in.kivinen_format $options[:types], nil, nil do |l,v|
       write_to.puts "%s:\t%s" % [l, v]
     end
 
