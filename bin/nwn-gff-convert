@@ -8,16 +8,30 @@ require 'nwn/yaml'
 require 'nwn/kivinen'
 require 'nwn/gff/api'
 
+Thread.abort_on_exception = true
+
 $options = {
   :infile => '-',
   :outfile => '-',
+  :informat => :auto,
+  :outformat => :in,
   :verbose => false,
   :filters => [],
-  :filter_safe => 4,
+  :run => [],
+  :safelevel => 4,
   :inferdatafile => ENV['NWN_LIB_INFER_DATA_FILE'],
 }
 
 FileFormats = [:gff, :yaml, :kivinen, :marshal]
+
+GuessFormats = {
+  /^ut[cdeimpstw]$/ => :gff,
+  /^(git|are|gic)$/ => :gff,
+  /^(mod|ifo|fac)$/ => :gff,
+  /^ya?ml$/ => :yaml,
+  /^marshal$/ => :marshal,
+  /^k(ivinen)?$/ => :kivinen,
+}
 
 begin OptionParser.new do |o|
   o.banner = "Usage: nwn-gff-convert <options>"
@@ -28,16 +42,17 @@ begin OptionParser.new do |o|
   o.on "-i", "--infile FILE", "Input file (default: - for stdin)" do |f|
     $options[:infile] = f
   end
-  o.on "-l, ""--infile-format FORMAT", FileFormats,
-      "Input format (#{FileFormats.join(', ')})" do |f|
+  o.on "-l, ""--infile-format FORMAT", [:auto] + FileFormats,
+      "Input format (#{([:auto] + FileFormats).join(', ')})",
+      "(default: auto - try to guess based on extension)" do |f|
     $options[:informat] = f
   end
 
   o.on "-o", "--outfile FILE", "Output file (default: - for stdout)" do |f|
     $options[:outfile] = f
   end
-  o.on "-k", "--outfile-format FORMAT", FileFormats,
-      "Output format (#{FileFormats.join(', ')})" do |f|
+  o.on "-k", "--outfile-format FORMAT", [:in] + FileFormats,
+      "Output format (#{([:in] + FileFormats).join(', ')})" do |f|
     $options[:outformat] = f
   end
 
@@ -51,26 +66,41 @@ begin OptionParser.new do |o|
   end
 
   o.separator " "
-  o.separator "Mangling:"
+  o.separator "Selection, Transformation:"
 
   o.on "-p", "--path PATH", "Only operate on the given path" do |path|
     $options[:path] = path
   end
-  o.on "-f", "--filter FILTER", "Apply filter before writing it out",
+  o.on "-m", "--modify FILTER", "Run code on tree nodes",
       " FILTER is 'regexp=code',",
       " where regexp is a regular expression,",
       " and code is any valid ruby code.",
       " Examples:",
-      "   -f '/AddCost=self.field_value += 20'",
+      "   -m '/AddCost=self.field_value += 20'",
       " To see all pathes that would match",
       " your regular expression, use",
-      "   -f 'your_rx='",
-      " together with -v" do |filter|
+      "   -m 'your_rx='",
+      " together with -v",
+      "A special function 'log' is provided to print",
+      "things to stderr." do |filter|
     $options[:filters] << filter
   end
-  o.on "--filter-safe-level LEVEL", %w{0 1 2 3 4},
-      "Set a custom filter $SAFE level.", "(0 to 4, default: 4)" do |f|
-    $options[:filter_safe] = f.to_i
+  o.on "-r", "--run FILE", "Invoke a scriptfile.",
+        "A special function 'log' is provided to print",
+        "things to stderr." do |path|
+    FileTest.readable?(path) && FileTest.file?(path) or fail
+      "Specified file (-r) does not exist: #{path}"
+    $options[:run] << path
+  end
+
+  o.on "--safe-level LEVEL", %w{0 1 2 3 4},
+      "Set a custom $SAFE level for -m and -r",
+        "(0 to 4, default: #{$options[:safelevel]}, 0 means unrestricted)",
+        "Please note that running 3rd party scripts can be",
+        " D A N G E R O U S",
+        "even with safe-level = 4. Do NOT RUN code",
+        "you do not understand." do |f|
+    $options[:safelevel] = f.to_i
   end
 
   o.separator " "
@@ -110,6 +140,15 @@ end
 vputs "Reading: #{$options[:infile]}"
 data_in = $options[:infile] == '-' ? $stdin.read : IO.read($options[:infile])
 
+if :auto == $options[:informat]
+  extension = File.extname($options[:infile])[1..-1]
+  $options[:informat] = GuessFormats[GuessFormats.keys.select {|key| extension =~ key}[0]]
+  fail "Cannot guess infile format from extension `#{extension}', specify with -l." unless
+    $options[:informat]
+end
+
+$options[:outformat] = $options[:informat] if :in == $options[:outformat]
+
 data_in = case $options[:informat]
   when :gff
     NWN::Gff::Reader.read(data_in)
@@ -136,6 +175,8 @@ if path = $options[:path]
   data_in = data_in.by_path(path)
 end
 
+original_hash = data_in.hash
+
 $options[:filters].each {|filter|
   filter_path, filter_code = filter.split('=', 2)
   filter_rx = Regexp.new('^' + filter_path + '$')
@@ -144,13 +185,27 @@ $options[:filters].each {|filter|
   data_in.each_by_flat_path {|path, field|
     if path =~ filter_rx
       vputs "Filter #{filter_path} matches #{path.inspect} .."
-      Thread.new { field.instance_eval {
-        self.taint
-        $SAFE = $options[:filter_safe]
-        eval filter_code
-      } }.join
+      t = Thread.new {
+        Thread.current[:stdout] = [].taint
+        def log *argv; Thread.current[:stdout] << [caller[0], argv]; end
+        $SAFE = $options[:safelevel]
+        field.instance_eval filter_code
+      }.join
+      t[:stdout].each {|caller, *line| $stderr.puts "#{file} #{caller}: #{line.join("")}" }
     end
   }
+}
+
+$options[:run].each {|file|
+  code = IO.read(file)
+  vputs "Running script file: #{file}"
+  t = Thread.new {
+    Thread.current[:stdout] = [].taint
+    def log *argv; Thread.current[:stdout] << [caller[0], argv]; end
+    $SAFE = $options[:safelevel]
+    data_in.instance_eval(code)
+  }.join
+  t[:stdout].each {|caller, *line| $stderr.puts "#{file} #{caller}: #{line.join("")}" }
 }
 
 write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
