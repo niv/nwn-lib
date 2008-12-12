@@ -4,40 +4,17 @@ class NWN::Gff::Reader
 
   attr_reader :root_struct
 
-  # This is a hash containing the following options:
-  # [+float_rounding+]
-  #  Round floating numbers to this many righthand positions.
-  #  Defaults to nil (for no rounding). This can be set to prevent
-  #  minor toolset fiddlings from showing up in diffs.
-  #  Note that this is somewhat experimental and may introduce
-  #  accumulating rounding errors over periods of time.
-  #  Suggested values:
-  #   *.git: 4
-  # [+float_is_unsigned]
-  #  Converts all floating point values to unsigned.
-  #  This is an experimentatl feature, and as such may induce
-  #  unexpected data mangling/precision loss. Use at own risk.
-  #  Defaults to false.
-  #  Suggested values:
-  #   true for all files that only contain orientation values. (like *.git)
-  #   Note that this may pose problems with lvars.
-  attr_accessor :options
-
   # Create a new Reader with the given +bytes+ and immediately parse it.
   # This is not needed usually; use Reader.read instead.
-  def initialize bytes, options = {}
+  def initialize bytes
     @bytes = bytes
-    @options = {
-      :float_rounding => nil,
-      :float_is_unsigned => false,
-    }.merge(options)
 
     read_all
   end
 
   # Reads +bytes+ as gff data and returns a NWN::Gff:Gff object.
-  def self.read bytes, options = {}
-    self.new(bytes, options).root_struct
+  def self.read bytes
+    self.new(bytes).root_struct
   end
 
   private
@@ -149,9 +126,7 @@ class NWN::Gff::Reader
         [data_or_offset].pack("I").unpack("i")[0]
 
       when :float
-        vsx = [data_or_offset].pack("V").unpack("f")[0]
-        vsx = @options[:float_rounding] ? ("%.#{@options[:float_rounding]}f" % vsx).to_f : vsx
-        @options[:float_is_unsigned] ? vsx.abs : vsx
+        [data_or_offset].pack("V").unpack("f")[0]
 
       when :dword64
         len = 8
