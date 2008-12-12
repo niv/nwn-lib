@@ -70,13 +70,13 @@ module NWN::Gff::Struct
 
       struct = struct[v]
       if index
-        struct.field_type == :list or raise NWN::Gff::GffError,
+        struct.field_type == :list or raise NWN::Gff::GffPathInvalidError,
           "Specified a list offset for a non-list item: #{v}[#{index}]."
 
         struct = struct.field_value[index.to_i]
       end
 
-      raise NWN::Gff::GffError,
+      raise NWN::Gff::GffPathInvalidError,
         "Cannot find a path to /#{path} (at: /#{current_path})." unless struct
 
       current_path += v
