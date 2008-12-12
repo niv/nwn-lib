@@ -169,7 +169,7 @@ end
 
 # This parses the struct and extends all fields with their proper type.
 YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
-  struct = {}
+  struct = {}.taint
   struct.extend(NWN::Gff::Struct)
 
   # The metadata
@@ -209,7 +209,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
         element.field_value.compact!
     end
 
-    struct[label] = element
+    struct[label] = element.taint
   }
 
   NWN::Gff.__yaml_postparse nil, struct if struct.data_type

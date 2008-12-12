@@ -73,7 +73,7 @@ class NWN::Gff::Reader
 
   # This iterates through a struct and reads all fields into a hash, which it returns.
   def read_struct index, file_type = nil, file_version = nil
-    struct = {}
+    struct = {}.taint
     struct.extend(NWN::Gff::Struct)
 
     type = @structs[index * 3]
@@ -109,7 +109,7 @@ class NWN::Gff::Reader
   def read_field index, parent_of
     gff = {}
 
-    field = {}
+    field = {}.taint
     field.extend(NWN::Gff::Field)
 
     index *= 3
@@ -190,7 +190,7 @@ class NWN::Gff::Reader
         }
         len = total_size + 4
         exostr.compact!
-        exostr
+        exostr.taint
 
       when :void
         len = @field_data[data_or_offset, 4].unpack("V")[0]
@@ -222,7 +222,7 @@ class NWN::Gff::Reader
           list << read_struct(@list_indices[i], field.path, field.parent.data_version)
         end
 
-        list
+        list.taint
 
     end
 
@@ -233,7 +233,7 @@ class NWN::Gff::Reader
     [value].compact.flatten.each {|iv|
       iv.element = field if iv.respond_to?('element=')
     }
-    field['value'] = value
+    field['value'] = value.taint
 
     [label, field]
   end
