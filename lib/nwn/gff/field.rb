@@ -60,6 +60,8 @@ module NWN::Gff::Field
   # This extends this field object and its' value with the
   # appropriate meta classes, depending on field_type.
   def extend_meta_classes
+    return if field_type == :struct
+
     field_klass_name = field_type.to_s.capitalize
     field_klass = NWN::Gff.const_defined?(field_klass_name) ?
       NWN::Gff.const_get(field_klass_name) : nil
