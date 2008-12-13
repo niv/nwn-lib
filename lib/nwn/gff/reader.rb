@@ -151,7 +151,7 @@ class NWN::Gff::Reader
 
       when :cexolocstr
         exostr = {}
-        exostr.extend(NWN::Gff::CExoLocString)
+
         total_size, str_ref, str_count =
           @field_data[data_or_offset, 12].unpack("VVV")
         all = @field_data[data_or_offset + 12, total_size]
@@ -164,7 +164,8 @@ class NWN::Gff::Reader
           exostr[id] = str
         }
         len = total_size + 4
-        exostr.compact!
+        # Filter out empty strings.
+        exostr.reject! {|k,v| v.nil? || v.empty?}
         exostr.taint
 
       when :void
@@ -176,7 +177,6 @@ class NWN::Gff::Reader
 
       when :list
         list = []
-        list.extend(NWN::Gff::List)
 
         raise GffError, "List index not divisable by 4" unless
           data_or_offset % 4 == 0
@@ -209,6 +209,9 @@ class NWN::Gff::Reader
       iv.element = field if iv.respond_to?('element=')
     }
     field['value'] = value.taint
+
+    # We extend all fields and field_values with matching classes.
+    field.extend_meta_classes
 
     [label, field]
   end

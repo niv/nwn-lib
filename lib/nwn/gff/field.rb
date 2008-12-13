@@ -1,11 +1,17 @@
-# A Field wraps a GFF label->value pair,
-# provides a +.field_type+ and, optionally,
-# a +.str_ref+ for CExoLocStrings.
+# A Field wraps a GFF label->value pair, providing:
+# * +.field_type+ describing the field type (e.g. :int)
+# * +.field_value+ holding the value of this Field
+# * +.str_ref+ containing a str_ref for applicable fields
+
+# and, if loaded by Gff::Reader or through YAML:
+# * +.field_label+ holding the label
+# * +.parent+ holding the struct this Field is child of.
 #
-# Fields:
-# [+label+]  The label of this element, for reference.
-# [+type+]   The type of this element. (See NWN::Gff)
-# [+value+]  The value of this element.
+# Note that it is ADVISED to use the provided accessors,
+# since they do some structure-keeping in the background.
+# If you do NOT want it to do that, use hash-notation for access:
+#
+#  field['value'], field['type'], field['str_ref'], field['label']
 module NWN::Gff::Field
   DEFAULT_STR_REF = 0xffffffff
 
@@ -24,18 +30,14 @@ module NWN::Gff::Field
   end
   def field_value= v
     self['value'] = v
+    extend_meta_classes
   end
-
-#:stopdoc:
-# Used internally, usually.
   def field_label
     self['label']
   end
   def field_label= l
     self['label']= l
   end
-#:startdoc:
-
   def str_ref
     self['str_ref'] || DEFAULT_STR_REF
   end
@@ -53,6 +55,22 @@ module NWN::Gff::Field
     raise NWN::Gff::GffError, "field not bound to a parent" unless @parent
     parent_path = @parent.path
     parent_path + "/" + field_label
+  end
+
+  # This extends this field object and its' value with the
+  # appropriate meta classes, depending on field_type.
+  def extend_meta_classes
+    field_klass_name = field_type.to_s.capitalize
+    field_klass = NWN::Gff.const_defined?(field_klass_name) ?
+      NWN::Gff.const_get(field_klass_name) : nil
+    field_value_klass = NWN::Gff.const_defined?(field_klass_name + 'Value') ?
+      NWN::Gff.const_get(field_klass_name + 'Value') : nil
+
+    self.extend(field_klass) unless field_klass.nil? ||
+      self.is_a?(field_klass)
+
+    field_value.extend(field_value_klass) unless field_value_klass.nil? ||
+      field_value.is_a?(field_value_klass)
   end
 
   # Validate if +value+ is within bounds of +type+.

@@ -199,15 +199,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
      raise NWN::Gff::GffError, "Cannot infer implicit type for /#{label} while parsing struct-id #{struct.struct_id}."
     end
 
-    case element.field_type
-      when :list
-        element.extend(NWN::Gff::List)
-      when :struct
-        element.extend(NWN::Gff::Struct)
-      when :cexolocstr
-        element.field_value.extend(NWN::Gff::CExoLocString)
-        element.field_value.compact!
-    end
+    element.extend_meta_classes
 
     struct[label] = element.taint
   }
