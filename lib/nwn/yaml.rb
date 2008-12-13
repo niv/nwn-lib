@@ -178,15 +178,11 @@ module NWN::Gff
 
   def self.get_struct_defaults_for path, key
     sd = NWN::Gff.get_struct_defaults
-    matching = sd.keys.reject {|vx| path !~ vx }
-    return nil if matching.empty?
-    path = matching[0]
-
-    if sd[path] && dd = sd[path][key]
-      dd
-    else
-      nil
-    end
+    sd.keys.each {|rx|
+      next unless path =~ rx
+      return sd[rx][key] if sd[rx][key]
+    }
+    nil
   end
 
   def self.get_struct_default_type path, key
