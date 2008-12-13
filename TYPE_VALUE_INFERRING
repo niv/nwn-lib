@@ -1,0 +1,90 @@
+== Go infer yourself, wacko
+
+nwn-lib is smart enough to infer data types when it is pointed to a
+file containing information on what is to be expected.
+
+This also works for default values.
+
+For these libaries, this is called type and value inferring.
+
+To use it, simply set the environment variable NWN_LIB_INFER_DATA_FILE
+to a YAML file location, or use the --infer-data-file argument most
+command-line scripts will take.
+
+Some sample files have been provided with nwn-lib, look for them within
+the distribution unter data/.
+
+Here is an example to see what the fuss is about: From both representations
+will exactly the same gff represenation generated.
+
+=== Without inferring
+
+  --- !nwn-lib.elv.es,2008-12/struct
+  __data_type: UTI
+  __struct_id: 4294967295
+  AddCost: {type: :dword, value: 0}
+  BaseItem: {type: :int, value: 80}
+  Charges: {type: :byte, value: 0}
+  Cloth1Color: {type: :byte, value: 0}
+  Cloth2Color: {type: :byte, value: 0}
+  Comment: {type: :cexostr, value: ""}
+  Cost: {type: :dword, value: 200}
+  Cursed: {type: :byte, value: 0}
+  DescIdentified:
+    type: :cexolocstr
+    value: {}
+
+  Description:
+    type: :cexolocstr
+    value: {}
+
+  Identified: {type: :byte, value: 1}
+  Leather1Color: {type: :byte, value: 0}
+  Leather2Color: {type: :byte, value: 0}
+  LocalizedName:
+    type: :cexolocstr
+    value:
+      4: Einfacher Umhang
+  Metal1Color: {type: :byte, value: 0}
+  Metal2Color: {type: :byte, value: 0}
+  ModelPart1: {type: :byte, value: 1}
+  PaletteID: {type: :byte, value: 18}
+  Plot: {type: :byte, value: 0}
+  PropertiesList:
+    type: :list
+    value: []
+
+  StackSize: {type: :word, value: 1}
+  Stolen: {type: :byte, value: 0}
+  Tag: {type: :cexostr, value: Umhang}
+  TemplateResRef: {type: :resref, value: umhang}
+  VarTable:
+    type: :list
+    value:
+    - !nwn-lib.elv.es,2008-12/struct
+      __data_type: UTI/VarTable
+      __struct_id: 0
+      Name: {type: :cexostr, value: cloak_model}
+      Type: {type: :dword, value: 1}
+      Value: {type: :int, value: 10}
+
+=== With type and default-value inferring
+
+  --- !nwn-lib.elv.es,2008-12/struct
+  __data_type: UTI
+  BaseItem: 80
+  Cost: 200
+  Identified: 1
+  LocalizedName:
+    value:
+      4: Einfacher Umhang
+  ModelPart1: 1
+  PaletteID: 18
+  Tag: Umhang
+  TemplateResRef: umhang
+  VarTable:
+  - !nwn-lib.elv.es,2008-12/struct
+    __data_type: UTI/VarTable
+    Name: cloak_model
+    Type: 1
+    Value: {type: :int, value: 10}

@@ -23,6 +23,17 @@ data sources.
 An example for a standalone script would be a script, that asks
 the user for a name and then generates a random item from that.
 
+You can create standalone scripts by prefixing them with the proper
+shebang:
+
+  #!/usr/bin/env nwn-dsl
+
+If you are on systems which do not support executable scripts this
+way, simply call them with nwn-dsl.
+
+DSL stands for domain-specific-language by the way, and this is quite
+a stretch, considering your scripts will be written in plain old ruby.
+
 === API
 
 There are various helpers available to scripts. See NWN::Gff::Scripting

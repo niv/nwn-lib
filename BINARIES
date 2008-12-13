@@ -1,10 +1,10 @@
-== nwn-gff-convert
+== nwn-gff
 
 A generic converter that can be used for converting gff files to and fro from various
-file formats and presentations.
+file formats and presentations, and transform them with custom script filters.
 
 Type
-  nwn-gff-convert -h
+  nwn-gff -h
 for help, it should be self-explanatory.
 
 There are some usage examples on the CHEATSHEET.
@@ -15,6 +15,9 @@ nwn-gff-irb allows interactive editing of gff files.
 
 There are some usage examples on the CHEATSHEET.
 
+== nwn-dsl
+
+A standalone script interpreter.
 
 == Things under tools/
 
