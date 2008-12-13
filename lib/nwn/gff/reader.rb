@@ -173,7 +173,7 @@ class NWN::Gff::Reader
         @field_data[data_or_offset + 4, len].unpack("H*")[0]
 
       when :struct
-        read_struct data_or_offset
+        read_struct data_or_offset, field.path, field.parent.data_version
 
       when :list
         list = []
