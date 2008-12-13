@@ -133,10 +133,11 @@ module NWN::Gff
   # A sample file has been provided with nwn-lib, called gff-bioware.yml
   def self.load_struct_defaults file
     @YAMLStructDefaults = YAML.load(IO.read(file))
+    new = {}
     @YAMLStructDefaults.each {|k,v|
-      @YAMLStructDefaults.delete(k)
-      @YAMLStructDefaults[Regexp.new('^' + k + '$')] = v
+      new[Regexp.new('^' + k + '$')] = v
     }
+    @YAMLStructDefaults = new
   end
 
   def self.get_struct_defaults
