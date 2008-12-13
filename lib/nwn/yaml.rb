@@ -95,8 +95,37 @@ module NWN::Gff::Field
     YAMLCompactableFields.index(field_type) && can_infer_str_ref? && can_infer_type?
   end
 
+  def can_compact_as_list?
+    NWN::Gff.get_struct_defaults_for(self.path, '__compact') != nil
+  end
+
+  def get_compact_as_list_field
+    NWN::Gff.get_struct_defaults_for(self.path, '__compact')
+  end
+
   def to_yaml(opts = {})
-    if can_compact_print?
+    if (field_type == :list && can_compact_as_list?)
+      YAML::quick_emit(nil, opts) do |out|
+        out.seq("!", to_yaml_style) do |seq|
+          field_value.each {|item|
+            calf = get_compact_as_list_field
+            case calf
+              when Array
+                  ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(self.path, ik) }
+
+                  raise NWN::Gff::GffError, "cannot compact list-structs which do not " +
+                    "have all compactable field values set or are inferrable." if ar.size != ar.compact.size
+                  ar.to_yaml_style = :inline
+                  seq.add(ar)
+              else
+                seq.style = :inline
+                seq.add(item[calf])
+            end
+          }
+        end
+      end
+
+    elsif can_compact_print?
       field_value.to_yaml(opts)
 
     else
@@ -189,8 +218,82 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
   end
 
   hash.each {|label,element|
-    # Its not a hash, so it is a compacted value.
-    element = {'value' => element} if !element.is_a?(Hash)
+    element = case element
+      when Hash # already uncompacted
+        element
+
+      when Array # compacted struct-list
+        element = {
+          'type' => :list,
+          'value' => element,
+        }
+        path = struct.data_type + "/" + label
+        unpack_struct_element = NWN::Gff.get_struct_defaults_for(path, '__compact')
+        if unpack_struct_element
+          # If it doesn't have unpack data, we need to assume its a compacted list itself.
+          # Sorry.
+          # Hope this wont bite anyone later on.
+
+          #raise NWN::Gff::GffError,
+          #  "Cannot unpack compacted struct list at #{path}, no infer data available." unless
+          #    unpack_struct_element
+
+          unpack_struct_element_struct_id =
+            NWN::Gff.get_struct_defaults_for(path, "__struct_id")
+
+          raise NWN::Gff::GffError,
+            "Cannot infer struct_id of #{path}/#{unpack_struct_element}, " +
+            "invalid value: #{unpack_struct_element_struct_id}" unless
+              unpack_struct_element_struct_id.is_a?(Fixnum)
+
+          unpack_struct_elements = [unpack_struct_element].flatten
+
+          unpack_struct_element_types = unpack_struct_elements.map {|unpack_struct_element|
+            raise NWN::Gff::GffError, "While unpacking #{path}: " +
+              "#{unpack_struct_element} is not a field-naime, dummy." unless
+                unpack_struct_element.is_a?(String)
+
+            unpack_struct_element_type =
+              NWN::Gff.get_struct_default_type(path, unpack_struct_element)
+
+            raise NWN::Gff::GffError,
+              "Cannot infer type of #{path}/#{unpack_struct_element}, " +
+              "invalid value: #{unpack_struct_element_type}" unless
+                unpack_struct_element_type && NWN::Gff::Types.index(unpack_struct_element_type)
+
+            unpack_struct_element_type
+          }
+
+          element['value'].map! {|kv|
+            kv = [kv].flatten
+            st = {}
+            st.extend(NWN::Gff::Struct)
+            st.struct_id = unpack_struct_element_struct_id
+            st.data_type = path
+
+            unpack_struct_elements.each_with_index {|use, index|
+              uset = unpack_struct_element_types[index]
+              el = st[use] = {
+                'label' => use,
+                'type' => uset,
+                'value' => kv[index]
+              }
+              el.extend(NWN::Gff::Field)
+              el.extend_meta_classes
+              el.parent = st
+            }
+
+            st
+          }
+        end
+        element
+
+      when Fixnum, Float, String # compacted scalar
+        {'value' => element}
+
+      else
+        fail "Don't know how to un-compact /#{label}: #{element.inspect}"
+    end
 
     element.extend(NWN::Gff::Field)
     element.field_label = label
@@ -208,6 +311,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     elsif element.field_type.nil? && infer_field_type
       element.field_type = infer_field_type
     end
+
 
     element.extend_meta_classes
 
