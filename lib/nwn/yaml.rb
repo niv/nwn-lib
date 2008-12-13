@@ -284,11 +284,11 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
         end
         element
 
-      when Fixnum, Float, String # compacted scalar
+      when Numeric, String # compacted scalar
         {'value' => element}
 
       else
-        fail "Don't know how to un-compact /#{label}: #{element.inspect}"
+        fail "Don't know how to un-compact /#{label}: #{element.inspect}, klass #{element.class.to_s}"
     end
 
     element.extend(NWN::Gff::Field)
