@@ -72,9 +72,12 @@ module NWN::Gff::Field
   # Returns true if we can later infer the field type.
   def can_infer_type?
     expected = NWN::Gff.get_struct_default_type(@parent.path, field_label)
-    # We can compact cexostrs into a :resref, if they're shorter than 17 bytes.
-    # They'll get written out as :resref afterwards.
-    expected == field_type || (expected == :resref && field_type == :cexostr && field_value.size <= 16)
+
+    raise NWN::Gff::GffError, "#{field_label} has field_type " +
+      "#{field_type.inspect}, but infer data says #{expected.inspect}." if
+        expected && expected != field_type
+
+    expected == field_type
   end
 
   # Returns true if we can later infer the default value.
@@ -194,10 +197,16 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     element.parent = struct
     element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF
 
-    if element.field_type.nil? && field_type = NWN::Gff.get_struct_default_type(struct.path, element.field_label)
-      element.field_type = field_type
-    elsif element.field_type.nil?
-     raise NWN::Gff::GffError, "Cannot infer implicit type for /#{label} while parsing struct-id #{struct.struct_id}."
+    infer_field_type = NWN::Gff.get_struct_default_type(struct.path, element.field_label)
+
+    if element.field_type && infer_field_type && infer_field_type != element.field_type
+      raise NWN::Gff::GffError, "/#{label} has field_type #{element.field_type.inspect}, but infer data says #{infer_field_type.inspect}."
+
+    elsif element.field_type.nil? && infer_field_type.nil?
+      raise NWN::Gff::GffError, "Cannot infer implicit type for /#{label} while parsing struct-id #{struct.struct_id}."
+
+    elsif element.field_type.nil? && infer_field_type
+      element.field_type = infer_field_type
     end
 
     element.extend_meta_classes
