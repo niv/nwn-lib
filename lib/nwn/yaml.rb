@@ -131,14 +131,16 @@ module NWN::Gff::Field
             calf = get_compact_as_list_field
             case calf
               when Array
-                  ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(self.path, ik) }
+                style = NWN::Gff.get_struct_defaults_for(item.path, '__inline')
+                ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(item.path, ik) }
 
-                  raise NWN::Gff::GffError, "cannot compact list-structs which do not " +
-                    "have all compactable field values set or are inferrable." if ar.size != ar.compact.size
-                  ar.to_yaml_style = :inline
-                  seq.add(ar)
+                raise NWN::Gff::GffError, "cannot compact list-structs which do not " +
+                  "have all compactable field values set or are inferrable." if ar.size != ar.compact.size
+                ar.to_yaml_style = :inline if style
+                seq.add(ar)
               else
-                seq.style = :inline
+                isv = NWN::Gff.get_struct_defaults_for(self.path, '__inline')
+                seq.style = :inline if isv.nil? || isv === true
                 seq.add(item[calf])
             end
           }
