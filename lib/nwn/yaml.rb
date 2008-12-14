@@ -200,7 +200,7 @@ module NWN::Gff
     sd = NWN::Gff.get_struct_defaults
     sd.keys.each {|rx|
       next unless path =~ rx
-      return sd[rx][key] if sd[rx][key]
+      return sd[rx][key] if sd[rx][key] != nil
     }
     nil
   end
