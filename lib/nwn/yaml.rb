@@ -16,8 +16,14 @@ class Hash
   def to_yaml(opts = {})
     YAML::quick_emit(object_id, opts) do |out|
       out.map(taguri, to_yaml_style) do |map|
-        sort.each do |k, v|
-          map.add(k, v)
+        if keys.map {|v| v.class }.size > 0
+          each do |k, v|
+            map.add(k, v)
+          end
+        else
+          sort.each do |k, v|
+            map.add(k, v)
+          end
         end
       end
     end
@@ -65,9 +71,15 @@ module NWN::Gff::Struct
   end
 end
 
+module NWN::Gff::Cexolocstr
+  def field_value_as_compact
+    field_value.merge({'str_ref' => str_ref})
+  end
+end
+
 module NWN::Gff::Field
   YAMLCompactableFields = [:byte, :char, :word, :short, :dword, :int,
-    :dword64, :int64, :float, :double, :cexostr, :resref, :list]
+    :dword64, :int64, :float, :double, :cexostr, :resref, :cexolocstr, :list]
 
   # Returns true if we can later infer the field type.
   def can_infer_type?
@@ -92,7 +104,11 @@ module NWN::Gff::Field
 
   # Can we print this field without any syntactic gizmos?
   def can_compact_print?
-    YAMLCompactableFields.index(field_type) && can_infer_str_ref? && can_infer_type?
+
+    YAMLCompactableFields.index(field_type) &&
+      # exolocs print their str_ref along with their language keys
+      (field_type == :cexolocstr || can_infer_str_ref?) &&
+      can_infer_type?
   end
 
   def can_compact_as_list?
@@ -101,6 +117,10 @@ module NWN::Gff::Field
 
   def get_compact_as_list_field
     NWN::Gff.get_struct_defaults_for(self.path, '__compact')
+  end
+
+  def field_value_as_compact
+    field_value
   end
 
   def to_yaml(opts = {})
@@ -126,7 +146,7 @@ module NWN::Gff::Field
       end
 
     elsif can_compact_print?
-      field_value.to_yaml(opts)
+      field_value_as_compact.to_yaml(opts)
 
     else
       YAML::quick_emit(nil, opts) do |out|
@@ -215,7 +235,17 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
 
   hash.each {|label,element|
     element = case element
-      when Hash # already uncompacted
+      when Hash # already uncompacted or a compacted exolocstr
+        # It has only got numbers as key, we *assume* its a cexoloc.
+        # Thats okay, because type inferration will catch it later and bite us. Hopefully.
+        if element.size > 0 && element.keys.select {|x| x.to_s !~ /^(str_ref|\d+)$/}.size == 0
+          element = {
+            'type' => :cexolocstr,
+            'str_ref' => element.delete('str_ref') || NWN::Gff::Field::DEFAULT_STR_REF,
+            'value' => element,
+          }
+        end
+
         element
 
       when Array # compacted struct-list
