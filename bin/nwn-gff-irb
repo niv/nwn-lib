@@ -44,7 +44,7 @@ end
 include NWN::Gff
 include NWN::TwoDA
 
-puts "Your GFF file is in `GFF' (type: #{GFF.type.inspect})."
+puts "Your GFF file is in `GFF' (type: #{GFF.data_type.inspect})."
 puts "Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving)."
 puts "To save to a different location, type `save \"path/to/new/location.ext\"'."
 puts ""
