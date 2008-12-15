@@ -71,6 +71,13 @@ module NWN
           # [1..-1]: Strip off the ID
           data[row[0].to_i] = row = row[1..-1]
 
+          row.map! {|cell|
+            cell = case cell
+              when nil; nil
+              when "****"; ""
+              else cell
+            end
+          }
           raise ArgumentError,
             "Row #{idx} does not have the appropriate amount of cells (has: #{row.size}, want: #{header.size}) (while parsing #{row[0,3].join(' ')})." if
               row.size != header.size
@@ -87,7 +94,7 @@ module NWN
       # [+column+] The column to retrieve (name or id), or nil for all columns.
       def by_row row, column = nil
         column = column_name_to_id column
-        column.nil? ? @rows[row.to_i] : @rows[row.to_i][column]
+        column.nil? ? @rows[row.to_i] : (@rows[row.to_i].nil? ? nil : @rows[row.to_i][column])
       end
 
 
@@ -98,7 +105,7 @@ module NWN
       def by_col column, row = nil
         column = column_name_to_id column
         raise ArgumentError, "column must not be nil." if column.nil?
-        row.nil? ? @rows.map {|v| v[column] } : @rows[row.to_i][column]
+        row.nil? ? @rows.map {|v| v[column] } : (@rows[row.to_i].nil? ? nil : @rows[row.to_i][column])
       end
 
 
@@ -146,6 +153,7 @@ module NWN
           rv = []
           rv << row_idx.to_s + " " * (id_cell_size - row_idx.to_s.size)
           row.each_with_index {|cell, column_idx|
+            cell = "****" if cell == ""
             rv << cell + " " * (max_cell_size_by_column[column_idx] - cell.size)
           }
           ret << rv.join("").rstrip
