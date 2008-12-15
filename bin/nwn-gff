@@ -6,6 +6,7 @@ require 'nwn/all'
 Thread.abort_on_exception = true
 
 $options = {
+  :backup => nil,
   :infile => '-',
   :outfile => '-',
   :informat => :auto,
@@ -39,6 +40,11 @@ begin OptionParser.new do |o|
 
   o.on "-t", "--types", "Show field types (kivinen format only)" do
     $options[:types] = true
+  end
+  o.on "-b", "--backup [CONTROL]", "make a backup of existing destination file",
+      "acts the same as GNU file utilities",
+      "(see `man cp' for a description)" do |b|
+    $options[:backup] = b.nil? ? true : b
   end
 
   o.separator " "
@@ -126,6 +132,42 @@ if original_hash == modified_hash && $options[:outformat] == $options[:informat]
   File.expand_path($options[:outfile]) == File.expand_path($options[:infile]) && $options[:outfile] != "-"
   $stderr.puts "#{$options[:outfile]}: No need to write, data and filename would be the same."
   exit 0
+end
+
+if $options[:backup] && FileTest.exists?($options[:outfile])
+  bdest = case $options[:backup] != true ? $options[:backup] : ENV['VERSION_CONTROL']
+
+    when 'numbered', 't'
+      # make numbered backups
+      last_numbered_backup = 0
+      last_numbered_backup += 1 while
+        FileTest.exists?($options[:outfile] + "~#{last_numbered_backup}")
+
+      $options[:outfile] + "~#{last_numbered_backup}"
+
+    when 'existing', 'nil'
+      # numbered if numbered backups exist, simple otherwise
+      last_numbered_backup = 0
+      last_numbered_backup += 1 while
+        FileTest.exists?($options[:outfile] + "~#{last_numbered_backup}")
+      $options[:outfile]
+
+      last_numbered_backup > 0 ?
+        $options[:outfile] + "~#{last_numbered_backup}" :
+        $options[:outfile] + '~'
+
+    when 'simple', 'never'
+      # always make simple backups
+      $options[:outfile] + '~'
+
+    # when 'none', 'off'
+      # never make backups (even if --backup is given)
+    #  nil
+    else
+      # Do nothing
+  end
+
+  FileUtils.cp($options[:outfile], bdest) if bdest
 end
 
 write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
