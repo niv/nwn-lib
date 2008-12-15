@@ -75,7 +75,7 @@ module NWN::Gff::Cexolocstr
 end
 
 module NWN::Gff::Field
-  YAMLCompactableFields = [:byte, :char, :word, :short, :dword, :int,
+  YAMLCompactableFields = [:byte, :char, :word, :short, :dword, :int, :void,
     :dword64, :int64, :float, :double, :cexostr, :resref, :cexolocstr, :list]
 
   # Returns true if we can later infer the field type.
