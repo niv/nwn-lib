@@ -9,9 +9,10 @@ for help, it should be self-explanatory.
 
 There are some usage examples on the CHEATSHEET.
 
-== nwn-gff-irb
+== nwn-irb
 
-nwn-gff-irb allows interactive editing of gff files.
+nwn-irb is a interactive shell preloading all relevant libs, and optionally
+loading a gff file.
 
 There are some usage examples on the CHEATSHEET.
 
