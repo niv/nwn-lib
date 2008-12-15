@@ -42,6 +42,20 @@ module NWN::Gff::Scripting
     satisfy(*what) or raise ArgumentError, "Needs #{what.inspect}, cannot satisfy - aborting."
   end
 
+  # Call this to prevent nwn-gff from emitting output.
+  def stop_output
+    if $standalone
+      log "warn: no need to stop_output on standalone scripts"
+    else
+      log "#{$base_script}: not emitting any data."
+    end
+    $stop_output = true
+  end
+  
+  def will_output?
+    !$stop_output
+  end
+
   # This checks if the currently-operating field or struct
   # satisfies one of the given conditions.
   #
@@ -100,14 +114,12 @@ module NWN::Gff::Scripting
     return nil
   end
 
+
   # Log a friendly message to stderr.
   # Use this instead of puts, since SAFE levels greater than 0
   # will prevent you from doing logging yourself.
   def log *args
-    if $SAFE > 0
-      Thread.current[:stderr] << [$script, caller, *args]
-    else
-      $stderr.puts [$script, ": ", *args].join("")
-    end
+    $stderr.puts [$base_script, " on ", $options[:infile], ": ", *args].join("")
   end
+
 end

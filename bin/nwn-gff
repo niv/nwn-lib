@@ -33,8 +33,9 @@ begin OptionParser.new do |o|
   o.on "-o", "--outfile FILE", "Output file (default: stdout)" do |f|
     $options[:outfile] = f
   end
-  o.on "-k", "--outfile-format FORMAT", [:in] + NWN::Gff::FileFormats,
-      "Output format (#{([:in] + NWN::Gff::FileFormats).join(', ')})" do |f|
+  o.on "-k", "--outfile-format FORMAT", [:in, :none] + NWN::Gff::FileFormats,
+      "Output format (#{([:none, :in] + NWN::Gff::FileFormats).join(', ')})",
+      "(default: in - same as input)" do |f|
     $options[:outformat] = f
   end
 
@@ -118,13 +119,23 @@ end
 
 original_hash = data_in.hash
 
+$options.freeze
+
+$stop_output = $options[:outformat] == :none
+
 $options[:run].each {|file|
   vputs "Running script file: #{file}"
-  $script = file
+  $script = File.expand_path(file)
+  $base_script = File.basename($script)
   include NWN
   include NWN::Gff::Scripting
   NWN::Gff::Scripting.run_script(IO.read(file), data_in)
 }
+
+if $options[:outformat] == :none || $stop_output
+  vputs "not emitting any data by user or script choice."
+  exit
+end
 
 modified_hash = data_in.hash
 
