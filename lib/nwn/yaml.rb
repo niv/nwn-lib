@@ -73,10 +73,19 @@ module NWN::Gff::Field
               when Array
                 style = NWN::Gff.get_struct_defaults_for(item.path, '__inline')
 
-                ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(item.path, ik) }
+                non_inferrable = (item.keys.reject {|x|
+                  item[x].can_infer_type? && item[x].can_infer_value?
+                } - calf).sort
+                raise NWN::Gff::GffError, "cannot compact list struct at #{item.path}, would " +
+                  "LOSE fields: #{non_inferrable.inspect}" if non_inferrable.size > 0
 
-                raise NWN::Gff::GffError, "cannot compact list-structs which do not " +
-                  "have all compactable field values set or are inferrable." if ar.size != ar.compact.size
+                ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(item.path, ik) }
+                missing = ar.map {|x| x.nil? ? calf[ar.index(x)] : nil }.compact
+
+                raise NWN::Gff::GffError, "cannot compact list-struct at #{item.path}, does not " +
+                  "have all compactable field values set or are inferrable (missing fields: #{missing.inspect})." if
+                    missing.size > 0
+
                 ar.to_yaml_style = :inline if style
 
                 ar.unshift(item.struct_id) if struct_id_of_item == 'inline'
@@ -178,6 +187,20 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             unpack_struct_element_type
           }
 
+          always_add_fields = NWN::Gff.get_struct_always_fields(path).map {|aa_lbl|
+            ff = {
+              'label' => aa_lbl,
+              'type' => NWN::Gff.get_struct_default_type(path, aa_lbl),
+              'value' => NWN::Gff.get_struct_default_value(path, aa_lbl),
+            }
+            raise NWN::Gff::GffError, "#{aa_lbl.inspect} at #{path} is __always, but no default data" unless
+              ff['type'] && ff['value']
+
+            ff.extend(NWN::Gff::Field)
+            ff.extend_meta_classes
+            ff
+          }
+
           last_struct_id = -1
           element['value'].map! {|kv|
             kv = [kv].flatten
@@ -190,6 +213,9 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
                 kv.shift
               when Fixnum
                 unpack_struct_element_struct_id
+              else
+                raise NWN::Gff::GffError,
+                  "dont know how to handle struct_id #{unpack_struct_element_struct_id} at #{label}"
             end
             st.data_type = path
 
@@ -198,14 +224,13 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
                 uset = kv[index]['type']
                 kv[index] = kv[index]['value']
 
-              elsif !unpack_struct_element_type || !NWN::Gff::Types.index(unpack_struct_element_type)
+              else
+                uset = unpack_struct_element_types[index]
                 raise NWN::Gff::GffError,
                   "Cannot infer type of #{path}/#{unpack_struct_element}, " +
                   "invalid value: #{unpack_struct_element_type}" unless
-                    unpack_struct_element_type && NWN::Gff::Types.index(unpack_struct_element_type)
+                    uset && NWN::Gff::Types.index(uset)
 
-              else
-                uset = unpack_struct_element_types[index]
               end
               el = st[use] = {
                 'label' => use,
@@ -216,7 +241,10 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
               el.extend_meta_classes
               el.parent = st
             }
-
+            always_add_fields.each {|xy|
+              st[xy.field_label] = xy = xy.clone
+              xy.parent = st
+            }
             st
           }
         end
