@@ -56,7 +56,7 @@ end
 module NWN::Gff::Struct
   # Returns true if we can later infer the struct_id with the given path.
   def can_infer_struct_id?
-    NWN::Gff.get_struct_defaults_for(self.path, '__struct_id').nil?
+    NWN::Gff.get_struct_defaults_for(self.path, '__struct_id') == @struct_id
   end
 
   # Returns true if we can infer the data version of this struct (if it has parent).
