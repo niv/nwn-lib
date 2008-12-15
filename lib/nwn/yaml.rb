@@ -153,8 +153,8 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             NWN::Gff.get_struct_defaults_for(path, "__struct_id")
 
           raise NWN::Gff::GffError,
-            "Cannot infer struct_id of #{path}/#{unpack_struct_element}, " +
-            "invalid value: #{unpack_struct_element_struct_id}" unless
+            "Cannot infer struct_id of #{path}, " +
+            "invalid value: #{unpack_struct_element_struct_id.inspect}" unless
               unpack_struct_element_struct_id.is_a?(Fixnum)
 
           unpack_struct_elements = [unpack_struct_element].flatten
