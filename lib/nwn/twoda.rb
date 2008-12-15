@@ -3,6 +3,7 @@ require 'shellwords'
 module NWN
   module TwoDA
     class Table
+      CELL_PAD_SPACES = 4
 
       # An array of all column names present in this 2da table.
       attr_accessor :columns
@@ -120,11 +121,34 @@ module NWN
       # Returns this table as a valid 2da to be written to a file.
       def to_2da
         ret = []
+
+        # Contains the maximum string length by each column,
+        # from which we can calulate the padding we need that
+        # things align properly.
+        id_cell_size = @rows.size.to_s.size + CELL_PAD_SPACES
+        max_cell_size_by_column = @columns.map {|col|
+          ([col] + by_col(col)).inject(0) {|max, cell|
+            cell.to_s.size > max ? cell.to_s.size : max
+          } + CELL_PAD_SPACES
+        }
+
         ret << "2DA V2.0"
         ret << ""
-        ret << "    " + @columns.join("    ")
-        @rows.each_with_index {|row, idx|
-          ret << [idx].concat(row).join("    ")
+
+        rv = []
+        rv << " " * id_cell_size
+        @columns.each_with_index {|column, column_idx|
+          rv << column + " " * (max_cell_size_by_column[column_idx] - column.size)
+        }
+        ret << rv.join("").rstrip
+
+        @rows.each_with_index {|row, row_idx|
+          rv = []
+          rv << row_idx.to_s + " " * (id_cell_size - row_idx.to_s.size)
+          row.each_with_index {|cell, column_idx|
+            rv << cell + " " * (max_cell_size_by_column[column_idx] - cell.size)
+          }
+          ret << rv.join("").rstrip
         }
         ret.join("\r\n")
       end
