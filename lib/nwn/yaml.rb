@@ -93,7 +93,7 @@ module NWN::Gff::Field
         out.map(taguri, to_yaml_style) do |map|
           map.style = :inline unless NWN::Gff::YAMLNonInlineableFields.index(self['type'])
           map.add('type', self['type']) unless can_infer_type?
-          map.add('str_ref', self['str_ref']) if self.has_str_ref? && !can_infer_str_ref?
+          map.add('str_ref', self['str_ref']) unless can_infer_str_ref?
           map.add('value', self['value']) unless can_infer_value?
         end
       end

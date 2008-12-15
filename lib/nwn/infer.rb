@@ -69,7 +69,7 @@ end
 
 module NWN::Gff::Cexolocstr
   def field_value_as_compact
-    field_value.merge({'str_ref' => str_ref})
+    !can_infer_str_ref? ? field_value.merge({'str_ref' => str_ref}) : field_value
   end
 end
 
@@ -95,7 +95,7 @@ module NWN::Gff::Field
 
   # Returns true if we can infer the str ref later on.
   def can_infer_str_ref?
-    !has_str_ref?
+    !has_str_ref? || NWN::Gff.get_struct_defaults_for(@parent.path, field_label)[2] != nil
   end
 
   # Can we print this field without any syntactic gizmos?
