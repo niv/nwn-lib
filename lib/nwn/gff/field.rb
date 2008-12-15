@@ -22,22 +22,34 @@ module NWN::Gff::Field
   def field_type
     self['type']
   end
+  alias :t :field_type
+
   def field_type= t
     self['type'] = t
   end
+  alias :t= :field_type=
+
   def field_value
     self['value']
   end
+  alias :v :field_value
+
   def field_value= v
     self['value'] = v
     extend_meta_classes
   end
+  alias :v= :field_value=
+
   def field_label
     self['label']
   end
+  alias :l :field_label
+
   def field_label= l
     self['label']= l
   end
+  alias :l= :field_label=
+
   def str_ref
     self['str_ref'] || DEFAULT_STR_REF
   end
