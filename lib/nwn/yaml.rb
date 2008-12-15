@@ -66,19 +66,26 @@ module NWN::Gff::Field
       YAML::quick_emit(nil, opts) do |out|
         out.seq("!", to_yaml_style) do |seq|
           field_value.each {|item|
+            struct_id_of_item = NWN::Gff.get_struct_defaults_for(item.path, '__struct_id')
+
             calf = get_compact_as_list_field
             case calf
               when Array
                 style = NWN::Gff.get_struct_defaults_for(item.path, '__inline')
+
                 ar = calf.map {|ik| item[ik] || NWN::Gff.get_struct_default_value(item.path, ik) }
 
                 raise NWN::Gff::GffError, "cannot compact list-structs which do not " +
                   "have all compactable field values set or are inferrable." if ar.size != ar.compact.size
                 ar.to_yaml_style = :inline if style
+
+                ar.unshift(item.struct_id) if struct_id_of_item == 'inline'
                 seq.add(ar)
               else
                 isv = NWN::Gff.get_struct_defaults_for(self.path, '__inline')
                 seq.style = :inline if isv.nil? || isv === true
+
+                seq.add(item.struct_id) if struct_id_of_item == 'inline'
                 seq.add(item[calf])
             end
           }
@@ -149,13 +156,14 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
           #  "Cannot unpack compacted struct list at #{path}, no infer data available." unless
           #    unpack_struct_element
 
-          unpack_struct_element_struct_id =
-            NWN::Gff.get_struct_defaults_for(path, "__struct_id")
-
-          raise NWN::Gff::GffError,
-            "Cannot infer struct_id of #{path}, " +
-            "invalid value: #{unpack_struct_element_struct_id.inspect}" unless
-              unpack_struct_element_struct_id.is_a?(Fixnum)
+          unpack_struct_element_struct_id = NWN::Gff.get_struct_defaults_for(path, "__struct_id")
+          case unpack_struct_element_struct_id
+            when 'inline','iterative', Fixnum
+            else
+              raise NWN::Gff::GffError,
+                "Cannot infer struct_id of #{path}, " +
+                "invalid value: #{unpack_struct_element_struct_id.inspect}"
+          end
 
           unpack_struct_elements = [unpack_struct_element].flatten
 
@@ -175,11 +183,19 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             unpack_struct_element_type
           }
 
+          last_struct_id = -1
           element['value'].map! {|kv|
             kv = [kv].flatten
             st = {}
             st.extend(NWN::Gff::Struct)
-            st.struct_id = unpack_struct_element_struct_id
+            st.struct_id = case unpack_struct_element_struct_id
+              when 'iterative'
+                last_struct_id += 1
+              when 'inline'
+                kv.shift
+              when Fixnum
+                unpack_struct_element_struct_id
+            end
             st.data_type = path
 
             unpack_struct_elements.each_with_index {|use, index|

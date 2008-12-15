@@ -56,7 +56,8 @@ end
 module NWN::Gff::Struct
   # Returns true if we can later infer the struct_id with the given path.
   def can_infer_struct_id?
-    NWN::Gff.get_struct_defaults_for(self.path, '__struct_id') == @struct_id
+    v = NWN::Gff.get_struct_defaults_for(self.path, '__struct_id')
+    v == @struct_id || v == "iterative" || v == "inline"
   end
 
   # Returns true if we can infer the data version of this struct (if it has parent).
@@ -108,7 +109,7 @@ module NWN::Gff::Field
   end
 
   def can_compact_as_list?
-    NWN::Gff.get_struct_defaults_for(self.path, '__compact') != nil &&
+     NWN::Gff.get_struct_defaults_for(self.path, '__compact') != nil &&
       field_value.reject {|x|
         x.can_infer_struct_id?
       }.size == 0
