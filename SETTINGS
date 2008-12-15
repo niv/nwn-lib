@@ -62,3 +62,9 @@ as configured in $NWN_LIB_INFER_DATA_FILE.
 
 nwn-lib, by default, filters fields out of (some) dump formats that would resolve to values that
 the NWN engine would fill with default values anyways.
+
+
+== NWN_LIB_2DA_LOCATION
+
+Set to a path containing all 2da files to initialize the 2da cache. This is needed for
+most interactive helpers and a few type infer gizmos.

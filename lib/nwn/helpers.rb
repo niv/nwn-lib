@@ -19,7 +19,7 @@ module NWN
 
       # Get the 2da file with the given name. +name+ is without extension.
       def self.get(name)
-        raise Exception, "You need to set up the cache first through Cache.setup." unless @_root
+        raise Exception, "You need to set up the cache first through the environment variable NWN_LIB_2DA_LOCATION." unless @_root
         @_cache[name.downcase] ||= read_2da(name.downcase)
       end
 

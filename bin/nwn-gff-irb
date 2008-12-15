@@ -41,14 +41,6 @@ def save destination = nil
   puts "saved."
 end
 
-if __cache_location = ENV['NWN2DAHOME']
-  require 'nwn/helpers'
-  puts "Setting up 2da cache at #{__cache_location} .."
-  NWN::TwoDA::Cache.setup __cache_location
-else
-  puts "Warning: Environment variable `NWN2DAHOME' is not available, not using 2da cache (helpers not available)."
-end
-
 include NWN::Gff
 include NWN::TwoDA
 
