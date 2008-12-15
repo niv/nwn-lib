@@ -175,11 +175,6 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             unpack_struct_element_type =
               NWN::Gff.get_struct_default_type(path, unpack_struct_element)
 
-            raise NWN::Gff::GffError,
-              "Cannot infer type of #{path}/#{unpack_struct_element}, " +
-              "invalid value: #{unpack_struct_element_type}" unless
-                unpack_struct_element_type && NWN::Gff::Types.index(unpack_struct_element_type)
-
             unpack_struct_element_type
           }
 
@@ -199,7 +194,19 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             st.data_type = path
 
             unpack_struct_elements.each_with_index {|use, index|
-              uset = unpack_struct_element_types[index]
+              if kv[index].is_a?(Hash) && kv[index]['type'] && kv[index]['value']
+                uset = kv[index]['type']
+                kv[index] = kv[index]['value']
+
+              elsif !unpack_struct_element_type || !NWN::Gff::Types.index(unpack_struct_element_type)
+                raise NWN::Gff::GffError,
+                  "Cannot infer type of #{path}/#{unpack_struct_element}, " +
+                  "invalid value: #{unpack_struct_element_type}" unless
+                    unpack_struct_element_type && NWN::Gff::Types.index(unpack_struct_element_type)
+
+              else
+                uset = unpack_struct_element_types[index]
+              end
               el = st[use] = {
                 'label' => use,
                 'type' => uset,
