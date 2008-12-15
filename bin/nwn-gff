@@ -12,7 +12,6 @@ $options = {
   :outformat => :in,
   :verbose => false,
   :run => [],
-  :inferdatafile => ENV['NWN_LIB_INFER_DATA_FILE'],
 }
 
 begin OptionParser.new do |o|
@@ -40,11 +39,6 @@ begin OptionParser.new do |o|
 
   o.on "-t", "--types", "Show field types (kivinen format only)" do
     $options[:types] = true
-  end
-
-  o.on "--infer-data-file FILE", "Specify a .yml containing infer data",
-      "(default: ENV variable NWN_LIB_INFER_DATA_FILE)" do |f|
-    $options[:inferdatafile] = f
   end
 
   o.separator " "
@@ -94,12 +88,6 @@ end
 
 $options[:informat] or fail "No input format specified."
 $options[:outformat] or fail "No output format specified."
-
-if $options[:inferdatafile]
-  vputs "Trying to load infer data file: #{$options[:inferdatafile]}"
-  NWN::Gff.load_struct_defaults($options[:inferdatafile])
-end
-
 
 if :auto == $options[:informat]
   $options[:informat] = NWN::Gff.guess_file_format($options[:infile])

@@ -62,7 +62,8 @@ module NWN::Gff::Struct
 
         reject {|k, v|
           # Dont emit fields that would result in their default values anyways.
-          v.can_infer_type? && v.can_infer_str_ref? && v.can_infer_value?
+          !ENV['NWN_LIB_KEEP_KNOWN_VALUES'] && v.can_infer_type? &&
+            v.can_infer_str_ref? && v.can_infer_value?
         }.sort.each {|k,v|
           map.add(k,v)
         }
@@ -124,7 +125,7 @@ module NWN::Gff::Field
   end
 
   def to_yaml(opts = {})
-    if (field_type == :list && can_compact_as_list?)
+    if !ENV['NWN_LIB_DONT_COMPACT_LIST_STRUCTS'] && field_type == :list && can_compact_as_list?
       YAML::quick_emit(nil, opts) do |out|
         out.seq("!", to_yaml_style) do |seq|
           field_value.each {|item|
@@ -147,7 +148,7 @@ module NWN::Gff::Field
         end
       end
 
-    elsif can_compact_print?
+    elsif !ENV['NWN_LIB_DONT_COMPACT_FIELDS'] && can_compact_print?
       field_value_as_compact.to_yaml(opts)
 
     else
