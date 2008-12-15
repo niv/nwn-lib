@@ -24,7 +24,7 @@ module NWN::Gff
     @YAMLStructDefaults = YAML.load(IO.read(file))
     new = {}
     @YAMLStructDefaults.each {|k,v|
-      new[Regexp.new('^' + k + '$')] = v
+      new[Regexp.new(k + '$')] = v
     }
     @YAMLStructDefaults = new
   end
