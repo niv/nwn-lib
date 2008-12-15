@@ -2,37 +2,7 @@ require 'nwn/gff'
 require 'nwn/twoda'
 
 module NWN
-
-  module TwoDA
-
-    # This is a simple 2da cache.
-    module Cache
-
-      @_cache = {}
-      @_root = nil
-
-      # Set the file system path where all 2da files reside.
-      # Call this on application startup.
-      def self.setup root
-        @_root = root
-      end
-
-      # Get the 2da file with the given name. +name+ is without extension.
-      def self.get(name)
-        raise Exception, "You need to set up the cache first through the environment variable NWN_LIB_2DA_LOCATION." unless @_root
-        @_cache[name.downcase] ||= read_2da(name.downcase)
-      end
-
-      def self.read_2da name # :nodoc:
-        Table.parse IO.read(@_root + '/' + name + '.2da')
-      end
-
-      private_class_method :read_2da
-    end
-  end
-
   module Gff
-
 
     module Helpers
       # This sets up the IPRP cache. Used internally; no need to call this yourself.
