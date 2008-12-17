@@ -28,20 +28,24 @@ module NWN::Gff::Struct
             yield(path, field)
 
           when NWN::Gff::Struct
-            yield(path, path)
-            yield(path + " ____struct_type", field.struct_id)
+            yield(path + "/", path)
+            yield(path + "/ ____struct_type", field.struct_id)
 
           when NWN::Gff::Field
+
             case field.field_type
               when :list
               when :struct
+                yield(path + "/", path)
+                yield(path + "/ ____struct_type", field.field_value.struct_id)
               when :cexolocstr
               else
                 yield(path, field.field_value)
             end
 
             yield(path + ". ____string_ref",field.str_ref) if
-              field.has_str_ref?
+              field.has_str_ref? || field.field_type == :cexolocstr
+
             yield(path + ". ____type", NWN::Gff::Types.index(field.field_type)) if
               types_too
 
