@@ -14,7 +14,7 @@ class Hash
   # Replacing the to_yaml function so it'll serialize hashes sorted (by their keys)
   # Original function is in /usr/lib/ruby/1.8/yaml/rubytypes.rb
   def to_yaml(opts = {})
-    YAML::quick_emit(object_id, opts) do |out|
+    YAML::quick_emit(nil, opts) do |out|
       out.map(taguri, to_yaml_style) do |map|
         if keys.map {|v| v.class }.size > 0
           each do |k, v|
@@ -61,6 +61,7 @@ module NWN::Gff::Struct
 end
 
 module NWN::Gff::Field
+
   def to_yaml(opts = {})
     if !ENV['NWN_LIB_DONT_COMPACT_LIST_STRUCTS'] && field_type == :list && can_compact_as_list?
       YAML::quick_emit(nil, opts) do |out|
@@ -84,7 +85,7 @@ module NWN::Gff::Field
 
                 raise NWN::Gff::GffError, "cannot compact list-struct at #{item.path}, does not " +
                   "have all compactable field values set or are inferrable (missing fields: #{missing.inspect})." if
-                    missing.size > 0
+                  missing.size > 0
 
                 ar.to_yaml_style = :inline if style
 
@@ -135,11 +136,15 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
   end
 
   hash.each {|label,element|
+    label.freeze
     element = case element
       when Hash # already uncompacted or a compacted exolocstr
+        raise NWN::Gff::GffError,
+          "Cannot parse compacted hash with no contents (at #{struct.path}/#{label})." if element.size == 0
+
         # It has only got numbers as key, we *assume* its a cexoloc.
         # Thats okay, because type inferration will catch it later and bite us. Hopefully.
-        if element.size > 0 && element.keys.select {|x| x.to_s !~ /^(str_ref|\d+)$/}.size == 0
+        if element.keys.select {|x| x.to_s !~ /^(str_ref|\d+)$/}.size == 0
           element = {
             'type' => :cexolocstr,
             'str_ref' => element.delete('str_ref') || NWN::Gff::Field::DEFAULT_STR_REF,
@@ -224,6 +229,12 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
                 when Array
                   uset = unpack_struct_element_types[index]
                   usev = kv[index]
+                  if usev.is_a?(Hash)
+                    uset, usev = usev['type'], usev['value']
+                  end
+                when String, Numeric, Symbol
+                  uset = unpack_struct_element_types[index]
+                  usev = kv
                 else
                   raise "Dont know how to unpack list-struct element: #{kv.inspect}"
               end
