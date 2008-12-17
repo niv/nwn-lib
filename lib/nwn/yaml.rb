@@ -166,15 +166,8 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
           #    unpack_struct_element
 
           unpack_struct_element_struct_id = NWN::Gff.get_struct_defaults_for(path, "__struct_id")
-          case unpack_struct_element_struct_id
-            when 'inline','iterative', Fixnum
-            else
-              raise NWN::Gff::GffError,
-                "Cannot infer struct_id of #{path}, " +
-                "invalid value: #{unpack_struct_element_struct_id.inspect}"
-          end
 
-          unpack_struct_elements = [unpack_struct_element].flatten
+          unpack_struct_elements = [unpack_struct_element].flatten.freeze
 
           unpack_struct_element_types = unpack_struct_elements.map {|unpack_struct_element|
             raise NWN::Gff::GffError, "While unpacking #{path}: " +
@@ -185,7 +178,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
               NWN::Gff.get_struct_default_type(path, unpack_struct_element)
 
             unpack_struct_element_type
-          }
+          }.freeze
 
           always_add_fields = NWN::Gff.get_struct_always_fields(path).map {|aa_lbl|
             ff = {
@@ -203,7 +196,6 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
 
           last_struct_id = -1
           element['value'].map! {|kv|
-            kv = [kv].flatten
             st = {}
             st.extend(NWN::Gff::Struct)
             st.struct_id = case unpack_struct_element_struct_id
@@ -214,28 +206,43 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
               when Fixnum
                 unpack_struct_element_struct_id
               else
-                raise NWN::Gff::GffError,
-                  "dont know how to handle struct_id #{unpack_struct_element_struct_id} at #{label}"
+                kv['__struct_id'] || raise(NWN::Gff::GffError,
+                  "dont know how to handle struct_id #{unpack_struct_element_struct_id} at #{label} = #{kv.inspect}")
             end
             st.data_type = path
 
             unpack_struct_elements.each_with_index {|use, index|
-              if kv[index].is_a?(Hash) && kv[index]['type'] && kv[index]['value']
-                uset = kv[index]['type']
-                kv[index] = kv[index]['value']
-
-              else
-                uset = unpack_struct_element_types[index]
-                raise NWN::Gff::GffError,
-                  "Cannot infer type of #{path}/#{unpack_struct_element}, " +
-                  "invalid value: #{unpack_struct_element_type}" unless
-                    uset && NWN::Gff::Types.index(uset)
-
+              case kv
+                when Hash
+                  if !kv[use]
+                    uset, usev = unpack_struct_element_types[index],
+                      NWN::Gff.get_struct_default_value(path, use)
+                  else
+                    uset = kv[use]['type']
+                    usev = kv[use]['value']
+                  end
+                when Array
+                  uset = unpack_struct_element_types[index]
+                  usev = kv[index]
+                else
+                  raise "Dont know how to unpack list-struct element: #{kv.inspect}"
               end
+
+              raise NWN::Gff::GffError, "Cannot infer type of #{path}/#{use} (got: #{uset.inspect})" unless
+                uset && NWN::Gff::Types.index(uset)
+              raise NWN::Gff::GffError, "Cannot get or infer value of #{path}/#{use} (got: #{usev.inspect})" unless
+                usev && (usev.is_a?(String) || usev.is_a?(Numeric) || usev.is_a?(Symbol))
+
+              # Figure out the default value (which we'll need to re-add?) if
+              # it was filtered while outputting.
+              #kv[index] = NWN::Gff.get_struct_default_value(path, use) if !kv[index]
+              #raise NWN::Gff::GffError, "field present in compacted struct-list, and cant " +
+              #  "infer default value at #{use}/#{index} (#{kv.inspect})" if !kv[index]
+
               el = st[use] = {
                 'label' => use,
                 'type' => uset,
-                'value' => kv[index]
+                'value' => usev
               }
               el.extend(NWN::Gff::Field)
               el.extend_meta_classes
