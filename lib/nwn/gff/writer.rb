@@ -1,4 +1,5 @@
 class NWN::Gff::Writer
+  include NWN
   include NWN::Gff
 
   attr_reader :bytes
