@@ -2,6 +2,40 @@ require 'shellwords'
 
 module NWN
   module TwoDA
+
+    # A Row is simply an Array with some helpers.
+    # It wraps a data row in a TwoDA::Table.
+    #
+    # You can access Table columns in a row by simply
+    # calling a method with the same name.
+    #
+    # For example (spells.2da):
+    #
+    #  table.rows.select {|x| x.Wiz_Sorc == "9" }
+    #
+    # selects all level 9 arcane spells.
+    class Row < Array
+      attr_accessor :table
+
+      # Returns the id of this row.
+      def ID
+        @table.rows.index(self)
+      end
+
+      def method_missing meth, *args
+        if idx = @table.columns.index(meth.to_s.downcase) || idx = @table.columns.index(meth.to_s)
+          if meth.to_s =~ /=$/
+            self[idx] = args.shift or raise ArgumentError,
+              "Need a paramenter for assignments .."
+          else
+            self[idx]
+          end
+        else
+          super
+        end
+      end
+    end
+
     class Table
       CELL_PAD_SPACES = 4
 
@@ -69,7 +103,8 @@ module NWN
           end
 
           # [1..-1]: Strip off the ID
-          data[row[0].to_i] = row = row[1..-1]
+          data[row[0].to_i] = row = Row.new(row[1..-1])
+          row.table = self
 
           row.map! {|cell|
             cell = case cell
