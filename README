@@ -9,6 +9,8 @@ They should work with NWN2 just as well, since the file format specifications di
 With the release of 0.4.0, the API changed significantly. Previous yaml dumps made with 0.3.x are INCOMPATIBLE, and so are all scripts.
 I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see BINARIES).
 
+Please consider all version releases below 1.0.0 to be unstable, even though the code is fully functional - further API changes may not be avoidable between major revisions - such as is the case with 0.3 -> 0.4.
+
 === Features of nwn-lib
 
 * a feature-complete parser and generator of valid GFF V3.2 data

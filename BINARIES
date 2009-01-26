@@ -18,7 +18,8 @@ There are some usage examples on the CHEATSHEET.
 
 == nwn-dsl
 
-A standalone script interpreter.
+A standalone script interpreter. See the example scripts in the gem distribution
+under scripts/.
 
 == Things under tools/
 
@@ -31,9 +32,9 @@ This can be used to migrate old YAML dumps made with version 0.3.x to the new,
 compacter format of 0.4.x.
 
 Usage is simple: just pass all old .yml files to the script, it will convert them
-in-place.
+in-place (read: make a backup!).
 
-This uses nwn-gff-convert, so all environment variables are taken into consideration.
-You will want to point NWN_LIB_INFER_DATA_FILE to something useful.
+This uses nwn-gff-convert and nwn-gff, so all environment variables are taken into
+consideration. You will want to point NWN_LIB_INFER_DATA_FILE to something useful.
 
 Backup and testing is ADVISED!
