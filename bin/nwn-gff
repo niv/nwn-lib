@@ -7,6 +7,7 @@ Thread.abort_on_exception = true
 
 $options = {
   :backup => nil,
+  :force => false,
   :infile => '-',
   :outfile => '-',
   :informat => :auto,
@@ -46,6 +47,10 @@ begin OptionParser.new do |o|
       "acts the same as GNU file utilities",
       "(see `man cp' for a description)" do |b|
     $options[:backup] = b.nil? ? true : b
+  end
+
+  o.on "--force", "Force write even when the resulting data would be the same" do
+    $options[:force] = true
   end
 
   o.separator " "
@@ -139,7 +144,7 @@ end
 
 modified_hash = data_in.hash
 
-if original_hash == modified_hash && $options[:outformat] == $options[:informat] &&
+if !$options[:force] && original_hash == modified_hash && $options[:outformat] == $options[:informat] &&
   File.expand_path($options[:outfile]) == File.expand_path($options[:infile]) && $options[:outfile] != "-"
   $stderr.puts "#{$options[:outfile]}: No need to write, data and filename would be the same."
   exit 0
