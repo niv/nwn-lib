@@ -1,5 +1,7 @@
 There are various environment variables you can configure to adjust various parts of nwn-lib.
 
+<b>All of them are optional!</b>
+
 Under linux, just add them to your shell environment (usually .bashrc), like so:
 
   export NWN_LIB_INFER_DATA_FILE==/usr/lib/ruby/gems/1.8/gems/nwn-lib-0.4.0/data/gff-common-nwn1.yaml
@@ -68,3 +70,4 @@ the NWN engine would fill with default values anyways.
 
 Set to a path containing all 2da files to initialize the 2da cache. This is needed for
 most interactive helpers and a few type infer gizmos.
+
