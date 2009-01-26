@@ -14,95 +14,42 @@
 #
 # You can use regular expressions in pathes, but not in
 # field names.
+#
+# Special field labels:
+# __inline: "yes" to dump this struct inline (YAML only)
+# __struct_id:
+#   "iterative" to assign struct ids iteratively (only for
+#     compacted struct lists!)
+#   "inline" struct_id is first field in compacted struct
+#     list
+#   some number: as-is
 ---
+__OBJECT_INVALID: &OBJECT_INVALID 0x7f000000
+__OBJECT_SELF:    &OBJECT_SELF    0xffffffff
 
 # Generic structs first.
-'[A-Z]{3}/VarTable':
+'.*/VarTable':
+  __compact: [ Name, Type, Value ]
+  __inline: yes
   __struct_id: 0
   Name: :cexostr
   Type: :dword
-
-UTI:
-  __struct_id: 0xffffffff
-  ActionList: [ :list, [] ]
-  AddCost: :dword
-  BaseItem: :int
-  Charges: [ :byte, 0 ]
-  Cloth1Color: :byte
-  Cloth2Color: :byte
   Comment: [ :cexostr, "" ]
-  Cost: :dword
-  Cursed: [ :byte, 0 ]
-  DisplayName: :cexostr
-  Dropable: [ :byte, 1 ]
-  EffectList: [ :list, [] ]
-  DescIdentified: [ :cexolocstr, {} ]
-  Description: [ :cexolocstr, {} ]
-  LocalizedName: [ :cexolocstr, {} ]
-  Identified: [ :byte, 0 ]
-  Leather1Color: :byte
-  Leather2Color: :byte
-  Metal1Color: :byte
-  Metal2Color: :byte
-  ModelPart1: :byte
-  ObjectId: :dword
-  PaletteID: :byte
-  Pickpocketable: :byte
-  Plot: [ :byte, 0 ]
-  PropertiesList: [ :list, [] ]
-  StackSize: [ :word, 1 ]
-  Stolen: [ :byte, 0 ]
-  Tag: :resref
+
+'[A-Z]{3}':
+  __struct_id: *OBJECT_SELF
+
+__ref: &ref
+  Tag: :cexostr
+  ResRef: :resref
   TemplateResRef: :resref
-  XOrientation: [ :float, 1.0 ]
-  XPosition: [ :float, 0.0 ]
-  YOrientation: [ :float, 0.0 ]
-  YPosition: [ :float, 0.0 ]
-  ZOrientation: [ :float, 0.0 ]
-  ZPosition: [ :float, 0.0 ]
-  VarTable: [ :list, [] ]
-
-UTI/PropertiesList:
-  __struct_id: 0
-  ChanceAppear: :byte
-  CostTable: :byte
-  CostValue: :word
-  Param1: :byte
-  Param1Value: :byte
-  PropertyName: :word
-  Subtype: :word
-
-UTC:
-  __struct_id: 4294967295
-  SkillList: :list
-
-UTC/SkillList:
-  __struct_id: 0
-  Rank: :byte
-
-
-UTP:
-  AnimationState: [ :byte, 0 ]
-  Appearance: :dword
-  AutoRemoveKey: [ :byte, 0 ]
-  BodyBag: [ :byte, 0 ]
-  CloseLockDC: [ :byte, 0 ]
   Comment: [ :cexostr, "" ]
-  Conversation: [ :resref, "" ]
-  CurrentHP: :short
-  Description: [ :cexolocstr, {} ]
-  DisarmDC: [ :byte, 0 ]
-  Faction: [ :dword, 1 ]
-  Fort: :byte
-  HP: :short
-  Hardness: :byte
-  HasInventory: [ :byte, 0 ]
-  Interruptable: [ :byte, 1 ]
-  KeyName: [ :cexostr, "" ]
-  KeyRequired: [ :byte, 0 ]
-  LocName: [ :cexolocstr, {} ]
-  Lockable: :byte
-  Locked: [ :byte, 0 ]
+  Comments: [ :cexostr, "" ]
+  PaletteID: :byte
+
+__events: &events
+  OnEnter: [ :resref, "" ]
+  OnExit: [ :resref, "" ]
   OnClick: [ :resref, "" ]
   OnClosed: [ :resref, "" ]
   OnDamaged: [ :resref, "" ]
@@ -113,32 +60,771 @@ UTP:
   OnLock: [ :resref, "" ]
   OnMeleeAttacked: [ :resref, "" ]
   OnOpen: [ :resref, "" ]
+  OnFailToOpen: [ :resref, "" ]
   OnSpellCastAt: [ :resref, "" ]
   OnTrapTriggered: [ :resref, "" ]
   OnUnlock: [ :resref, "" ]
   OnUsed: [ :resref, "" ]
   OnUserDefined: [ :resref, "" ]
-  OpenLockDC: [ :byte, 0 ]
-  PaletteID: [ :byte, 0 ]
+
+  ScriptAttacked: [ :resref, "" ]
+  ScriptDamaged: [ :resref, "" ]
+  ScriptDeath: [ :resref, "" ]
+  ScriptDialogue: [ :resref, "" ]
+  ScriptDisturbed: [ :resref, "" ]
+  ScriptEndRound: [ :resref, "" ]
+  ScriptHeartbeat: [ :resref, "" ]
+  ScriptOnBlocked: [ :resref, "" ]
+  ScriptOnEnter: [ :resref, "" ]
+  ScriptOnExit: [ :resref, "" ]
+  ScriptOnNotice: [ :resref, "" ]
+  ScriptRested: [ :resref, "" ]
+  ScriptSpawn: [ :resref, "" ]
+  ScriptSpellAt: [ :resref, "" ]
+  ScriptUserDefine: [ :resref, "" ]
+
+__game_object: &gameobject
+  <<: *events
+  Interruptable: [ :byte, 1 ]
+  BodyBag: [ :byte, 0 ]
+  BodyBagId: [ :dword, *OBJECT_SELF ]
+  AmbientAnimState: [ :byte, 0 ]
+  AnimationDay: [ :dword, 0 ]
+  AnimationTime: [ :dword, 0 ]
+  AnimationState: [ :byte, 0 ]
+  FortSaveThrow: :char
+  RefSaveThrow: :char
+  WillSaveThrow: :char
+  fortbonus: [ :short, 0 ]
+  refbonus: [ :short, 0 ]
+  willbonus: [ :short, 0 ]
+  Fort: [ :byte, 0]
+  Ref: [ :byte, 0]
+  Will: [ :byte, 0]
+  ActionList: [ :list, [] ]
+  EffectList: [ :list, [] ]
+  ObjectId: :dword
   Plot: [ :byte, 0 ]
+  HitPoints: :short
+  Hardness: :byte
+  CurrentHitPoints: :short
+  MaxHitPoints: :short
+  CurrentHP: :short
+  HP: :short
+  FactionID: :word
+  Faction: :dword
+  Conversation: [ :resref, "" ]
   PortraitId: [ :word, 0 ]
-  Ref: [ :byte, 0 ]
-  Static: [ :byte, 0 ]
-  Tag: :cexostr
-  TemplateResRef: :resref
+  Portrait: [ :resref, "" ]
+
+__location: &location
+  Bearing: [ :float, 0.0 ]
+  Orientation: [ :float, 0 ]
+  X: [ :float, 0.0 ]
+  Y: [ :float, 0.0 ]
+  Z: [ :float, 0.0 ]
+  XOrientation: [ :float, 1.0 ]
+  XPosition: [ :float, 0.0 ]
+  YOrientation: [ :float, 0.0 ]
+  YPosition: [ :float, 0.0 ]
+  ZOrientation: [ :float, 0.0 ]
+  ZPosition: [ :float, 0.0 ]
+
+__geometry: &geometry
+  __compact: [ PointX, PointY, PointZ ]
+  __inline: yes
+  PointX: :float
+  PointY: :float
+  PointZ: :float
+
+__naming: &naming
+  DisplayName: [ :cexostr, "" ]
+  FirstName: [ :cexolocstr, {} ]
+  LastName: [ :cexolocstr, {} ]
+  DescIdentified: [ :cexolocstr, {} ]
+  Description: [ :cexolocstr, {} ]
+  LocName: [ :cexolocstr, {} ]
+  LocalizedName: [ :cexolocstr, {} ]
+  DescIdentifiedOv: [ :cexostr, "" ]
+  DescriptionOverr: [ :cexostr, "" ]
+
+__mapnote: &mapnote
+  HasMapNote: [ :byte, 0 ]
+  MapNote: [ :cexolocstr, {} ]
+  MapNoteEnabled: [ :byte, 0 ]
+
+__lock: &lock
+  KeyName: [ :cexostr, "" ]
+  KeyRequired: [ :byte, 0 ]
+  LocName: [ :cexolocstr, {} ]
+  Lockable: :byte
+  Locked: [ :byte, 0 ]
+  OpenLockDC: [ :byte, 0 ]
+  CloseLockDC: [ :byte, 0 ]
+  AutoRemoveKey: [ :byte, 0 ]
+
+__trap: &trap
+  DisarmDC: [ :byte, 0 ]
   TrapDetectDC: [ :byte, 0 ]
   TrapDetectable: :byte
   TrapDisarmable: :byte
   TrapFlag: [ :byte, 0 ]
   TrapOneShot: [ :byte, 1 ]
   TrapType: [ :byte, 0 ]
+
+__trigger: &trigger
+  Cursor: [ :byte, 0 ]
+  HighlightHeight: [ :float, 0.0 ]
+
+__transition: &transition
+  <<: *trigger
+  LoadScreenID: [ :word, 0 ]
+  LinkedTo: [ :cexostr, "" ]
+  LinkedToFlags: [ :byte, 0 ]
+  GenericType: :byte
+
+__armorpart: &armorpart
+  ArmorPart_Belt: [ :byte, 0 ]
+  ArmorPart_LBicep: [ :byte, 0 ]
+  ArmorPart_LFArm: [ :byte, 0 ]
+  ArmorPart_LFoot: [ :byte, 0 ]
+  ArmorPart_LHand: [ :byte, 0 ]
+  ArmorPart_LShin: [ :byte, 0 ]
+  ArmorPart_LShoul: [ :byte, 0 ]
+  ArmorPart_LThigh: [ :byte, 0 ]
+  ArmorPart_Neck: [ :byte, 0 ]
+  ArmorPart_Pelvis: [ :byte, 0 ]
+  ArmorPart_RBicep: [ :byte, 0 ]
+  ArmorPart_RFArm: [ :byte, 0 ]
+  ArmorPart_RFoot: [ :byte, 0 ]
+  ArmorPart_RHand: [ :byte, 0 ]
+  ArmorPart_RShin: [ :byte, 0 ]
+  ArmorPart_RShoul: [ :byte, 0 ]
+  ArmorPart_RThigh: [ :byte, 0 ]
+  ArmorPart_Torso: [ :byte, 0 ]
+  ArmorPart_Robe: [ :byte, 0 ]
+  UArmorPart_Belt: [ :byte, 0 ]
+  UArmorPart_LBice: [ :byte, 0 ]
+  UArmorPart_LFArm: [ :byte, 0 ]
+  UArmorPart_LFoot: [ :byte, 0 ]
+  UArmorPart_LHand: [ :byte, 0 ]
+  UArmorPart_LShin: [ :byte, 0 ]
+  UArmorPart_LShou: [ :byte, 0 ]
+  UArmorPart_LThig: [ :byte, 0 ]
+  UArmorPart_Neck: [ :byte, 0 ]
+  UArmorPart_Pelvi: [ :byte, 0 ]
+  UArmorPart_RBice: [ :byte, 0 ]
+  UArmorPart_RFArm: [ :byte, 0 ]
+  UArmorPart_RFoot: [ :byte, 0 ]
+  UArmorPart_RHand: [ :byte, 0 ]
+  UArmorPart_RShin: [ :byte, 0 ]
+  UArmorPart_RShou: [ :byte, 0 ]
+  UArmorPart_RThig: [ :byte, 0 ]
+  UArmorPart_Torso: [ :byte, 0 ]
+  UArmorPart_Robe: [ :byte, 0 ]
+
+
+UTI: &uti
+  <<: *ref
+  <<: *gameobject
+  <<: *location
+  <<: *naming
+  <<: *armorpart
+  AddCost: [ :dword, 0 ]
+  BaseItem: :int
+  Charges: [ :byte, 0 ]
+  Cloth1Color: [ :byte, 0 ]
+  Cloth2Color: [ :byte, 0 ]
+  Cost: [ :dword, 0 ]
+  Cursed: [ :byte, 0 ]
+  Dropable: [ :byte, 1 ]
+  Identified: [ :byte, 0 ]
+  Leather1Color: [ :byte, 0 ]
+  Leather2Color: [ :byte, 0 ]
+  Metal1Color: [ :byte, 0 ]
+  Metal2Color: [ :byte, 0 ]
+  ModelPart1: :byte
+  ModelPart2: :byte
+  ModelPart3: :byte
+  Pickpocketable: [ :byte, 1 ]
+  PropertiesList: [ :list, [] ]
+  StackSize: [ :word, 1 ]
+  Stolen: [ :byte, 0 ]
+  VarTable: [ :list, [] ]
+
+'(UTI|BIC|UTC|UTP|Creature List)/(ItemList/)?ItemList':
+  <<: *uti
+  __struct_id: iterative
+  InventoryRes: :resref
+
+# Containers dont have as many pages
+# as an inventory, sooo .. a byte was
+# enough for everyone, eh, Bioware?
+'(UTI|BIC|UTC|UTP|Creature List)/ItemList':
+  Repos_PosX: [ :word, 0 ]
+  Repos_Posy: [ :word, 0 ]
+'(UTI|BIC|UTC|UTP|Creature List)/ItemList/ItemList':
+  Repos_PosX: [ :byte, 0 ]
+  Repos_Posy: [ :byte, 0 ]
+
+'(BIC|UTC|UTC|Creature List)/Equip_ItemList':
+  <<: *uti
+  EquippedRes: :resref
+
+# Looks weird, but:
+# UTI/ItemList/Properties: Inventory
+# UTI/ItemList/ItemList/Properties: container
+# UTI/Equip_ItemList/Properties: equipped stuff
+'(UTI|BIC|UTC|Creature List)/(ItemList/)?((Equip_)?ItemList/)?PropertiesList':
+  __compact: [ PropertyName, Subtype, CostTable, CostValue, Param1, Param1Value, UsesPerDay ]
+  __always: [ ChanceAppear, Useable ]
+  __inline: yes
+  __struct_id: 0
+
+  ChanceAppear: [ :byte, 100 ]
+  Useable: [ :byte, 1 ]
+  UsesPerDay: [ :byte, 255 ]
+
+  PropertyName: :word
+  __2da_PropertyName: [ itempropdef, Label ]
+  Subtype: [ :word, 0 ]
+  __2da_Subtype: [ :PropertyName, SubTypeResRef, Label ]
+
+  CostTable: :byte
+  __2da_CostTable: [ iprp_costtable, Name ]
+  CostValue: [ :word, -1 ]
+  __2da_CostValue: [ :CostTable, Name, Label ]
+
+  Param1: [ :byte, 255 ]
+  __2da_Param1: [ iprp_paramtable, Lable ]
+  Param1Value: [ :byte, 0 ]
+  __2da_Param1Value: [ :Param1, TableResRef, Label ]
+
+
+UTC: &utc
+  <<: *ref
+  <<: *gameobject
+  <<: *location
+  <<: *naming
+  # Yeah, I know, its weird .. but UTC
+  # seems to write armorpart values sometimes.
+  # Im adding it here for completeness' sake.
+  <<: *armorpart
+  Age: :int
+  Appearance_Head: :byte
+  Appearance_Type: :word
+  AreaId: :dword
+  ArmorClass: :short
+  BaseAttackBonus: :byte
+  BodyPart_Belt: :byte
+  BodyPart_LBicep: :byte
+  BodyPart_LFArm: :byte
+  BodyPart_LFoot: :byte
+  BodyPart_LHand: :byte
+  BodyPart_LShin: :byte
+  BodyPart_LShoul: :byte
+  BodyPart_LThigh: :byte
+  BodyPart_Neck: :byte
+  BodyPart_Pelvis: :byte
+  BodyPart_RBicep: :byte
+  BodyPart_RFArm: :byte
+  BodyPart_RHand: :byte
+  BodyPart_RShin: :byte
+  BodyPart_RShoul: :byte
+  BodyPart_RThigh: :byte
+  BodyPart_Torso: :byte
+  CRAdjust: [ :int, 0 ]
+  Cha: :byte
+  ChallengeRating: [ :float, 1.0 ]
+  Color_Hair: [ :byte, 0 ]
+  Color_Skin: [ :byte, 0 ]
+  Color_Tattoo1: [ :byte, 0 ]
+  Color_Tattoo2: [ :byte, 0 ]
+  CreatnScrptFird: [ :byte, 1 ]
+  CreatureSize: :int
+  DeadSelectable: [ :byte, 1 ]
+  Con: :byte
+  DecayTime: [ :dword, 5000 ]
+  Deity: [ :cexostr, "" ]
+  Dex: :byte
+  DetectMode: [ :byte, 0 ]
+  Disarmable: [ :byte, 1 ]
+  EncounterObject: [ :dword, *OBJECT_INVALID ]
+  Experience: [ :dword, 0 ]
+  FamiliarName: [ :cexostr, "" ]
+  FamiliarType: :int
+  FootstepType: [ :int, -1 ]
+  Gender: [ :byte, 0 ]
+  Gold: [ :dword, 0 ]
+  GoodEvil: [ :byte, 50 ]
+  LawfulChaotic: [ :byte, 50 ]
+  Int: :byte
+  IsCommandable: [ :byte, 1 ]
+  IsImmortal: [ :byte, 0 ]
+  IsPC: [ :byte, 0 ]
+  IsDM: [ :byte, 0 ]
+  IsDestroyable: [ :byte, 1 ]
+  IsRaiseable: [ :byte, 1 ]
+  Listening: [ :byte, 0 ]
+  Lootable: :byte
+  MClassLevUpIn: [ :byte, 0 ]
+  MasterID: [ :dword, *OBJECT_INVALID ]
+  MovementRate: [ :byte, 0 ]
+  OverrideBAB: [ :byte, 0 ]
+  PM_IsPolymorphed: [ :byte, 0 ]
+  NaturalAC: :byte
+  NoPermDeath: [ :byte, 0 ]
+  PerceptionRange: :byte
+  Phenotype: [ :int, 0 ]
+  PregameCurrent: :short
+  Race: :byte
+  SitObject: [ :dword, *OBJECT_INVALID ]
+  SkillPoints: [ :word, 0 ]
+  SoundSetFile: :word
+  StartingPackage: [ :byte, 0 ]
+  StealthMode: [ :byte, 0 ]
+  Str: :byte
+  Subrace: [ :cexostr, "" ]
+  Tail: [ :byte, 0 ]
+  Tail_New: [ :dword, 0 ]
+  WalkRate: :int
+  Wings: [ :byte, 0 ]
+  Wings_New: [ :dword, 0 ]
+  Wis: :byte
+
+  CombatInfo: :struct
+  CombatRoundData: :struct
+
+  TemplateList: [ :list, [] ]
+  SpecAbilityList: [ :list, [] ]
+  Equip_ItemList: [ :list, [] ]
+  ItemList: [ :list, [] ]
+  ClassList: :list
+  SkillList: :list
+  FeatList: :list
+  LvlStatList: [ :list, [] ]
+  PerceptionList: [ :list, [] ]
+  QBList: [ :list, [] ]
+
+'(BIC|UTC|Creature List)/LvlStatList':
+  __struct_id: 0
+  EpicLevel: [ :byte, 0 ]
+  FeatList: :list
+  LvlStatClass: :byte
+  LvlStatHitDie: :byte
+  LvlStatAbility: :byte
+  SkillList: :list
+  SkillPoints: [ :word, 0 ]
+
+'(BIC|UTC|Creature List)/PerceptionList':
+  __struct_id: 0
+  __compact: [ ObjectId, PerceptionData ]
+  __inline: yes
+  ObjectId: :dword
+  PerceptionData: :byte
+
+'(BIC|UTC|Creature List)/QBList':
+  __struct_id: 0
+  __compact: [ QBObjectType, QBCommandLabel, QBCommandLine, QBCastPropIndex, QBCastSubPropIdx,
+    QBContReposX, QBContReposY, QBItemInvSlot, QBDomainLevel, QBINTParam1,
+    QBMetaType, QBMultiClass, QBItemReposX, QBItemReposY ]
+  __inline: yes
+  QBCommandLabel: [ :cexostr, "" ]
+  QBCommandLine: [ :cexostr, "" ]
+  QBCastPropIndex: [ :byte, 0 ]
+  QBCastSubPropIdx: [ :byte, 255 ]
+  QBContReposX: [ :byte, 255 ]
+  QBContReposY: [ :byte, 255 ]
+  QBItemInvSlot: [ :dword, *OBJECT_SELF ]
+  QBDomainLevel: [ :byte, 0 ]
+  QBINTParam1: [ :int, 0 ]
+  QBMetaType: [ :byte, 0 ]
+  QBMultiClass: [ :byte, 0 ]
+  QBObjectType: [ :byte, 0 ]
+  QBItemReposX: [ :byte, 0xff ]
+  QBItemReposY: [ :byte, 0xff ]
+
+'(BIC|UTC|Creature List)/CombatInfo':
+  __struct_id: 51882
+  ArcaneSpellFail: [ :byte, 0 ]
+  ArmorCheckPen: [ :byte, 0 ]
+  AttackList: [ :list, [] ]
+  CreatureDice: [ :byte, 0 ]
+  CreatureDie: [ :byte, 0 ]
+  DamageDice: [ :byte, 0 ]
+  DamageDie: [ :byte, 0 ]
+  DamageList: [ :list, [] ]
+  LeftEquip: [ :dword, *OBJECT_INVALID ]
+  LeftString: [ :cexostr, "" ]
+  NumAttacks: [ :byte, 1 ]
+  OffHandAttackMod: [ :char, 0 ]
+  OffHandCritMult: [ :byte, 2 ]
+  OffHandCritRng: [ :byte, 1 ]
+  OffHandDamageMod: [ :char, 0 ]
+  OffHandWeaponEq: [ :byte, 0 ]
+  OnHandAttackMod: [ :char, 1 ]
+  OnHandCritMult: [ :byte, 2 ]
+  OnHandCritRng: [ :byte, 1 ]
+  OnHandDamageMod: [ :char, 1 ]
+  RightEquip: [ :dword, *OBJECT_INVALID ]
+  RightString: [ :cexostr, "" ]
+  SpellResistance: [ :byte, 0 ]
+  UnarmedDamDice: [ :byte, 1 ]
+  UnarmedDamDie: [ :byte, 3 ]
+  eatureDice: [ :byte, 0 ]
+  eatureDie: [ :byte, 0 ]
+  reatureDice: [ :byte, 0 ]
+  reatureDie: [ :byte, 0 ]
+
+'(BIC|UTC|Creature List)/CombatRoundData':
+  __struct_id: 51930
+
+'(BIC|UTC|Creature List)/ClassList':
+#  __compact: [ Class, ClassLevel ]
+#  __inline: yes
+  __struct_id: 2
+  Class: :int
+  __2da_Class: [ classes, Label ]
+  ClassLevel: :short
+  KnownList0: [ :list, [] ]
+  KnownList1: [ :list, [] ]
+  KnownList2: [ :list, [] ]
+  KnownList3: [ :list, [] ]
+  KnownList4: [ :list, [] ]
+  KnownList5: [ :list, [] ]
+  KnownList6: [ :list, [] ]
+  KnownList7: [ :list, [] ]
+  KnownList8: [ :list, [] ]
+  KnownList9: [ :list, [] ]
+  MemorizedList0: [ :list, [] ]
+  MemorizedList1: [ :list, [] ]
+  MemorizedList2: [ :list, [] ]
+  MemorizedList3: [ :list, [] ]
+  MemorizedList4: [ :list, [] ]
+  MemorizedList5: [ :list, [] ]
+  MemorizedList6: [ :list, [] ]
+  MemorizedList7: [ :list, [] ]
+  MemorizedList8: [ :list, [] ]
+  MemorizedList9: [ :list, [] ]
+  School: :byte
+
+'(BIC|UTC|Creature List)/ClassList/KnownList[0-9]':
+  __compact: Spell
+  __inline: no
+  __struct_id: 3
+  Spell: :word
+  __2da_Spell: [ spells, Label ]
+
+'(BIC|UTC|Creature List)/ClassList/MemorizedList[0-9]':
+  __compact: [ Spell, SpellMetaMagic, SpellFlags, Ready ]
+  __inline: yes
+  __struct_id: 3
+  Spell: :word
+  __2da_Spell: [ spells, Label ]
+  SpellMetaMagic: [ :byte, 0x00 ]
+  SpellFlags: [ :byte, 0x01 ]
+  Ready: [ :byte, 1 ]
+
+'(BIC|UTC|Creature List)/FeatList':
+  __struct_id: 1
+
+'(BIC|UTC|Creature List)/(LvlStatList/)?FeatList':
+  __compact: [ Feat, Uses ]
+  __inline: yes
+  __struct_id: 0
+  Feat: :word
+  __2da_Feat: [ feat, LABEL ]
+  Uses: [ :byte, 0 ]
+
+'(BIC|UTC|Creature List)/(LvlStatList/)?SkillList':
+  __compact: Rank
+  __struct_id: 0
+  Rank: :byte
+
+'(BIC|UTC)/(LvlStatList/)?KnownList[0-9]':
+  __compact: Spell
+  __struct_id: 0
+  Spell: :word
+  __2da_Spell: [ spells, Label ]
+
+BIC: &bic
+  <<: *utc
+
+UTP: &utp
+  <<: *ref
+  <<: *gameobject
+  <<: *lock
+  <<: *trap
+  <<: *location
+  Appearance: :dword
+  Description: [ :cexolocstr, {} ]
+  HasInventory: [ :byte, 0 ]
+  Static: [ :byte, 0 ]
   Type: [ :byte, 0 ]
   Useable: [ :byte, 0 ]
-  Will: [ :byte, 0 ]
 
+
+UTD: &utd
+  <<: *ref
+  <<: *gameobject
+  <<: *lock
+  <<: *trap
+  <<: *naming
+  <<: *transition
+  <<: *location
+  Appearance: :dword
+
+UTE: &ute
+  <<: *ref
+  <<: *gameobject
+  <<: *naming
+  <<: *location
+  Active: :byte
+  'CreatureList': :list
+  Difficulty: :int
+  DifficultyIndex: :int
+  MaxCreatures: :int
+  OnEntered: :resref
+  OnExhausted: :resref
+  PlayerOnly: :byte
+  RecCreatures: :int
+  Reset: :byte
+  ResetTime: :int
+  Respawns: :int
+  SpawnOption: :int
+
+UTE/CreatureList:
+  __struct_id: 0
+  Appearance: :int
+  CR: :float
+  ResRef: :resref
+  SingleSpawn: :byte
+
+UTE/Geometry:
+  __struct_id: 1
+  <<: *geometry
+
+UTM: &utm
+  <<: *ref
+  <<: *naming
+  <<: *location
+  ID: :byte
+  OnOpenStore: [ :resref, "" ]
+  OnStoreClosed: [ :resref, "" ]
+  StoreGold: [ :int, -1 ]
+  MaxBuyPrice: [ :int, -1 ]
+  WillOnlyBuy: [ :list, [] ]
+  WillNotBuy: [ :list, [] ]
+  MarkUp: [ :int ]
+  MarkDown: [ :int ]
+  BlackMarket: [ :byte, 0 ]
+  BM_MarkDown: [ :int ]
+  IdentifyPrice: [ :int, -1 ]
+  StoreList: [ :list, [] ]
+
+UTM/WillOnlyBuy:
+  __struct_id: 97869
+  __compact: BaseItem
+  BaseItem: :int
+
+UTM/StoreList:
+  __struct_id: 0
+  __inline: no
+  ItemList: [ :list, [] ]
+
+UTM/StoreList/ItemList:
+  <<: *uti
+  __struct_id: 0
+  __compact: [ InventoryRes, Infinite, Repos_PosX, Repos_Posy ]
+  __inline: yes
+  Infinite: [ :byte, 0 ]
+  InventoryRes: :resref
+  Repos_PosX: [ :word ]
+  Repos_Posy: [ :word ]
+
+UTS: &uts
+  <<: *ref
+  <<: *gameobject
+  <<: *naming
+  <<: *location
+  Active: :byte
+  Continuous: :byte
+  Elevation: :float
+  GeneratedType: [ :dword, 0 ]
+  Hours: :dword
+  Interval: :dword
+  IntervalVrtn: :dword
+  Looping: :byte
+  MaxDistance: :float
+  MinDistance: :float
+  PitchVariation: :float
+  Positional: :byte
+  Priority: :byte
+  Random: :byte
+  RandomPosition: :byte
+  RandomRangeX: :float
+  RandomRangeY: :float
+  Times: :byte
+  Volume: :byte
+  VolumeVrtn: :byte
+
+  Sounds: :list
+
+__sound_list: &sound_list
+  __compact: Sound
+  __struct_id: 0
+  Sound: :resref
+
+UTS/Sounds:
+  <<: *sound_list
+
+UTT: &utt
+  <<: *ref
+  <<: *gameobject
+  <<: *naming
+  <<: *trap
+  <<: *lock
+  <<: *transition
+  <<: *location
+  Type: [ :int, 0 ]
+
+UTW: &utw
+  <<: *ref
+  <<: *gameobject
+  <<: *naming
+  <<: *transition
+  <<: *mapnote
+  <<: *location
+  Appearance: :byte
+
+
+ARE: &are
+  <<: *ref
+  <<: *events
+  ChanceLightning: :int
+  ChanceRain: :int
+  ChanceSnow: :int
+  Creator_ID: :int
+  DayNightCycle: :byte
+  Expansion_List: [ :list, [] ]
+  Flags: :dword
+  FogClipDist: :float
+  Height: :int
+  ID: :int
+  IsNight: :byte
+  LightingScheme: :byte
+  LoadScreenID: :word
+  ModListenCheck: :int
+  ModSpotCheck: :int
+  MoonAmbientColor: :dword
+  MoonDiffuseColor: :dword
+  MoonFogAmount: :byte
+  MoonFogColor: :dword
+  MoonShadows: :byte
+  Name: :cexolocstr
+  NoRest: :byte
+  PlayerVsPlayer: :byte
+  ShadowOpacity: :byte
+  SkyBox: :byte
+  SunAmbientColor: :dword
+  SunDiffuseColor: :dword
+  SunFogAmount: :byte
+  SunFogColor: :dword
+  SunShadows: :byte
+  Tileset: :resref
+  Version: :dword
+  Width: :int
+  WindPower: :int
+
+  Tile_List: :list
+
+ARE/Tile_List:
+  __struct_id: 1
+  __compact: [ Tile_AnimLoop1, Tile_AnimLoop2, Tile_AnimLoop3,
+    Tile_Height, Tile_ID, Tile_MainLight1, Tile_MainLight2,
+    Tile_Orientation, Tile_SrcLight1, Tile_SrcLight2 ]
+  __inline: yes
+  Tile_AnimLoop1: :byte
+  Tile_AnimLoop2: :byte
+  Tile_AnimLoop3: :byte
+  Tile_Height: :int
+  Tile_ID: :int
+  Tile_MainLight1: :byte
+  Tile_MainLight2: :byte
+  Tile_Orientation: :int
+  Tile_SrcLight1: :byte
+  Tile_SrcLight2: :byte
+
+GIT: &git
+  'Creature List': [ :list, [] ]
+  'Door List': [ :list, [] ]
+  'Encounter List': [ :list, [] ]
+  'Placeable List': [ :list, [] ]
+  'SoundList': [ :list, [] ]
+  'StoreList': [ :list, [] ]
+  'TriggerList': [ :list, [] ]
+  'WaypointList': [ :list, [] ]
+  # What is THAT, Bioware?
+  List: [ :list, [] ]
+
+GIT/AreaProperties:
+  __struct_id: 100
+  AmbientSndDay: :int
+  AmbientSndDayVol: :int
+  AmbientSndNight: :int
+  AmbientSndNitVol: :int
+  EnvAudio: :int
+  MusicBattle: :int
+  MusicDay: :int
+  MusicDelay: :int
+  MusicNight: :int
+
+'GIT/Creature List':
+  <<: *utc
+'GIT/Door List':
+  <<: *utd
+'GIT/Encounter List':
+  <<: *ute
+  SpawnPointList: [ :list, [] ]
+
+'GIT/Encounter List/Geometry':
+  __struct_id: 1
+  __compact: [ X, Y, Z ]
+  __inline: yes
+  X: :float
+  Y: :float
+  Z: :float
+
+'GIT/Encounter List/SpawnPointList':
+  __struct_id: 2
+  __inline: yes
+  __compact: [ X, Y, Z, Orientation ]
+  <<: *location
+
+'GIT/Placeable List':
+  <<: *utp
+
+'GIT/SoundList':
+  <<: *uts
+
+'GIT/SoundList/Sounds':
+  <<: *sound_list
+
+'GIT/StoreList':
+  <<: *utm
+
+'GIT/TriggerList':
+  <<: *utt
+  Geometry: [ :list, [] ]
+
+'GIT/TriggerList/Geometry':
+  __struct_id: 3
+  <<: *geometry
+
+'GIT/WaypointList':
+  <<: *utw
 
 IFO:
-  __struct_id: 0xffffffff
   Expansion_Pack: :word
   Mod_Area_list: :list
   Mod_CacheNSSList: :list
@@ -151,12 +837,11 @@ IFO:
   Mod_Entry_Area: :resref
   Mod_Entry_Dir_X: :float
   Mod_Entry_Dir_Y: :float
-  Mod_Entry_X: :float,
+  Mod_Entry_X: :float
   Mod_Entry_Y: :float
   Mod_Entry_Z: :float
   Mod_Expan_List: [ :list, [] ]
   Mod_GVar_List: [ :list, [] ]
-  Mod_HakList: :list
   Mod_ID: :void
   Mod_IsSaveGame: [ :byte, 0 ]
   Mod_MinGameVer: :cexostr
@@ -188,12 +873,110 @@ IFO:
   Mod_Version: :dword
   Mod_XPScale: :byte
   VarTable: [ :list, [] ]
+  Mod_HakList: [ :list, [] ]
 
 IFO/Mod_Area_list:
   __struct_id: 6
+  __compact: Area_Name
+  __inline: no
   Area_Name: :resref
 
 IFO/Mod_CacheNSSList:
   __struct_id: 9
+  __compact: ResRef
+  __inline: no
   ResRef: :resref
 
+IFO/Mod_HakList:
+  __struct_id: 8
+  __compact: Mod_Hak
+  __inline: no
+  Mod_Hak: :cexostr
+
+FAC:
+  FactionList: :list
+  RepList: :list
+
+FAC/FactionList:
+  __struct_id: iterative
+  __compact: [ FactionGlobal, FactionName, FactionParentID ]
+  __inline: yes
+  FactionGlobal: :word
+  FactionName: :cexostr
+  FactionParentID: :dword
+
+FAC/RepList:
+  __struct_id: iterative
+  __compact: [ FactionID1, FactionID2, FactionRep ]
+  __inline: yes
+  FactionID1: :dword
+  FactionID2: :dword
+  FactionRep: :dword
+
+JRL:
+  Categories: :list
+
+JRL/Categories:
+  __struct_id: iterative
+  Name: :cexolocstr
+  Comment: [ :cexostr, "" ]
+  EntryList: :list
+  Picture: [ :word, 0xffff ]
+  Priority: :dword
+  Tag: [ :cexostr, "" ]
+  XP: [ :dword, 0 ]
+
+JRL/Categories/EntryList:
+  __struct_id: iterative
+#  __compact: [ End, ID, Text ]
+#  __inline: yes
+  End: :word
+  ID: :dword
+  Text: :cexolocstr
+
+DLG:
+  DelayEntry: [ :dword, 0 ]
+  DelayReply: [ :dword, 0 ]
+  EndConverAbort: :resref
+  EndConversation: :resref
+  NumWords: :dword
+  PreventZoomIn: :byte
+
+  EntryList: :list
+  ReplyList: :list
+  StartingList: :list
+
+
+'DLG/(Entry|Reply)List':
+  __struct_id: iterative
+  AnimLoop: [ :byte, 1 ]
+  Animation: [ :dword, 0 ]
+  Comment: [ :cexostr, "" ]
+  Delay: [ :dword, *OBJECT_SELF ]
+  Quest: [ :cexostr, "" ]
+  Script: [ :resref, "" ]
+  Sound: [ :resref, "" ]
+  Text: [ :cexolocstr, {} ]
+
+DLG/EntryList:
+  ReplistList: :list
+  Speaker: [ :cexostr, "" ]
+
+DLG/ReplyList:
+  EntriesList: :list
+
+'DLG/(Entry|Reply)List/(Replies|Entries)List':
+  __compact: [ Active, Index, IsChild, LinkComment ]
+  __inline: yes
+  __struct_id: iterative
+  Active: :resref
+  Index: :dword
+  IsChild: :byte
+  LinkComment: [ :cexostr, "" ]
+
+DLG/StartingList:
+  __compact: [ Active, Index ]
+  __inline: yes
+  __struct_id: iterative
+  Active: :resref
+  Index: :dword
