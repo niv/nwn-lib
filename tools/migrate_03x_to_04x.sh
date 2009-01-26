@@ -1,28 +1,17 @@
 #!/bin/sh
+# This script automages migrating <= 0.3.6-formatted YAML
+# dumps to the current format.
+# You need both versions of nwn-lib installed.
 set -e
 
-
 for in_yml in $@; do
-	if [ -z "$in_yml" ]; then
-		echo "Need a filename!"
+	if [ ! -e "$in_yml" ]; then
+		echo "$in_yml: does not exist"
 		exit 1
 	fi
 	tmp=$1.gff
 
-	echo "$in_yml -> $tmp -> $in_yml"
-
-	echo '
-		gem "nwn-lib", "0.3.6"
-		require "nwn/gff"
-		require "nwn/yaml"
-		File.open("'$tmp'", "w") {|f|
-			f.write NWN::Gff::Writer.dump(
-				YAML.load(IO.read("'$in_yml'"))
-			)
-		}
-	' | ruby -rubygems
-
-	../bin/nwn-gff-convert -i "$tmp" -lg -ky -o "$in_yml"
-
-	rm $tmp
+	echo -n "$in_yml: "
+	( nwn-gff-import _0.3.6_ -y $in_yml | nwn-gff -lg -ky > $tmp ) && mv $tmp $in_yml
+	echo "ok."
 done
