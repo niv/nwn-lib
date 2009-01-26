@@ -139,8 +139,10 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     label.freeze
     element = case element
       when Hash # already uncompacted or a compacted exolocstr
+        default_type = NWN::Gff.get_struct_default_type(struct.path, label)
         raise NWN::Gff::GffError,
-          "Cannot parse compacted hash with no contents (at #{struct.path}/#{label})." if element.size == 0
+          "Cannot parse compacted hash with no contents and no infer data at #{struct.path}/#{label}." if
+            element.size == 0 && default_type == nil
 
         # It has only got numbers as key, we *assume* its a cexoloc.
         # Thats okay, because type inferration will catch it later and bite us. Hopefully.
