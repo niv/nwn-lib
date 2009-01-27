@@ -64,6 +64,12 @@ as configured in $NWN_LIB_INFER_DATA_FILE.
 
 The default is to not omit known-value data fields.
 
+== NWN_LIB_FILTER_EMPTY_EXOLOCSTR
+
+Set to non-nil ("1" will do) to make nwn-lib filter out empty exolocstr fields from
+input files on reading.
+
+The default is to keep them as-is.
 
 == NWN_LIB_2DA_LOCATION
 
