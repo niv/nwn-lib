@@ -50,7 +50,7 @@ module NWN::Gff::Struct
 
         reject {|k, v|
           # Dont emit fields that would result in their default values anyways.
-          !ENV['NWN_LIB_KEEP_KNOWN_VALUES'] && v.can_infer_type? &&
+          ENV['NWN_LIB_CLEAR_KNOWN_VALUES'] && v.can_infer_type? &&
             v.can_infer_str_ref? && v.can_infer_value?
         }.sort.each {|k,v|
           map.add(k,v)

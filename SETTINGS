@@ -57,13 +57,12 @@ structs, if type inferring data is available.
   SkillList: [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, ...
 
 
-== NWN_LIB_KEEP_KNOWN_VALUES
+== NWN_LIB_CLEAR_KNOWN_VALUES
 
-Set to non-nil ("1" will do) to prevent nwn-lib from omitting fields that resolve to default values
+Set to non-nil ("1" will do) to make nwn-lib omit fields that resolve to default values
 as configured in $NWN_LIB_INFER_DATA_FILE.
 
-nwn-lib, by default, filters fields out of (some) dump formats that would resolve to values that
-the NWN engine would fill with default values anyways.
+The default is to not omit known-value data fields.
 
 
 == NWN_LIB_2DA_LOCATION
