@@ -17,6 +17,9 @@ the distribution unter data/.
 Here is an example to see what the fuss is about: From both representations
 will exactly the same gff represenation generated.
 
+Please be advised that inferring support for YAML is <b>EXPERIMENTAL</b> and may result in
+<b>module and gff file corruption</b>.
+
 === Without inferring
 
   --- !nwn-lib.elv.es,2008-12/struct

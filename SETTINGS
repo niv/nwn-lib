@@ -4,13 +4,15 @@ There are various environment variables you can configure to adjust various part
 
 Under linux, just add them to your shell environment (usually .bashrc), like so:
 
-  export NWN_LIB_INFER_DATA_FILE==/usr/lib/ruby/gems/1.8/gems/nwn-lib-0.4.0/data/gff-common-nwn1.yaml
+  export NWN_LIB_INFER_DATA_FILE=/usr/lib/ruby/gems/1.8/gems/nwn-lib-0.4.0/data/gff-common-nwn1.yaml
 
 
 == NWN_LIB_INFER_DATA_FILE
 
 The path to the type/value inferring data file. See TYPE_VALUE_INFERRING for a definition.
 
+Please be advised that inferring support for YAML is <b>EXPERIMENTAL</b> and may result in
+<b>module and gff file corruption</b>.
 
 == NWN_LIB_DONT_COMPACT_FIELDS
 
