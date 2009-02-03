@@ -126,4 +126,47 @@ module NWN::Gff::Scripting
     end
   end
 
+
+  # Ask the user for something.
+  # +question+  the Question to ask
+  # +match+     a selection of answers to choose from (eg, a hash, the user would choose the key)
+  def ask question, match = nil
+    object = case match
+      when Array
+        i = 0 ; Hash[match.map {|x| [i+=1, x]}]
+
+      when Hash, Regexp, Fixnum, Float
+        match
+
+      else
+        raise NWN::Gff::GffError, "Do not know how to " +
+          "validate against #{match.class}"
+    end
+
+    ret = nil
+    while true
+      y object
+      $stderr.print File.basename($base_script) + ": " + question + " "
+      ret = $stdin.gets
+      ret = ret.rstrip
+
+      break if object.nil? || case object
+        when Hash
+          object.keys.index(ret) || (ret != "" && object.keys.index(ret.to_i))
+        when Regexp
+          ret =~ match
+        when Fixnum
+          ret =~ /^\d+$/
+        when Float
+          ret =~ /^\d+(.\d+)?$/
+      end
+    end
+
+    case match
+      when Float; ret.to_f
+      when Fixnum; ret.to_i
+      else; ret
+    end
+  end
+
 end
