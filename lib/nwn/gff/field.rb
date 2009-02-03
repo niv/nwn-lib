@@ -35,8 +35,10 @@ module NWN::Gff::Field
   alias :v :field_value
 
   def field_value= v
+    Field.valid_for?(v, field_type) or raise ArgumentError,
+      "Given field_value is not valid for type #{field_type.inspect}."
+
     self['value'] = v
-    extend_meta_classes
   end
   alias :v= :field_value=
 
