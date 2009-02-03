@@ -4,10 +4,12 @@ This package provides a library for reading, changing, and writing common file f
 
 They should work with NWN2 just as well, since the file format specifications did not change.
 
-=== A word on version numbers
+=== Upgrade from 0.3.6 to 0.4.x
 
 With the release of 0.4.0, the API changed significantly. Previous yaml dumps made with 0.3.x are INCOMPATIBLE, and so are all scripts.
 I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see BINARIES).
+
+=== A word on version numbers
 
 Please consider all version releases below 1.0.0 to be unstable, even though the code is fully functional - further API changes may not be avoidable between major revisions - such as is the case with 0.3 -> 0.4.
 

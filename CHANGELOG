@@ -105,3 +105,7 @@ Bernhard Stoeckner <elven@swordcoast.net> (5):
 
 Stuart Coyle <stuart.coyle@gmail.com> (1):
       TwoDA: use four spaces for field separation instead of tabs, indent columns
+
+==== 0.4.0
+Bernhard Stoeckner <elven@swordcoast.net>:
+      too many to sanely list, see README for migration information
