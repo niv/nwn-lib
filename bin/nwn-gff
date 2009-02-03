@@ -130,6 +130,7 @@ $stop_output = $options[:outformat] == :none
 
 $options[:run].each {|file|
   vputs "Running script file: #{file}"
+  FileTest.exists?(file) or file = file + ".rb"
   $script = File.expand_path(file)
   $base_script = File.basename($script)
   include NWN
