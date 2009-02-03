@@ -200,22 +200,30 @@ module NWN
     # This is a simple 2da cache.
     module Cache
       @_cache = {}
-      @_root = nil
+      @_roots = []
 
-      # Set the file system path where all 2da files reside.
+      # Set the file system path spec where all 2da files reside.
       # Call this on application startup.
-      def self.setup root
-        @_root = root
+      # path spec is a colon-separated list of pathes, just like $PATH.
+      def self.setup root_directories
+        @_roots = root_directories.split(':').compact.reject {|x| "" == x.strip }
       end
 
       # Get the 2da file with the given name. +name+ is without extension.
       def self.get(name)
-        raise Exception, "You need to set up the cache first through the environment variable NWN_LIB_2DA_LOCATION." unless @_root
+        raise Exception,
+          "You need to set up the cache first through the environment variable NWN_LIB_2DA_LOCATION." unless
+            @_roots.size > 0
         @_cache[name.downcase] ||= read_2da(name.downcase)
       end
 
       def self.read_2da name # :nodoc:
-        Table.parse IO.read(@_root + '/' + name + '.2da')
+        @_roots.each {|root|
+          file = root + '/' + name + '.2da'
+          next unless FileTest.exists?(file)
+          return Table.parse(IO.read(file))
+        }
+        raise Errno::ENOENT, name + ".2da"
       end
 
       private_class_method :read_2da
