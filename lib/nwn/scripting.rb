@@ -119,7 +119,11 @@ module NWN::Gff::Scripting
   # Use this instead of puts, since SAFE levels greater than 0
   # will prevent you from doing logging yourself.
   def log *args
-    $stderr.puts [$base_script, " on ", $options[:infile], ": ", *args].join("")
+    if $options
+      $stderr.puts [$base_script, " on ", $options[:infile], ": ", *args].join("")
+    else
+      $stderr.puts [$base_script, ": ", *args].join("")
+    end
   end
 
 end
