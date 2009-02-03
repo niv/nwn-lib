@@ -263,7 +263,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     element.extend(NWN::Gff::Field)
     element.field_label = label
     element.parent = struct
-    element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF
+    element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF if element.respond_to?('str_ref=')
 
     infer_field_type = NWN::Gff.get_struct_default_type(struct.path, element.field_label)
 

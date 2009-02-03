@@ -1,7 +1,6 @@
 # A Field wraps a GFF label->value pair, providing:
 # * +.field_type+ describing the field type (e.g. :int)
 # * +.field_value+ holding the value of this Field
-# * +.str_ref+ containing a str_ref for applicable fields
 
 # and, if loaded by Gff::Reader or through YAML:
 # * +.field_label+ holding the label
@@ -13,8 +12,6 @@
 #
 #  field['value'], field['type'], field['str_ref'], field['label']
 module NWN::Gff::Field
-  DEFAULT_STR_REF = 0xffffffff
-
   # The parent struct.
   # This is set internally by Gff::Reader on load.
   attr_accessor :parent
@@ -51,17 +48,6 @@ module NWN::Gff::Field
     self['label']= l
   end
   alias :l= :field_label=
-
-  def str_ref
-    self['str_ref'] || DEFAULT_STR_REF
-  end
-  def str_ref= s
-    self['str_ref'] = s.to_i
-  end
-
-  def has_str_ref?
-    str_ref != DEFAULT_STR_REF
-  end
 
   # Returns the path to this field, including all parents structs.
   # For example: UTI/PropertiesList/CostTable

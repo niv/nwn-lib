@@ -155,6 +155,7 @@ class NWN::Gff::Reader
         total_size, str_ref, str_count =
           @field_data[data_or_offset, 12].unpack("VVV")
         all = @field_data[data_or_offset + 12, total_size]
+        field.extend(NWN::Gff::Cexolocstr)
         field.str_ref = str_ref
 
         str_count.times {
