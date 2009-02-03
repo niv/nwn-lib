@@ -51,11 +51,6 @@ module NWN::Gff
     dd = get_struct_defaults_for(path, key)
     dd.is_a?(Array) ? dd[1] : nil
   end
-
-  def self.get_struct_always_fields path
-    dd = get_struct_defaults_for(path, '__always')
-    dd || []
-  end
 end
 
 module NWN::Gff::Struct

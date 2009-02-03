@@ -63,6 +63,7 @@ end
 module NWN::Gff::Field
 
   def to_yaml(opts = {})
+
     if !ENV['NWN_LIB_DONT_COMPACT_LIST_STRUCTS'] && field_type == :list && can_compact_as_list?
       YAML::quick_emit(nil, opts) do |out|
         out.seq("!", to_yaml_style) do |seq|
@@ -187,20 +188,6 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
             unpack_struct_element_type
           }.freeze
 
-          always_add_fields = NWN::Gff.get_struct_always_fields(path).map {|aa_lbl|
-            ff = {
-              'label' => aa_lbl,
-              'type' => NWN::Gff.get_struct_default_type(path, aa_lbl),
-              'value' => NWN::Gff.get_struct_default_value(path, aa_lbl),
-            }
-            raise NWN::Gff::GffError, "#{aa_lbl.inspect} at #{path} is __always, but no default data" unless
-              ff['type'] && ff['value']
-
-            ff.extend(NWN::Gff::Field)
-            ff.extend_meta_classes
-            ff
-          }
-
           last_struct_id = -1
           element['value'].map! {|kv|
             st = {}
@@ -260,10 +247,6 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
               el.extend(NWN::Gff::Field)
               el.extend_meta_classes
               el.parent = st
-            }
-            always_add_fields.each {|xy|
-              st[xy.field_label] = xy = xy.clone
-              xy.parent = st
             }
             st
           }
