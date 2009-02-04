@@ -13,7 +13,26 @@ self.each_by_flat_path do |label, field|
   next unless field.is_a?(Gff::Cexolocstr)
   next if field.v.size == 0
 
-  compactable = field.v.values.reject {|x| x == ""}.uniq.size < 2
+  val = field.v.dup
+
+  val.clear if field.has_str_ref?
+
+  # strip empty strings
+  val.reject! {|k,v|
+    v.strip == ""
+  }
+
+  rej_lid = ENV['NWN_LIB_CLEAN_LOCSTR_REJECT_LANGUAGES']
+  val.reject! {|k,v|
+    rej_lid.index(k.to_s)
+  } if rej_lid && rej_lid = rej_lid.split(/\s+/)
+
+  # Remove all duplicate values.
+  val.each {|k,v|
+    val.select {|kk,vv| vv == v}[0..-2].each {|kk,vv| val.delete(kk) }
+  }
+
+  compactable = val.size < 2
 
   unless will_output?
     unless compactable
@@ -27,16 +46,14 @@ self.each_by_flat_path do |label, field|
     str = nil
     unless compactable
       log "Cannot compact #{label}, because the contained strings are not unique."
-      selection = ask "Use what string?", field.v
+      selection = ask "Use what string?", val
       log "Using: #{selection.inspect}"
-      str = field.v[selection.to_i]
+      str = val[selection.to_i]
     else
-      str = field.v[field.v.keys.sort[0]]
+      str = val[val.keys.sort[0]]
     end
     field.v.clear
-    field.v[0] = str
-
-    field.str_ref = Gff::Field::DEFAULT_STR_REF
+    field.v[0] = str if str
 
     count += 1
   end
