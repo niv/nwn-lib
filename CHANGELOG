@@ -109,3 +109,10 @@ Stuart Coyle <stuart.coyle@gmail.com> (1):
 ==== 0.4.0
 Bernhard Stoeckner <elven@swordcoast.net>:
       too many to sanely list, see README for migration information
+
+==== 0.4.1
+Bernhard Stoeckner <elven@swordcoast.net> (3):
+      Field#field_value=: unbreak setting a new value
+      Scripting: add rudimentary ask method
+      scripts/clean_locstrs.rb: optimise a bit
+      0.4.1-rel
