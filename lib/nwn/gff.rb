@@ -64,7 +64,7 @@ module NWN
     FileFormatGuesses = {
       /^ut[cdeimpstw]$/ => :gff,
       /^(git|are|gic)$/ => :gff,
-      /^(mod|ifo|fac|ssf|dlg)$/ => :gff,
+      /^(mod|ifo|fac|ssf|dlg|itp)$/ => :gff,
       /^(bic)$/ => :gff,
       /^ya?ml$/ => :yaml,
       /^marshal$/ => :marshal,
