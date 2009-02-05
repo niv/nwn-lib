@@ -84,52 +84,67 @@ module NWN
       # Parses a string that represents a valid 2da definition.
       # Replaces any content this table may already have.
       def parse bytes
-        magic, empty, header, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
+        magic, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
         raise ArgumentError, "Not valid 2da: No valid header found" if
           magic != "2DA V2.0"
 
+        # strip all empty lines; they are regarded as comments
+        data.reject! {|ln| ln.strip == ""}
 
-        if empty != ""
-          $stderr.puts "Warning: second line of 2da not empty, continuing anyways."
-          data = [header].concat(data)
-          header = empty
-        end
+        header = data.shift
 
         header = Shellwords.shellwords(header.strip)
         data.map! {|line|
-          Shellwords.shellwords(line.strip)
+          r = Shellwords.shellwords(line.strip)
+          # The last cell can be without double quotes even if it contains whitespace
+          r[header.size..-1] = r[header.size..-1].join(" ") if r.size > header.size
+          r
         }
 
-        data.reject! {|line|
-          line.size == 0
-        }
+        new_row_data = []
 
-        offset = 0
+        id_offset = 0
+        idx_offset = 0
         data.each_with_index {|row, idx|
-          if (idx + offset) != row[0].to_i
-            $stderr.puts "Warning: row #{idx} has a non-matching ID #{row[0]} (while parsing #{row[0,3].join(' ')})."
-            offset += (row[0].to_i - idx)
+          id = row.shift.to_i + id_offset
+
+          raise ArgumentError, "Invalid ID in row #{idx}" unless id >= 0
+
+          # Its an empty row - this is actually valid; we'll fill it up and dump it later.
+          while id > idx + idx_offset
+            new_row_data << Row.new([""] * header.size)
+            idx_offset += 1
           end
 
-          # [1..-1]: Strip off the ID
-          data[row[0].to_i] = row = Row.new(row[1..-1])
-          row.table = self
+          # NWN automatically increments duplicate IDs - so do we.
+          while id + id_offset < idx
+            $stderr.puts "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you."
+            id_offset += 1
+            id += 1
+          end
 
-          row.map! {|cell|
+          # NWN fills in missing columns with an empty value - so do we.
+          row << "" while row.size < header.size
+
+          new_row_data << k_row = Row.new(row)
+          k_row.table = self
+
+          k_row.map! {|cell|
             cell = case cell
               when nil; nil
               when "****"; ""
               else cell
             end
           }
+
           raise ArgumentError,
-            "Row #{idx} does not have the appropriate amount of cells (has: #{row.size}, want: #{header.size}) (while parsing #{row[0,3].join(' ')})." if
-              row.size != header.size
+            "Row #{idx} has too many cells for the given header (has #{k_row.size}, want <= #{header.size})" if
+              k_row.size != header.size
         }
 
         @columns = header
-        @rows = data
+        @rows = new_row_data
       end
 
 
