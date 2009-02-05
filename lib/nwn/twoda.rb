@@ -180,6 +180,7 @@ module NWN
         id_cell_size = @rows.size.to_s.size + CELL_PAD_SPACES
         max_cell_size_by_column = @columns.map {|col|
           ([col] + by_col(col)).inject(0) {|max, cell|
+            cell = '"%s"' % cell if cell =~ /\s/
             cell.to_s.size > max ? cell.to_s.size : max
           } + CELL_PAD_SPACES
         }
@@ -199,6 +200,7 @@ module NWN
           rv << row_idx.to_s + " " * (id_cell_size - row_idx.to_s.size)
           row.each_with_index {|cell, column_idx|
             cell = "****" if cell == ""
+            cell = '"%s"' % cell if cell =~ /\s/
             rv << cell + " " * (max_cell_size_by_column[column_idx] - cell.size)
           }
           ret << rv.join("").rstrip
