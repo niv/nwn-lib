@@ -45,10 +45,20 @@ module NWN
       # An array of row arrays, without headers.
       attr_accessor :rows
 
+      # What to use to set up newlines.
+      # Alternatively, specify the environ variable NWN_LIB_2DA_NEWLINE
+      # with one of the following:
+      #  0 for windows newlines: \r\n
+      #  1 for unix newlines: \n
+      #  2 for caret return only: \r
+      # defaults to \r\n.
+      attr_accessor :newline
+
       # Create a new, empty 2da table.
       def initialize
         @columns = []
         @rows = []
+        @newline = "\r\n"
       end
 
       # Creates a new Table object from a given IO source.
@@ -193,7 +203,20 @@ module NWN
           }
           ret << rv.join("").rstrip
         }
-        ret.join("\r\n")
+
+        # Append an empty newline.
+        ret << ""
+
+        ret.join(case ENV['NWN_LIB_2DA_NEWLINE']
+          when "0"
+            "\r\n"
+          when "1"
+            "\n"
+          when "2"
+            "\r"
+          when nil
+            @newlines
+        end)
       end
     end
 

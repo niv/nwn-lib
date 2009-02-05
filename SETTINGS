@@ -78,3 +78,9 @@ The default is to keep them as-is.
 Set to a path containing all 2da files to initialize the 2da cache. This is needed for
 most interactive helpers and a few type infer gizmos.
 
+== NWN_LIB_TWODA_NEWLINE
+
+Specify the type of newline that Table#to_2da uses to join rows.
+ 0 for windows newlines: \r\n (default)
+ 1 for unix newlines: \n
+ 2 for caret return only: \r
