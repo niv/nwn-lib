@@ -18,8 +18,7 @@ $base_script = ARGV.shift
 begin
   NWN::Gff::Scripting.run_script(IO.read($base_script), nil, ARGV)
 rescue => e
-  message = e.message.split(':', 4)[3].strip
-  $stderr.puts message
+  $stderr.puts e.message
   if $backtrace
     $stderr.puts ""
     $stderr.puts "  " + e.backtrace.join("\n")
