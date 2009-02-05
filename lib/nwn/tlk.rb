@@ -17,46 +17,54 @@ module NWN
 
     # Tlk wraps a File object that points to a .tlk file.
     class Tlk
+      HEADER_SIZE = 20
+      DATA_ELEMENT_SIZE = 4 + 16 + 4 + 4 + 4 + 4 + 4
+
       # The number of strings this Tlk holds.
-      attr_reader :size
+      # attr_reader :size
 
       # The language_id of this Tlk.
       attr_reader :language
+
+      attr_reader :cache
 
       # Cereate
       def initialize io
         @io = io
 
         # Read the header
-        type, version, language_id,
+        @file_type, @file_version, language_id,
           string_count, string_entries_offset =
-            @io.read(20).unpack("A4 A4 I I I")
+            @io.read(HEADER_SIZE).unpack("A4 A4 I I I")
 
-        raise ArgumentError, "The given IO does not describe a valid tlk table" unless
-          type == "TLK" && version == "V3.0"
+        raise IOError, "The given IO does not describe a valid tlk table" unless
+          @file_type == "TLK" && @file_version == "V3.0"
 
         @size = string_count
         @language = language_id
         @entries_offset = string_entries_offset
+
+        @cache = {}
       end
 
       # Returns a TLK entry as a hash with the following keys:
-      # +:text+          string: The text
-      # +:sound+         string: A sound resref, or "" if no sound is specified.
-      # +:sound_length+  float: Length of the given resref (or 0.0 if no sound is given).
+      #  :text          string: The text
+      #  :sound         string: A sound resref, or "" if no sound is specified.
+      #  :sound_length  float: Length of the given resref (or 0.0 if no sound is given).
       #
       # id is the numeric offset within the Tlk, starting at 0.
       # The maximum is Tlk#size - 1.
       def [](id)
-        return { :text => "", :sound => "", :sound_length => 0.0 } if id == 0xffffffff
+        return { :text => "", :sound => "", :sound_length => 0.0, :volume_variance => 0, :pitch_variance => 0} if id == 0xffffffff
 
-        raise ArgumentError, "No such string ID: #{id.inspect}" if id >= @size || id < 0
-        data_element_size = 4 + 16 + 4 + 4 + 4 + 4 + 4
-        seek_to = 20 + (id) * data_element_size
+        return @cache[id] if @cache[id]
+
+        raise ArgumentError, "No such string ID: #{id.inspect}" if id >= self.highest_id || id < 0
+        seek_to = HEADER_SIZE + (id) * DATA_ELEMENT_SIZE
         @io.seek(seek_to)
-        data = @io.read(data_element_size)
+        data = @io.read(DATA_ELEMENT_SIZE)
 
-        raise ArgumentError, "Cannot read TLK file, missing string header data." if !data || data.size != 40
+        raise IOError, "Cannot read TLK file, missing string header data." if !data || data.size != 40
 
         flags, sound_resref, v_variance, p_variance, offset,
           size, sound_length = data.unpack("I A16 I I I I f")
@@ -65,13 +73,70 @@ module NWN
         @io.seek(@entries_offset + offset)
         text = @io.read(size)
 
-        raise ArgumentError, "Cannot read TLK file, missing string text data." if !text || text.size != size
+        raise IOError, "Cannot read TLK file, missing string text data." if !text || text.size != size
 
         text = flags & 0x1 > 0 ? text : ""
         sound = flags & 0x2 > 0 ? sound_resref : ""
         sound_length = flags & 0x4 > 0 ? sound_length.to_f : 0.0
 
-        { :text => text, :sound => sound, :sound_length => sound_length }
+        @cache[id] = {
+          :text => text, :sound => sound, :sound_length => sound_length,
+          :volume_variance => v_variance, :pitch_variance => p_variance
+        }
+      end
+
+      # Add a new entry to this Tlk and return the strref given to it.
+      # To override existing entries, use tlk[][:text] = ".."
+      def add text, sound = "", sound_length = 0.0, v_variance = 0, p_variance = 0
+        next_id = self.highest_id + 1
+        $stderr.puts "put in cache: #{next_id}"
+        @cache[next_id] = {:text => text, :sound => sound, :sound_length => 0.0, :volume_variance => v_variance, :pitch_variance => p_variance}
+        next_id
+      end
+
+      # Return the highest ID in this Tlk table.
+      def highest_id
+        highest_cached = @cache.keys.sort[-1] || 0
+        @size - 1 > highest_cached ? @size - 1 : highest_cached
+      end
+
+      # Write this Tlk to +io+.
+      # Take care not to write it to the same IO object you are reading from.
+      def write_to io
+        text_block = []
+        offsets = []
+        offset = 0
+        for i in 0..self.highest_id do
+          entry = self[i]
+          offsets[i] = offset
+          text_block << entry[:text]
+          offset += entry[:text].size
+        end
+        text_block = text_block.join("")
+
+        header = [
+          @file_type, @file_version,
+          @language,
+          self.highest_id + 1, HEADER_SIZE + (self.highest_id + 1) * DATA_ELEMENT_SIZE
+        ].pack("A4 A4 I I I")
+
+        entries = []
+        for i in 0..self.highest_id do
+          entry = self[i]
+          text, sound, sound_length = entry[:text], entry[:sound], entry[:sound_length]
+          flags = 0
+          flags |= 0x01 if text.size > 0
+          flags |= 0x02 if sound.size > 0
+          flags |= 0x04 if sound_length > 0.0
+          entries << [
+            flags, sound, entry[:volume_variance], entry[:pitch_variance], offsets[i], text.size, sound_length
+          ].pack("I a16 I I I I f")
+        end
+        entries = entries.join("")
+
+        io.write(header)
+        io.write(entries)
+        io.write(text_block)
       end
     end
 
