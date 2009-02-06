@@ -9,6 +9,14 @@ for help, it should be self-explanatory.
 
 There are some usage examples on the CHEATSHEET.
 
+== nwn-erf
+
+nwn-erf can pack/unpack all mod, hak, erf and nwm files.
+
+Type
+  nwn-erf -h
+for help.
+
 == nwn-irb
 
 nwn-irb is a interactive shell preloading all relevant libs, and optionally

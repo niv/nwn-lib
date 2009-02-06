@@ -1,0 +1,184 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'optparse'
+require 'nwn/all'
+require 'tempfile'
+
+$action = nil
+$verbose = false
+$type = 'ERF'
+$allow_duplicates = false
+$descriptions = {}
+
+begin OptionParser.new do |o|
+  o.banner = "Usage: nwn-erf <options> [FILEs] ..."
+
+  o.on "-f FILE", "Specify archive name (instead of stdin/stdout)" do |file|
+    $file = file
+  end
+
+  o.separator " "
+
+  o.on "-t", "--list", "List erf contents. Use -v for attributes." do
+    $action = :t
+  end
+  o.on "-c", "--create", "Create a new archive with the given files as contents." do
+    $action = :c
+  end
+  o.on "-x", "--extract", "Extract all files to current directory." do
+    $action = :x
+  end
+  o.on "-a", "--add", "Add files to the given archive.",
+      "This is an expensive operation, a full archive rebuild is required." do
+    $action = :a
+  end
+  o.on "-r", "--remove", "Remove files from the given archive.",
+      "This is an expensive operation, a full archive rebuild is required." do
+    $action = :r
+  end
+
+  o.separator " "
+
+  o.on "-D TEXT", "--description", "Set a description TEXT",
+      "Only useful with -c, -a, -r." do |text|
+    $descriptions[0] = text
+  end
+
+  o.on "--type TYPE", "Specify 3 or 4-letter archive type (defaults to 'HAK')" do |t|
+    $type = t
+  end
+
+  o.on "-H" , "--hak", "Shorthand for --type HAK" do
+    $type = 'HAK'
+  end
+
+  o.on "-E" , "--erf", "Shorthand for --type ERF (default)" do
+    $type = 'ERF'
+  end
+
+  o.on "-M" , "--mod", "Shorthand for --type MOD" do
+    $type = 'MOD'
+  end
+
+  o.separator " "
+  o.separator "Hacks:"
+
+  o.on "--allow-duplicates", "Allow packaging of duplicate filenames" do
+    $allow_duplicates = true
+  end
+
+  o.separator " "
+
+  o.on_tail "-h", "--help", "Show this crud" do
+    $stderr.puts o
+    exit 1
+  end
+
+  o.on_tail "-v", "--verbose", "be verbose" do |v|
+    $verbose = v
+  end
+end.parse!
+rescue => ee
+  $stderr.puts ee.to_s
+  $stderr.puts ee.backtrace.join("\n")
+  exit 1
+end
+
+
+def input filename = nil
+  if $file.nil?
+    yield $stdin
+  else
+    File.open(filename || $file, "r") {|f| yield f}
+  end
+end
+
+def output mode = "w", filename = nil
+  if $file.nil?
+    yield $stdout
+  else
+    File.open(filename || $file, mode) {|f| yield f}
+  end
+end
+
+case $action
+  when :t
+    input {|f|
+      erf = NWN::Erf::Erf.new(f)
+      $stderr.puts "# %-4s %14s %16s %-10s %s" % %w{type offset size date filename} if $verbose
+      erf.content.each {|c|
+        if !$verbose
+          $stderr.puts "%s" % [c.filename]
+        else
+          $stderr.puts "%4d %16d %16d %10s %s" % [
+            c.res_type, c.offset, c.size,
+            Date.ordinal(1900 + erf.year, erf.day_of_year).strftime("%Y-%m-%d"),
+            c.filename
+          ]
+        end
+      }
+    }
+
+  when :x
+    input {|f|
+      erf = NWN::Erf::Erf.new(f)
+      erf.content.each {|c|
+        $stderr.puts "%s" % [c.filename] if $verbose
+        File.open(c.filename, "w") {|ff|
+          ff.write(c.get)
+        }
+      }
+    }
+
+  when :c
+    erf = NWN::Erf::Erf.new
+    erf.file_type = $type if $type
+
+    if $descriptions
+      erf.localized_strings.merge! $descriptions
+      erf.description_str_ref = 0
+    end
+
+    ARGV.each {|a|
+      $stderr.puts File.basename(a) if $verbose
+      raise ArgumentError, "#{File.basename(a)} already present in erf." if
+        !$allow_duplicates && erf.has?(a)
+      erf.add a
+    }
+    output {|f| erf.write_to(f) }
+
+  when :a, :r
+    input do |infile|
+      erf = NWN::Erf::Erf.new(infile)
+
+      if $descriptions
+        erf.localized_strings.merge! $descriptions
+        erf.description_str_ref = 0
+      end
+
+      ARGV.each {|arg|
+        case $action
+          when :a
+            raise ArgumentError, "#{File.basename(arg)} already present in erf." if
+              !$allow_duplicates && erf.has?(arg)
+            erf.add arg
+
+          when :r
+            erf.content.reject! {|con|
+              con.filename.downcase == arg.downcase
+            }
+        end
+      }
+
+      tempfile = Tempfile.new("nwn-erf", File.dirname($file || "."))
+      output("w", tempfile.path) do |f|
+        erf.write_to(f)
+      end
+
+      FileUtils.mv(tempfile.path, $file) unless $file.nil?
+      tempfile.close
+    end
+
+  else
+    raise ArgumentError, "You need to specify a mode of operation (try -h)."
+end
