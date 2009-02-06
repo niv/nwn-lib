@@ -130,3 +130,9 @@ Bernhard Stoeckner <elven@swordcoast.net> (10):
       add *.itp to GuessFormats
       Tlk: basic talktable editing and writing
       0.4.2-rel
+
+=== 0.4.3
+Bernhard Stoeckner <elven@swordcoast.net> (2):
+      NWN::Erf: basic reading/writing library + tar-like binary
+      add tlk.rb to nwn/all.rb
+      0.4.3-rel
