@@ -1,5 +1,6 @@
 require 'nwn/twoda'
 require 'nwn/gff'
+require 'nwn/tlk'
 require 'nwn/erf'
 require 'nwn/yaml'
 require 'nwn/kivinen'
