@@ -36,7 +36,7 @@ begin OptionParser.new do |o|
   end
   o.on "-k", "--outfile-format FORMAT", [:in, :none] + NWN::Gff::FileFormats,
       "Output format (#{([:none, :in] + NWN::Gff::FileFormats).join(', ')})",
-      "(default: in - same as input)" do |f|
+      "(default: in when stdout, try to guess based on extension otherwise)" do |f|
     $options[:outformat] = f
   end
 
@@ -107,7 +107,13 @@ if :auto == $options[:informat]
     $options[:informat]
 end
 
-$options[:outformat] = $options[:informat] if :in == $options[:outformat]
+if $options[:outfile] == "-"
+  $options[:outformat] = $options[:informat] if :in == $options[:outformat]
+elsif :in == $options[:outformat]
+  $options[:outformat] = NWN::Gff.guess_file_format($options[:outfile])
+  fail "Cannot guess outfile format from filename, specify with -k." unless
+    $options[:outformat]
+end
 
 vputs "Reading: #{$options[:infile]}"
 data_in = $options[:infile] == '-' ? $stdin.read : IO.read($options[:infile])
