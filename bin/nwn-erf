@@ -10,6 +10,9 @@ $type = 'ERF'
 $allow_duplicates = false
 $descriptions = {}
 
+# tar-compat mode: first argument is options if no dash is specified.
+ARGV[0] = "-" + ARGV[0] if ARGV.size > 0 && ARGV[0][0] != ?-
+
 begin OptionParser.new do |o|
   o.banner = "Usage: nwn-erf <options> [FILEs] ..."
 
