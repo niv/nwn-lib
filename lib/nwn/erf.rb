@@ -237,8 +237,7 @@ module NWN
 
         locstrs = locstr.unpack("V V/a*" * locstr_count)
         locstrs.each_slice(3) {|lid, strsz, str|
-          raise IOError,
-            "Cannot read localized strings table: string size not met (want: #{strsz}, got #{str.size})" if
+          $stderr.puts "Expected string size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
               str.size != strsz
           @localized_strings[lid] = str
         }
