@@ -76,6 +76,9 @@ module NWN::Gff::Scripting
   #
   # Returns the object that satisfies the asked-for conditions,
   # or nil if none can be given.
+  #
+  # If only a filename/string is given and no further arguments,
+  # the read object will be returned as-is.
   def satisfy *what
     if $standalone
       fn = what.shift
@@ -95,6 +98,8 @@ module NWN::Gff::Scripting
       obj = self
     end
 
+    return obj if what.size == 1
+
     what.each {|w|
       case w
         when Class, Module
@@ -108,7 +113,6 @@ module NWN::Gff::Scripting
               return obj if obj.field_type.to_sdowncase == w.to_s.downcase
           end
       end
-
     }
 
     return nil
