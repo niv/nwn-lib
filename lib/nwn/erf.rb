@@ -235,13 +235,16 @@ module NWN
         raise IOError, "Cannot read locstr list" unless
           locstr.size == locstr_size
 
-        locstrs = locstr.unpack("V V/a*" * locstr_count)
-        locstrs.each_slice(3) {|lid, strsz, str|
+        for lstr in 0...locstr_count do
+          lid, strsz = locstr.unpack("V V")
+          str = locstr.unpack("a#{strsz}")[0]
           $stderr.puts "Expected string size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
-              str.size != strsz
+            strsz != str.size
           @localized_strings[lid] = str
-        }
-
+          locstr = locstr[8 + str.size .. -1]
+          raise IOError, "locstr table does not contain enough entries (want: #{locstr_count}, got: #{lstr + 1})" if locstr.nil? &&
+            lstr + 1 < locstr_count
+        end
 
         keylist_entry_size = @filename_length + 4 + 2 + 2
         keylist = @io.read(keylist_entry_size * entry_count)
