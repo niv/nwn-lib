@@ -16,6 +16,14 @@ module NWN::Gff::Field
   # This is set internally by Gff::Reader on load.
   attr_accessor :parent
 
+  # Create a new NWN::Gff::Field
+  def self.new label, type, value
+    s = {}.extend(self)
+    s['label'], s['type'], s['value'] = label, type, value
+    s.extend_meta_classes
+    s
+  end
+
   def field_type
     self['type']
   end
