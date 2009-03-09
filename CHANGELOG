@@ -136,3 +136,14 @@ Bernhard Stoeckner <elven@swordcoast.net> (2):
       NWN::Erf: basic reading/writing library + tar-like binary
       add tlk.rb to nwn/all.rb
       0.4.3-rel
+
+=== 0.4.4
+Bernhard Stoeckner (7):
+      bin/nwn-gff: guess outfile format based on extension
+      erf: do not fail on misaligned strings, print warning instead
+      bin/nwn-erf: compat mode with tar, options can be without dashes
+      API: Add some helpers for creating Gff elements
+      scripting: satisfy: return object as-is when no conditions are given
+      bin/nwn-erf: -vt: move column type before filename
+      erf: fix loctable reading breaking on more than one locstr
+      0.4.4-rel
