@@ -237,6 +237,11 @@ module NWN
       end
     end
 
+    # An alias for TwoDA::Cache.get
+    def self.get name
+      NWN::TwoDA::Cache.get(name)
+    end
+
     # This is a simple 2da cache.
     module Cache
       @_cache = {}
