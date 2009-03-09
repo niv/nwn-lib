@@ -13,10 +13,10 @@ end.parse!
 
 fail "Not enough arguments (try -h)." unless ARGV.size > 0
 
-$base_script = ARGV.shift
+$SCRIPT = ARGV.shift
 
 begin
-  NWN::Gff::Scripting.run_script(IO.read($base_script), nil, ARGV)
+  NWN::Gff::Scripting.run_script(IO.read($SCRIPT), nil, ARGV)
 rescue => e
   $stderr.puts e.message
   if $backtrace

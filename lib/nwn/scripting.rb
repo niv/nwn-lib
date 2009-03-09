@@ -47,7 +47,7 @@ module NWN::Gff::Scripting
     if $standalone
       log "warn: no need to stop_output on standalone scripts"
     else
-      log "#{$base_script}: not emitting any data."
+      log "#{$SCRIPT}: not emitting any data."
     end
     $stop_output = true
   end
@@ -124,9 +124,9 @@ module NWN::Gff::Scripting
   # will prevent you from doing logging yourself.
   def log *args
     if $options
-      $stderr.puts [$base_script, " on ", $options[:infile], ": ", *args].join("")
+      $stderr.puts [$SCRIPT, " on ", $options[:infile], ": ", *args].join("")
     else
-      $stderr.puts [$base_script, ": ", *args].join("")
+      $stderr.puts [$SCRIPT, ": ", *args].join("")
     end
   end
 
@@ -150,7 +150,7 @@ module NWN::Gff::Scripting
     ret = nil
     while true
       y object
-      $stderr.print File.basename($base_script) + ": " + question + " "
+      $stderr.print File.basename($SCRIPT) + ": " + question + " "
       ret = $stdin.gets
       ret = ret.rstrip
 

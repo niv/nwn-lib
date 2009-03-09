@@ -34,6 +34,9 @@ way, simply call them with nwn-dsl.
 DSL stands for domain-specific-language by the way, and this is quite
 a stretch, considering your scripts will be written in plain old ruby.
 
+The currently-running script name is in $SCRIPT - you can override this
+to print a custom name in, for example, +log+.
+
 === API
 
 There are various helpers available to scripts. See NWN::Gff::Scripting
