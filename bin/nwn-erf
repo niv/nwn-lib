@@ -83,7 +83,6 @@ begin OptionParser.new do |o|
 end.parse!
 rescue => ee
   $stderr.puts ee.to_s
-  $stderr.puts ee.backtrace.join("\n")
   exit 1
 end
 
@@ -108,15 +107,15 @@ case $action
   when :t
     input {|f|
       erf = NWN::Erf::Erf.new(f)
-      $stderr.puts "# %-4s %14s %16s %-10s %s" % %w{type offset size date filename} if $verbose
+      $stderr.puts "# %14s %16s %-10s %-4s %s" % %w{offset size date type filename} if $verbose
       erf.content.each {|c|
         if !$verbose
           $stderr.puts "%s" % [c.filename]
         else
-          $stderr.puts "%4d %16d %16d %10s %s" % [
-            c.res_type, c.offset, c.size,
+          $stderr.puts "%16d %16d %10s %4d %s" % [
+            c.offset, c.size,
             Date.ordinal(1900 + erf.year, erf.day_of_year).strftime("%Y-%m-%d"),
-            c.filename
+            c.res_type, c.filename
           ]
         end
       }
