@@ -1,5 +1,19 @@
 require 'shellwords'
 
+class Integer
+  def xp_to_level
+    NWN::TwoDA.get('exptable').rows.each {|row|
+      level, exp = row.Level.to_i, row.XP.to_i
+      return level - 1 if exp > self
+    }
+    return nil
+  end
+
+  def level_to_xp
+    NWN::TwoDA.get('exptable').by_col("XP", self - 1).to_i
+  end
+end
+
 module NWN
   module TwoDA
 
