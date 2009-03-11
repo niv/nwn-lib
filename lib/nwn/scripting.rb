@@ -118,15 +118,25 @@ module NWN::Gff::Scripting
     return nil
   end
 
+  # You can call this to provide a progress indicator, if your script is long-running.
+  # the calculated percentage will be prefixed before each log message.
+  #
+  # +position+   The number of items in the work queue finished.
+  # +total_size+ The total size of the work queue, defaults to ARGV.size.
+  def progress position, total_size = nil
+    total_size ||= ARGV.size
+    $PERCENTAGE_DONE = position.to_f / total_size.to_f * 100
+  end
 
   # Log a friendly message to stderr.
   # Use this instead of puts, since SAFE levels greater than 0
   # will prevent you from doing logging yourself.
   def log *args
+    perc = $PERCENTAGE_DONE.nil? ? "" : " (%d%%)" % [ $PERCENTAGE_DONE.to_i ]
     if $options
-      $stderr.puts [$SCRIPT, " on ", $options[:infile], ": ", *args].join("")
+      $stderr.puts [$SCRIPT, perc, " on ", $options[:infile], ": ", *args].join("")
     else
-      $stderr.puts [$SCRIPT, ": ", *args].join("")
+      $stderr.puts [$SCRIPT, perc, ": ", *args].join("")
     end
   end
 
