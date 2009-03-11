@@ -14,6 +14,7 @@ module NWN::Gff::Scripting
     $code = code
     $argv = arguments
     $standalone = run_on.nil?
+    $satisfy_loaded = {}
     run_on ||= Sandbox.new
 
     $script_obj_hash = run_on.hash
@@ -25,6 +26,24 @@ module NWN::Gff::Scripting
       end
     }
     $script_obj_hash != run_on.hash
+  end
+
+  # Save the given object if it was loaded via want/need
+  def save object
+    fn, hash = $satisfy_loaded[object.object_id]
+    if fn
+      if hash != object.hash
+        File.open(fn, "w") {|f|
+          NWN::Gff.write(f, NWN::Gff.guess_file_format(fn), object)
+        }
+        log "saved #{object.to_s} -> #{fn}"
+      else
+        log "not saving #{fn}: not modified"
+      end
+    else
+      raise ArgumentError,
+        "#save: object #{object.to_s} was not loaded via want/need/satisfy, cannot save"
+    end
   end
 
   # This script only runs for the following conditions (see #satisfy).
@@ -94,6 +113,8 @@ module NWN::Gff::Scripting
           #  "object to read from (usually the first script argument)."
       end
       obj = NWN::Gff.read(io, NWN::Gff.guess_file_format(fn))
+      log "satisfied #{fn} -> #{obj.to_s}"
+      $satisfy_loaded[obj.object_id] = [fn, obj.hash]
 
       return obj if what.size == 1
     else
