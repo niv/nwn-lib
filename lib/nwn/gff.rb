@@ -72,7 +72,7 @@ module NWN
     }
 
     def self.guess_file_format(filename)
-      extension = File.extname(filename)[1..-1]
+      extension = File.extname(filename.downcase)[1..-1]
       FileFormatGuesses[FileFormatGuesses.keys.select {|key| extension =~ key}[0]]
     end
 
