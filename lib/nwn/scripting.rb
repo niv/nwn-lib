@@ -187,7 +187,11 @@ module NWN::Gff::Scripting
 
       break if object.nil? || case object
         when Hash
-          object.keys.index(ret) || (ret != "" && object.keys.index(ret.to_i))
+          if object.keys.index(ret) || (ret != "" && object.keys.index(ret.to_i))
+            ret = object[ret] || (ret != "" && object[ret.to_i])
+          else
+            nil
+          end
         when Regexp
           ret =~ match
         when Fixnum
