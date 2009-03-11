@@ -94,11 +94,11 @@ module NWN::Gff::Scripting
           #  "object to read from (usually the first script argument)."
       end
       obj = NWN::Gff.read(io, NWN::Gff.guess_file_format(fn))
+
+      return obj if what.size == 1
     else
       obj = self
     end
-
-    return obj if what.size == 1
 
     what.each {|w|
       case w
