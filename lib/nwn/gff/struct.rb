@@ -82,4 +82,8 @@ module NWN::Gff::Struct
 
     super
   end
+
+  def to_s
+    "<NWN::Gff::Struct #{self.data_type}/#{self.data_version}, #{self.keys.size} fields>"
+  end
 end
