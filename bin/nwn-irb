@@ -38,8 +38,7 @@ def read file
   nil
 end
 
-include NWN::Gff
-include NWN::TwoDA
+include NWN
 
 if $file
   read($file)
