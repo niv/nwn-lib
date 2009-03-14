@@ -170,6 +170,37 @@ module NWN
         column = column_name_to_id column
         column.nil? ? @rows[row.to_i] : (@rows[row.to_i].nil? ? nil : @rows[row.to_i][column])
       end
+      alias_method :[], :by_row
+
+
+      # Set a cell or row value.
+      #
+      # [+row+]     The row to operate on (starts at 0)
+      # [+column+]  Optional column name or index.
+      # [+value+]   New value, either a full row, or a single value.
+      #
+      # Examples:
+      #  TwoDA.get('portraits')[1, "BaseResRef"] = "hi"
+      #  TwoDA.get('portraits')[1] = %w{1 2 3 4 5 6}
+      def []= row, column = nil, value = nil
+        if value.nil?
+          value = column
+          raise ArgumentError, "Expected array for setting a whole row" unless value.is_a?(Array)
+        end
+
+        if value.is_a?(Array)
+          raise ArgumentError, "Given array size does not match table columns (got: #{value.size}, want: #{self.columns.size})" unless value.size == self.columns.size
+          new_row = Row.new
+          new_row.concat(value.map {|x| x.to_s})
+
+          @rows[row] = new_row
+
+        else
+          col = column_name_to_id column
+          @rows[row][col] = value
+
+        end
+      end
 
 
       # Retrieve data by column.
