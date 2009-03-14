@@ -269,6 +269,8 @@ module NWN
       end
 
       # Get the 2da file with the given name. +name+ is without extension.
+      # This being a cache, modifications to the returned Table will be reflected
+      # in further calls to Cache.get.
       def self.get(name)
         raise Exception,
           "You need to set up the cache first through the environment variable NWN_LIB_2DA_LOCATION." unless
