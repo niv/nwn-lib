@@ -147,3 +147,21 @@ Bernhard Stoeckner (7):
       bin/nwn-erf: -vt: move column type before filename
       erf: fix loctable reading breaking on more than one locstr
       0.4.4-rel
+
+=== 0.4.5
+Bernhard Stoeckner (14):
+      bin/nwn-irb: fix help scriptname
+      nwn-dsl: $SCRIPT is the currently-running script
+      TwoDA: add .get alias
+      Scripting/log: provide #progress to indicate progress within scripts
+      guess_file_name: consider non-lowercase extensions
+      nwn-gff: $SCRIPT fix
+      nwn-irb: include NWN namespace
+      Namespace clobbering: Integer provides xp_to_level, level_to_xp
+      Gff::Struct: add #to_s
+      scripting: satisfy: return object as-is when no conditions are given (fix)
+      Scripting: add support to .#save files that were loaded with satisfy/need/want
+      Scripting: ask: fix return value of hash and arrays
+      TwoDA: add disclaimer for Cache references
+      TwoDA: add Table#[], Table#[]=
+
