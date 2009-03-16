@@ -100,8 +100,8 @@ module NWN
       def parse bytes
         magic, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
-        raise ArgumentError, "Not valid 2da: No valid header found" if
-          magic != "2DA V2.0"
+        raise ArgumentError, "Not valid 2da: No valid header found (got: #{magic[0,20].inspect}..)" if
+          magic !~ /^2DA\s+V2.0$/
 
         # strip all empty lines; they are regarded as comments
         data.reject! {|ln| ln.strip == ""}
