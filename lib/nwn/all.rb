@@ -1,4 +1,5 @@
 require 'nwn/twoda'
+require 'nwn/res'
 require 'nwn/gff'
 require 'nwn/tlk'
 require 'nwn/erf'
