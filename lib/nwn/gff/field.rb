@@ -83,29 +83,62 @@ module NWN::Gff::Field
       field_value.is_a?(field_value_klass)
   end
 
+  # Validate if this field value is within the bounds of the set type.
+  def valid?
+    NWN::Gff::Field.valid_for? self.v, self.t
+  end
+
+  # Validate this field, and raise an Excpetion if not valid.
+  def validate
+    valid? or raise NWN::Gff::GffError,
+      "#{self.path rescue $!.to_s + '/' + self.v.label}: " +
+        "value '#{self.v.inspect}' not valid for type '#{self.t.inspect}'"
+  end
+
   # Validate if +value+ is within bounds of +type+.
   def self.valid_for? value, type
     case type
-      when :char, :byte
-        value.is_a?(Fixnum)
-      when :short, :word
-        value.is_a?(Fixnum)
-      when :int, :dword
-        value.is_a?(Fixnum)
-      when :int64, :dword64
-        value.is_a?(Fixnum)
+      when :byte, :char
+        value.is_a?(Integer) && value >= 0 && value <= 255
+
+      when :short
+        value.is_a?(Integer) && value >= -0x8000 && value <= 0x7fff
+      when :word
+        value.is_a?(Integer) && value >= 0 && value <= 0xffff
+
+      when :int
+        value.is_a?(Integer) && value >= -0x80000000 && value <= 0x7fffffff
+      when :dword
+        value.is_a?(Integer) && value >= 0 && value <= 0xffffffff
+
+      when :int64
+        value.is_a?(Integer) && value >= -0x800000000000 && value <= 0x7fffffffffff
+      when :dword64
+        value.is_a?(Integer) && value >= 0 && value <= 0xffffffffffff
+
       when :float, :double
         value.is_a?(Float)
+
       when :resref
-        value.is_a?(String) && (1..16).member?(value.size)
+        value.is_a?(String) && (0..16).member?(value.size)
+
       when :cexostr
         value.is_a?(String)
+
       when :cexolocstr
+        value.is_a?(Hash) &&
+          value.keys.reject {|x| x.is_a?(Fixnum) && x >= 0 }.size == 0 &&
+          value.values.reject {|x| x.is_a?(String) }.size == 0
+
+      when :struct
+        value.is_a?(Hash)
+
+      when :list
         value.is_a?(Array)
-      when :struct, :list
-        value.is_a?(Array)
+
       when :void
-        true
+        value.is_a?(String)
+
       else
         false
     end

@@ -214,6 +214,7 @@ class NWN::Gff::Reader
 
     # We extend all fields and field_values with matching classes.
     field.extend_meta_classes
+    field.validate
 
     [label, field]
   end

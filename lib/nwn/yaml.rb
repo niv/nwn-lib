@@ -246,6 +246,8 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
               }
               el.extend(NWN::Gff::Field)
               el.extend_meta_classes
+              el.validate
+
               el.parent = st
             }
             st
@@ -279,6 +281,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
 
 
     element.extend_meta_classes
+    element.validate
 
     struct[label] = element.taint
   }
