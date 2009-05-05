@@ -6,9 +6,6 @@ require 'nwn/all'
 $backtrace = false
 OptionParser.new do |o|
   o.banner = "Usage: nwn-dsl [options] <script> -- [arguments to script]"
-  o.on "-b", "--backtrace", "Show a backtrace on error" do
-    $backtrace = true
-  end
 end.parse!
 
 fail "Not enough arguments (try -h)." unless ARGV.size > 0
@@ -19,9 +16,7 @@ begin
   NWN::Gff::Scripting.run_script(IO.read($SCRIPT), nil, ARGV)
 rescue => e
   $stderr.puts e.message
-  if $backtrace
-    $stderr.puts ""
-    $stderr.puts "  " + e.backtrace.join("\n")
-  end
+  $stderr.puts ""
+  $stderr.puts "  " + e.backtrace.join("\n")
   exit 1
 end
