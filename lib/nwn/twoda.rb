@@ -127,18 +127,23 @@ module NWN
 
           # Its an empty row - this is actually valid; we'll fill it up and dump it later.
           while id > idx + idx_offset
+            $stderr.puts "Warning: missing ID at #{id - id_offset}, fixing that for you."
             new_row_data << Row.new([""] * header.size)
             idx_offset += 1
           end
 
           # NWN automatically increments duplicate IDs - so do we.
-          while id + id_offset < idx
+          while id < idx + idx_offset
             $stderr.puts "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you."
             id_offset += 1
             id += 1
           end
 
           # NWN fills in missing columns with an empty value - so do we.
+          $stderr.puts "Warning: row #{id} (real: #{id - id_offset}) misses " +
+            "#{header.size - row.size} columns at the end, fixed" if
+              row.size < header.size
+
           row << "" while row.size < header.size
 
           new_row_data << k_row = Row.new(row)
@@ -146,7 +151,7 @@ module NWN
 
           k_row.map! {|cell|
             cell = case cell
-              when nil; nil
+              when nil; raise "Bug in parser: nil-value for cell"
               when "****"; ""
               else cell
             end
