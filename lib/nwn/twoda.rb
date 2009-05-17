@@ -97,6 +97,17 @@ module NWN
 
       # Parses a string that represents a valid 2da definition.
       # Replaces any content this table may already have.
+      # This will cope with all misformatting in the same way
+      # that NWN1 itself does. NWN2 employs slightly different
+      # parsing rules, and may or may not be compatible in the
+      # fringe cases.
+      #
+      # Will raise an ArgumentError if the given +bytes+ do
+      # not contain a valid 2DA header, or the file is so badly
+      # misshaped that it will not ever be parsed correctly by NWN1.
+      #
+      # Will complain about everything mismatching it finds
+      # on $stderr if $DEBUG is set (-d).
       def parse bytes
         magic, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
@@ -121,9 +132,11 @@ module NWN
         id_offset = 0
         idx_offset = 0
         data.each_with_index {|row, idx|
-          id = row.shift.to_i + id_offset
+          id = row.shift
 
-          raise ArgumentError, "Invalid ID in row #{idx}" unless id >= 0
+          $stderr.puts "Warning: invalid ID in line #{idx}: #{id.inspect}" if $DEBUG && $id !~ /^\d+$/
+
+          id = id.to_i + id_offset
 
           # Its an empty row - NWN strictly numbers by counted lines - then so do we.
           while id > idx + idx_offset
@@ -156,9 +169,10 @@ module NWN
             end
           }
 
-          raise ArgumentError,
-            "Row #{idx} has too many cells for the given header (has #{k_row.size}, want <= #{header.size})" if
-              k_row.size != header.size
+          $stderr.puts "Warning: row #{idx} has too many cells (has #{k_row.size}, want <= #{header.size})" if
+            $DEBUG && k_row.size > header.size
+
+          k_row.pop while k_row.size > header.size
         }
 
         @columns = header
