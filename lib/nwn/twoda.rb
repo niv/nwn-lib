@@ -125,10 +125,9 @@ module NWN
 
           raise ArgumentError, "Invalid ID in row #{idx}" unless id >= 0
 
-          # Its an empty row - this is actually valid; we'll fill it up and dump it later.
+          # Its an empty row - NWN strictly numbers by counted lines - then so do we.
           while id > idx + idx_offset
             $stderr.puts "Warning: missing ID at #{id - id_offset}, fixing that for you."
-            new_row_data << Row.new([""] * header.size)
             idx_offset += 1
           end
 
