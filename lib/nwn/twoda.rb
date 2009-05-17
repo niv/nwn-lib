@@ -281,7 +281,7 @@ module NWN
           when "2"
             "\r"
           when nil
-            @newlines
+            @newline
         end)
       end
     end
