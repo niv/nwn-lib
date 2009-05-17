@@ -1,6 +1,8 @@
 require 'shellwords'
 
 class Integer
+  # Returns the level that this amount experience resolves to.
+  # Depends on a set-up TwoDA::Cache, and reads from <tt>exptable</tt>.
   def xp_to_level
     NWN::TwoDA.get('exptable').rows.each {|row|
       level, exp = row.Level.to_i, row.XP.to_i
@@ -9,6 +11,8 @@ class Integer
     return nil
   end
 
+  # Returns the amount of experience that this level resolves to.
+  # Depends on a set-up TwoDA::Cache, and reads from <tt>exptable</tt>.
   def level_to_xp
     NWN::TwoDA.get('exptable').by_col("XP", self - 1).to_i
   end

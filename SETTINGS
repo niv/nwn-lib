@@ -1,6 +1,6 @@
 There are various environment variables you can configure to adjust various parts of nwn-lib.
 
-<b>All of them are optional!</b>
+<b>All of them are optional, and, in fact, can waste your time!</b>
 
 Under linux, just add them to your shell environment (usually .bashrc), like so:
 

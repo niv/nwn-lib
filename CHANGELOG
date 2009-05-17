@@ -164,4 +164,6 @@ Bernhard Stoeckner (14):
       Scripting: ask: fix return value of hash and arrays
       TwoDA: add disclaimer for Cache references
       TwoDA: add Table#[], Table#[]=
+      0.4.5-rel
+
 

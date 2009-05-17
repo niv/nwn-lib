@@ -4,34 +4,40 @@ This package provides a library for reading, changing, and writing common file f
 
 They should work with NWN2 just as well, since the file format specifications did not change.
 
+
+=== Features of nwn-lib
+
+==== nwn-lib reads and writes the following file formats (hopefully bug-free!), both with an API and useful command-line tools:
+
+* GFF 3.2 (are, git, gic, dlg, itp, ifo, jrl, fac, ssf, ut*, among others)
+* ERF (mod, hak, erf, among others)
+* 2DA V2.0
+* TLK
+
+==== nwn-lib can read and write the following representations of GFF data:
+
+* kivinen-style ("gffprint.pl") presentation of data
+* yaml presentation of data
+* ruby-native marshalling of gff data
+
+==== Also in the box:
+
+* shell scripts and tools to simplify your life (see BINARIES)
+* extensive developer API
+* a powerful get-out-of-my-way scripting system for data transformation (see SCRIPTING)
+
+
 === Upgrade from 0.3.6 to 0.4.x
 
 With the release of 0.4.0, the API changed significantly. Previous yaml dumps made with 0.3.x are INCOMPATIBLE, and so are all scripts.
 I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see BINARIES).
 
-=== A word on version numbers
-
-Please consider all version releases below 1.0.0 to be unstable, even though the code is fully functional - further API changes may not be avoidable between major revisions - such as is the case with 0.3 -> 0.4.
-
-=== Features of nwn-lib
-
-* a feature-complete parser and generator of valid GFF V3.2 data
-* shell scripts and tools to simplify your life (see BINARIES)
-* kivinen-style ("gffprint.pl") presentation of data
-* yaml presentation of data
-* ruby-native marshalling of gff data
-* extensive developer API
-* a powerful get-out-of-my-way scripting system for data transformation (see SCRIPTING)
-
-Also in the box:
-
-* a CHEATSHEET showing off some cool tricks
-* some gadgetry for working with 2da files
 
 === Attention Unicode/UTF-users
 
 ruby 1.8 does not support character sets natively, and as such nwn-gff-irb will <b>FAIL</b> to encode non-standard characters properly on non-latin1 shells.
 This will be worked around in a future release until the release of ruby 1.9, which will provide native charset support.
+
 
 === Quickstart
 
@@ -44,4 +50,16 @@ And do the following in a script of your own devising:
   require 'rubygems'
   require 'nwn/all'
 
+Also, Read BINARIES.
+
 For nwn-lib scripts, see SCRIPTING.
+
+For using the developer API, I suggest you start reading NWN::Gff::Struct.
+
+=== Latest code & developer contact
+
+The latest source is available through git[http://git.swordcoast.net/?p=nwn/nwn-lib.git;a=summary].
+
+All stable releases are tagged properly.
+
+You can reach me via email[mailto:elven@swordcoast.net].

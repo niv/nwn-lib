@@ -1,9 +1,23 @@
 ==== Convert all item files in the current directory to yaml and back
 
- for x in *.uti; do
-     nwn-gff-convert -i"$x" -o"$x.yml" -lg -ky
- done
+  for x in *.uti; do
+    nwn-gff -i"$x" -o"$x.yml"
+  done
 
- for x in *.uti.yml; do
-     nwn-gff-convert -i"$x" -o"$(basename $x .yml)" -ly -kg
- done
+  for x in *.uti.yml; do
+    nwn-gff -i"$x" -o"$(basename $x .yml)"
+  done
+
+==== A Makefile that rebuilds only changed resources
+
+This can be done with a GNU Makefile too, with the added benefit that
+it will keep track of changes automagically and only rebuild those resources
+that you have changed (saving you a lot of time).
+
+  yml = $(wildcard *.yml)
+  gff = $(basename $(yml))
+
+  all: $(gff)
+
+  % : %.yml
+      nwn-gff -i $< -o $@

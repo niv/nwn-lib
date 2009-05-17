@@ -4,6 +4,8 @@ module NWN
   module Erf
     ValidTypes = %w{ERF HAK MOD}
 
+    # This reads and writes NWN::Resources::Container
+    # as valid ERF binary data.
     class Erf < NWN::Resources::Container
 
       attr_accessor :localized_strings

@@ -1,7 +1,7 @@
 # A Field wraps a GFF label->value pair, providing:
 # * +.field_type+ describing the field type (e.g. :int)
 # * +.field_value+ holding the value of this Field
-
+#
 # and, if loaded by Gff::Reader or through YAML:
 # * +.field_label+ holding the label
 # * +.parent+ holding the struct this Field is child of.

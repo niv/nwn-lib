@@ -3,16 +3,21 @@
 module NWN::Gff::Struct
   DEFAULT_DATA_VERSION = "V3.2"
 
-  # The file-type this struct represents.
-  # This is usually the file extension for root structs,
-  # and nil for sub-structs.
+  # Each Gff::Struct has a data_type, which describes the type of data the struct contains.
+  # For top-level structs, this equals the data type written to the GFF file ("UTI",
+  # for example); for sub structures, this is usually the top-level data type + the
+  # field label ("UTI/PropertiesList", for example).
+  #
+  # This is set for completeness' sake, but is not required to save the struct.
+  # Scripts could use this, for example, to reliably re-attach a Item within
+  # /ItemList/ somewhere else, or export it as .uti.
   attr_accessor :data_type
 
   # The file version. Usually "V3.2" for root structs,
   # and nil for sub-structs.
   attr_accessor :data_version
 
-  # GFF struct type
+  # GFF struct type. The default is 0xffffffff.
   attr_accessor :struct_id
 
   # The field this struct is value of.
