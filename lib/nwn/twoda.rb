@@ -127,13 +127,13 @@ module NWN
 
           # Its an empty row - NWN strictly numbers by counted lines - then so do we.
           while id > idx + idx_offset
-            $stderr.puts "Warning: missing ID at #{id - id_offset}, fixing that for you."
+            $stderr.puts "Warning: missing ID at #{id - id_offset}, fixing that for you." if $DEBUG
             idx_offset += 1
           end
 
           # NWN automatically increments duplicate IDs - so do we.
           while id < idx + idx_offset
-            $stderr.puts "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you."
+            $stderr.puts "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you." if $DEBUG
             id_offset += 1
             id += 1
           end
@@ -141,7 +141,7 @@ module NWN
           # NWN fills in missing columns with an empty value - so do we.
           $stderr.puts "Warning: row #{id} (real: #{id - id_offset}) misses " +
             "#{header.size - row.size} columns at the end, fixed" if
-              row.size < header.size
+              row.size < header.size if $DEBUG
 
           row << "" while row.size < header.size
 
