@@ -121,10 +121,7 @@ module NWN
 
         header = Shellwords.shellwords(header.strip)
         data.map! {|line|
-          r = Shellwords.shellwords(line.strip)
-          # The last cell can be without double quotes even if it contains whitespace
-          r[header.size..-1] = r[header.size..-1].join(" ") if r.size > header.size
-          r
+          Shellwords.shellwords(line.strip)
         }
 
         new_row_data = []
