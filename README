@@ -22,7 +22,6 @@ Please consider all version releases below 1.0.0 to be unstable, even though the
 * ruby-native marshalling of gff data
 * extensive developer API
 * a powerful get-out-of-my-way scripting system for data transformation (see SCRIPTING)
-* guessing of field-types and -values for shorter plaintext data dumps (see TYPE_AND_VALUE_INFERRING)
 
 Also in the box:
 

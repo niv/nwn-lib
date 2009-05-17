@@ -4,67 +4,7 @@ There are various environment variables you can configure to adjust various part
 
 Under linux, just add them to your shell environment (usually .bashrc), like so:
 
-  export NWN_LIB_INFER_DATA_FILE=/usr/lib/ruby/gems/1.8/gems/nwn-lib-0.4.0/data/gff-common-nwn1.yaml
-
-
-== NWN_LIB_INFER_DATA_FILE
-
-The path to the type/value inferring data file. See TYPE_VALUE_INFERRING for a definition.
-
-Please be advised that inferring support for YAML is <b>EXPERIMENTAL</b> and may result in
-<b>module and gff file corruption</b>.
-
-== NWN_LIB_DONT_COMPACT_FIELDS
-
-Set to non-nil ("1" will do) to prevent nwn-lib from compacting scalar fields into a more-readable
-(but still fully parseable) format, if type inferring data is available.
-
-=== Without compacting
-  ItemList:
-    value:
-    - !nwn-lib.elv.es,2008-12/struct
-      __data_type: UTC/ItemList
-      __struct_id: 0
-      InventoryRes: {value: herb053}
-  PaletteID: {value: 6}
-  SkillList: [{value: 0}, {value: 0}, {value: 0}, {value: 0}, ...
-
-=== With compacting
-  ItemList:
-  - !nwn-lib.elv.es,2008-12/struct
-    __data_type: UTC/ItemList
-    InventoryRes: herb053
-  PaletteID: 6
-  SkillList: [0, 0, 0, 0, 0, 0, 2, 0, 0, 0 ...
-
-
-== NWN_LIB_DONT_COMPACT_LIST_STRUCTS
-
-Setting this to non-nil ("1" will do) will prevent nwn-lib from compacting lists that contain
-structs, if type inferring data is available.
-
-=== Without compacting
-  SkillList:
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 2}
-  - !nwn-lib.elv.es,2008-12/struct {__data_type: UTC/SkillList, Rank: 0}
-  ...
-
-=== With compacting
-  SkillList: [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, ...
-
-
-== NWN_LIB_CLEAR_KNOWN_VALUES
-
-Set to non-nil ("1" will do) to make nwn-lib omit fields that resolve to default values
-as configured in $NWN_LIB_INFER_DATA_FILE.
-
-The default is to not omit known-value data fields.
+  export NWN_LIB_FILTER_EMPTY_EXOLOCSTR=1
 
 == NWN_LIB_FILTER_EMPTY_EXOLOCSTR
 
@@ -76,7 +16,7 @@ The default is to keep them as-is.
 == NWN_LIB_2DA_LOCATION
 
 Set to a path containing all 2da files to initialize the 2da cache. This is needed for
-most interactive helpers and a few type infer gizmos.
+most interactive helpers and a few gizmos, and, of course, for TwoDA::Cache.
 
 == NWN_LIB_TWODA_NEWLINE
 

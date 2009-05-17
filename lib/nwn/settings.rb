@@ -1,7 +1,3 @@
-if ENV['NWN_LIB_INFER_DATA_FILE'] && ENV['NWN_LIB_INFER_DATA_FILE'] != ""
-  NWN::Gff.load_struct_defaults(ENV['NWN_LIB_INFER_DATA_FILE'])
-end
-
 if ENV['NWN_LIB_2DA_LOCATION'] && ENV['NWN_LIB_2DA_LOCATION'] != ""
   NWN::TwoDA::Cache.setup ENV['NWN_LIB_2DA_LOCATION']
 end

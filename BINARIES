@@ -43,6 +43,6 @@ Usage is simple: just pass all old .yml files to the script, it will convert the
 in-place (read: make a backup!).
 
 This uses nwn-gff-convert and nwn-gff, so all environment variables are taken into
-consideration. You will want to point NWN_LIB_INFER_DATA_FILE to something useful.
+consideration.
 
 Backup and testing is ADVISED!
