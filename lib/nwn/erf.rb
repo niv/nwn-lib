@@ -22,7 +22,7 @@ module NWN
         @file_type, @file_version = "ERF", "V1.0"
         @year = Time.now.year
         @description_str_ref = 0xffffffff
-        @day_of_year = Time.now.yday # strftime("%j").to_i
+        @day_of_year = Time.now.yday
         read_from io if io
       end
 
@@ -46,42 +46,40 @@ module NWN
 
         if @file_version == "V1.0"
           @filename_length = 16
-#        elsif version == "V1.1"
-#          @filename_length = 32
         else
           raise IOError, "Invalid erf version: #{@file_version}"
         end
 
-        raise IOError, "key list not after locstr list" unless
-          offset_to_keys == offset_to_locstr + locstr_size
-
-        raise IOError, "Offset to locstr list is not after header" if
-          offset_to_locstr != 160
-
+        @io.seek(offset_to_locstr)
         locstr = @io.read(locstr_size)
-        raise IOError, "Cannot read locstr list" unless
-          locstr.size == locstr_size
 
         for lstr in 0...locstr_count do
+          raise IOError, "locstr table does not contain enough entries or locstr_size is too small" if
+            locstr.nil? || locstr.size < 8
+
           lid, strsz = locstr.unpack("V V")
           str = locstr.unpack("x8 a#{strsz}")[0]
-          $stderr.puts "Expected string size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
-            strsz != str.size
+          raise IOError,
+            "Expected locstr size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
+              strsz != str.size
+
           @localized_strings[lid] = str
           locstr = locstr[8 + str.size .. -1]
-          raise IOError, "locstr table does not contain enough entries (want: #{locstr_count}, got: #{lstr + 1})" if locstr.nil? &&
-            lstr + 1 < locstr_count
         end
 
         keylist_entry_size = @filename_length + 4 + 2 + 2
+        @io.seek(offset_to_keys)
         keylist = @io.read(keylist_entry_size * entry_count)
+        raise IOError, "keylist too short" if keylist.size != keylist_entry_size * entry_count
         keylist = keylist.unpack("A16 V v v" * entry_count)
         keylist.each_slice(4) {|resref, res_id, res_type, unused|
           @content << NWN::Resources::ContentObject.new(resref, res_type, @io)
         }
 
         resourcelist_entry_size = 4 + 4
+        @io.seek(offset_to_res)
         resourcelist = @io.read(resourcelist_entry_size * entry_count)
+        raise IOError, "resource list too short" if resourcelist.size != resourcelist_entry_size * entry_count
         resourcelist = resourcelist.unpack("I I" * entry_count)
         _index = -1
         resourcelist.each_slice(2) {|offset, size|
