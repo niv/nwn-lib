@@ -21,6 +21,7 @@ module NWN::Gff::Field
     s = {}.extend(self)
     s['label'], s['type'], s['value'] = label, type, value
     s.extend_meta_classes
+    s.validate
     s
   end
 
@@ -62,7 +63,12 @@ module NWN::Gff::Field
   def path
     raise NWN::Gff::GffError, "field not bound to a parent" unless @parent
     parent_path = @parent.path
-    parent_path + "/" + field_label
+    if @parent.element && @parent.element.field_type == :list
+      idx = @parent.element.field_value.index(@parent)
+      parent_path + "[#{idx}]/" + field_label
+    else
+      parent_path + "/" + field_label
+    end
   end
 
   # This extends this field object and its' value with the
@@ -91,7 +97,7 @@ module NWN::Gff::Field
   # Validate this field, and raise an Excpetion if not valid.
   def validate
     valid? or raise NWN::Gff::GffError,
-      "#{self.path rescue $!.to_s + '/' + self.v.label}: " +
+      "#{self.path rescue $!.to_s + '/' + self.l}: " +
         "value '#{self.v.inspect}' not valid for type '#{self.t.inspect}'"
   end
 
