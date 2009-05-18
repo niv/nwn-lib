@@ -166,4 +166,40 @@ Bernhard Stoeckner (14):
       TwoDA: add Table#[], Table#[]=
       0.4.5-rel
 
+=== 0.4.6
+Bernhard Stoeckner <elven@swordcoast.net> (26):
+      bin/nwn-dsl: always print backtraces
+      tests: add rspec stub for later test introduction
+      Field: complete valid_for?, add checks in readers, add rspec
+      Field: #path prints proper list indices
+      ResourceManager: generic implementation as per bioware docs
+      TwoDA: read 2da header with arbitary spaces between magic and version
+      TwoDA: make id mismatch parsing more robust
+      TwoDA: nwn does not fill in missing row IDs
+      TwoDA: fix typo preventing #to_2da with NWN_LIB_2DA_NEWLINE absent
+      TwoDA: only print to $stderr when -d/$DEBUG is set
+      TwoDA: do not raise error on misshaped ID column, add documentation
+      TwoDA: do not compact multiple nonquoted cells in last column
+      TwoDA: add specs
+      Erf: skip over lid and strz to read locstrs correctly
+      Erf: seek to offsets instead of depending on constants, handle IOErrors
+      Erf: add specs
+      Tlk: fix reading last strref in a tlk
+      Tlk: add specs
+      Cexolocstr: add specs
+      Struct: .new accepts a block
+      Struct: add specs
+      Gff: add specs
+      feature kill: remove type/value inferring, NWN_LIB_INFER_*
+      Revert "add env setting NWN_LIB_FILTER_EMPTY_EXOLOCSTR"
+      Rakefile/rdoc: use mislav-hanna if available
+      update all documentation to reflect current situation
+      0.4.6-rel
 
+      This release changes a few features; most prominent of all is the
+      infer mechanism - it is removed completely for sanity reasons.
+
+      Also, quite a few bugfixes found their way into this release, thanks
+      to the newly-added specs.
+
+      Please browse the commit log for a full list of changes.
