@@ -59,7 +59,7 @@ module NWN
 
         return @cache[id] if @cache[id]
 
-        raise ArgumentError, "No such string ID: #{id.inspect}" if id >= self.highest_id || id < 0
+        raise ArgumentError, "No such string ID: #{id.inspect}" if id > self.highest_id || id < 0
         seek_to = HEADER_SIZE + (id) * DATA_ELEMENT_SIZE
         @io.seek(seek_to)
         data = @io.read(DATA_ELEMENT_SIZE)
