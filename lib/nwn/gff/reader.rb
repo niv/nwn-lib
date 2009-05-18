@@ -166,8 +166,7 @@ class NWN::Gff::Reader
         }
         len = total_size + 4
         # Filter out empty strings.
-        exostr.reject! {|k,v| v.nil? || v.empty?} if
-          ENV['NWN_LIB_FILTER_EMPTY_EXOLOCSTR']
+        exostr.reject! {|k,v| v.nil? || v.empty?}
         exostr.taint
 
       when :void
