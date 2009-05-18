@@ -64,7 +64,7 @@ module NWN
 
         for lstr in 0...locstr_count do
           lid, strsz = locstr.unpack("V V")
-          str = locstr.unpack("a#{strsz}")[0]
+          str = locstr.unpack("x8 a#{strsz}")[0]
           $stderr.puts "Expected string size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
             strsz != str.size
           @localized_strings[lid] = str
