@@ -43,11 +43,15 @@ module NWN::Gff::Struct
   # Create a new struct.
   # Usually, you can leave out data_type and data_version for non-root structs,
   # because that will be guess-inherited based on the existing associations.
+  #
+  # You can pass a block to this method, which will receive the newly-created
+  # Struct as the only argument.
   def self.new struct_id = 0xffffffff, data_type = nil, data_version = nil
     s = {}.extend(self)
     s.struct_id = struct_id
     s.data_type = data_type
     s.data_version = data_version
+    yield(s) if block_given?
     s
   end
 
@@ -58,17 +62,26 @@ module NWN::Gff::Struct
   #  some_struct.add_field 'ID', :byte, 5
   # is equivalent to:
   #  some_struct.add_byte 'ID', 5
+  #
+  # You can pass a block to this method, which will receive the newly-created
+  # Field as an argument.
+  #
+  # This allows for code like this:
+  #  Gff::Struct.new(0) do |s|
+  #    s.add_byte "Byte", 5
+  #    s.add_list "Some_List", [] do |l|
+  #      l.v << Gff::Struct.new ...
+  #      ..
+  #    end
+  #  end
   def add_field label, type, value, &block
     self[label] = NWN::Gff::Field.new(label, type, value)
     self[label].parent = self
-    if block_given?
-      yield(self[label])
-    end
+    yield(self[label]) if block_given?
     self[label]
   end
 
-  #:nodoc:
-  def method_missing meth, *av, &block
+  def method_missing meth, *av, &block # :nodoc:
     if meth.to_s =~ /^add_(.+)$/
       if NWN::Gff::Types.index($1.to_sym)
         av.size == 2 or super
