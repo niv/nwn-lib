@@ -1,7 +1,5 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-WELLFORMED_GFF = IO.read(File.dirname(__FILE__) + "/wellformed_gff.binary").freeze
-
 describe "Gff::*" do
 
   def wellformed_verify binary

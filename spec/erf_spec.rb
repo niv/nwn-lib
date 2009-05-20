@@ -1,39 +1,10 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-WELLFORMED_ERF = ([
-  "HAK", "V1.0",
-  locstr_count = 1, locstr_size = 14,
-  entry_count = 3,
-  offset_to_locstr = 160,
-  offset_to_keys = offset_to_locstr + locstr_size,
-  offset_to_res  = offset_to_locstr + locstr_size + entry_count * 24,
-
-  100, 126, # year, dayofyear
-  0xdeadbeef, "" #description strref, 116 bytes 0-padding
-].pack("a4 a4 VV VV VV VV V  a116") + [
-  0, 6, "abcdef" # one locstr
-].pack("V V a*") + [
-  "resref", 0, 10, 0, # keylist: resref.txt, id = 0
-  "help",   1,  1, 0, # keylist: help.bmp, id = 1
-  "yegods", 2,  4, 0, # keylist: yegods.wav, id = 2
-].pack("a16 V v v" * entry_count) + [
-  offset_to_res + entry_count * 8, 6,  # offset, size
-  offset_to_res + entry_count * 8 + 6, 4,  # offset, size
-  offset_to_res + entry_count * 8 + 6 + 4, 6,  # offset, size
-].pack("II" * entry_count) + [
-  "resref", "help", "yegods"
-].pack("a* a* a*")).freeze
-
-
-
-describe "Erf::Erf" do
-
+describe "Erf::Erf", :shared => true do
   def wellformed_verify binary, expect_locstr = true
-    t = nil
     t = Erf::Erf.new(StringIO.new binary)
 
     t.file_type.should == "HAK"
-    t.file_version.should == "V1.0"
     if expect_locstr
       t.localized_strings.should == {0 => "abcdef"}
     else
@@ -56,32 +27,42 @@ describe "Erf::Erf" do
   end
 
   it "reads wellformed ERF containers" do
-    wellformed_verify WELLFORMED_ERF
+    wellformed_verify @erf
   end
 
   it "reproduces correct ERF binary data" do
-    t = Erf::Erf.new(StringIO.new WELLFORMED_ERF)
+    t = Erf::Erf.new(StringIO.new @erf)
     io = StringIO.new
     t.write_to(io)
     io.seek(0)
-    proc {
-      wellformed_verify io.read
-    }.should_not raise_error IOError
+    wellformed_verify io.read
   end
 
   it "does not read ERF with locstr_size = 0 and locstr_count > 0" do
-    b = WELLFORMED_ERF.dup
-    b[12,4] = [0].pack("V")
+    @erf[12,4] = [0].pack("V")
     proc {
-      wellformed_verify b
+      wellformed_verify @erf
     }.should raise_error IOError
   end
 
   it "reads ERF with locstr_size > 0 and locstr_count = 0" do
-    b = WELLFORMED_ERF.dup
-    b[8,4] = [0].pack("V")
-    proc {
-      wellformed_verify b, false
-    }.should_not raise_error IOError
+    @erf[8,4] = [0].pack("V")
+    wellformed_verify @erf, false
   end
+end
+
+describe "Erf V1.0" do
+  before do
+    @erf = WELLFORMED_ERF.dup
+  end
+
+  it_should_behave_like "Erf::Erf"
+end
+
+describe "Erf V1.1" do
+  before do
+    @erf = WELLFORMED_ERF_11.dup
+  end
+
+  it_should_behave_like "Erf::Erf"
 end

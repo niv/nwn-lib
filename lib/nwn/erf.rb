@@ -30,6 +30,18 @@ module NWN
 
     private
 
+      def filename_length version
+        case version
+          when "V1.0"
+            16
+          when "V1.1"
+            32
+        else
+          raise IOError, "Invalid ERF version: #{version}"
+        end
+      end
+
+
       def read_from io
         header = @io.read(160)
         raise IOError, "Cannot read header: Not a erf file?" unless
@@ -46,11 +58,7 @@ module NWN
         raise IOError, "Cannot read erf stream: invalid type #{@file_type.inspect}" unless
           NWN::Erf::ValidTypes.index(@file_type)
 
-        if @file_version == "V1.0"
-          @filename_length = 16
-        else
-          raise IOError, "Invalid erf version: #{@file_version}"
-        end
+        fnlen = filename_length @file_version
 
         @io.seek(offset_to_locstr)
         locstr = @io.read(locstr_size)
@@ -69,11 +77,11 @@ module NWN
           locstr = locstr[8 + str.size .. -1]
         end
 
-        keylist_entry_size = @filename_length + 4 + 2 + 2
+        keylist_entry_size = fnlen + 4 + 2 + 2
         @io.seek(offset_to_keys)
         keylist = @io.read(keylist_entry_size * entry_count)
         raise IOError, "keylist too short" if keylist.size != keylist_entry_size * entry_count
-        keylist = keylist.unpack("A16 V v v" * entry_count)
+        keylist = keylist.unpack("A#{fnlen} V v v" * entry_count)
         keylist.each_slice(4) {|resref, res_id, res_type, unused|
           @content << NWN::Resources::ContentObject.new(resref, res_type, @io)
         }
@@ -95,8 +103,13 @@ module NWN
 
       # Writes this Erf to a io stream.
       def write_to io
+        fnlen = filename_length @file_version
+
         locstr = @localized_strings.map {|x| [x[0], x[1].size, x[1]].pack("V V a*") }.join("")
-        keylist = @content.map {|c| [c.resref, @content.index(c), c.res_type, 0].pack("a16 V v v") }.join("")
+        keylist = @content.map {|c|
+          NWN.log_debug "truncating filename #{c.resref}, longer than #{fnlen}" if c.resref.size > fnlen
+          [c.resref, @content.index(c), c.res_type, 0].pack("a#{fnlen} V v v")
+        }.join("")
         reslist = @content.map {|c| [c.offset, c.size].pack("V V") }.join("")
 
         offset_to_locstr = 160

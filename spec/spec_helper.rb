@@ -22,3 +22,54 @@ GffFieldValidations = {
   :short => [[-0x8000, 0x7fff], [-0x8001, 0x7fff + 1]],
   :word => [[0, 0xffff], [-1, 0xffff + 1]],
 }.freeze
+
+WELLFORMED_GFF_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "wellformed_gff.binary").freeze
+WELLFORMED_GFF = IO.read(WELLFORMED_GFF_PATH).freeze
+
+WELLFORMED_ERF = ([
+  "HAK", "V1.0",
+  locstr_count = 1, locstr_size = 14,
+  entry_count = 3,
+  offset_to_locstr = 160,
+  offset_to_keys = offset_to_locstr + locstr_size,
+  offset_to_res  = offset_to_locstr + locstr_size + entry_count * (16 + 4 + 2 + 2),
+
+  100, 126, # year, dayofyear
+  0xdeadbeef, "" #description strref, 116 bytes 0-padding
+].pack("A4 A4 VV VV VV VV V  a116") + [
+  0, 6, "abcdef" # one locstr
+].pack("V V a*") + [
+  "resref", 0, 10, 0, # keylist: resref.txt, id = 0
+  "help",   1,  1, 0, # keylist: help.bmp, id = 1
+  "yegods", 2,  4, 0, # keylist: yegods.wav, id = 2
+].pack("a16 V v v" * entry_count) + [
+  offset_to_res + entry_count * 8, 6,  # offset, size
+  offset_to_res + entry_count * 8 + 6, 4,  # offset, size
+  offset_to_res + entry_count * 8 + 6 + 4, 6,  # offset, size
+].pack("II" * entry_count) + [
+  "resref", "help", "yegods"
+].pack("a* a* a*")).freeze
+
+WELLFORMED_ERF_11 = ([
+  "HAK", "V1.1",
+  locstr_count = 1, locstr_size = 14,
+  entry_count = 3,
+  offset_to_locstr = 160,
+  offset_to_keys = offset_to_locstr + locstr_size,
+  offset_to_res  = offset_to_locstr + locstr_size + entry_count * (32 + 4 + 2 + 2),
+
+  100, 126, # year, dayofyear
+  0xdeadbeef, "" #description strref, 116 bytes 0-padding
+].pack("A4 A4 VV VV VV VV V  a116") + [
+  0, 6, "abcdef" # one locstr
+].pack("V V a*") + [
+  "resref", 0, 10, 0, # keylist: resref.txt, id = 0
+  "help",   1,  1, 0, # keylist: help.bmp, id = 1
+  "yegods", 2,  4, 0, # keylist: yegods.wav, id = 2
+].pack("a32 V v v" * entry_count) + [
+  offset_to_res + entry_count * 8, 6,  # offset, size
+  offset_to_res + entry_count * 8 + 6, 4,  # offset, size
+  offset_to_res + entry_count * 8 + 6 + 4, 6,  # offset, size
+].pack("II" * entry_count) + [
+  "resref", "help", "yegods"
+].pack("a* a* a*")).freeze
