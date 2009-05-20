@@ -1,22 +1,5 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-WELLFORMED_TLK = ([
-  "TLK", "V3.0",
-  language_id = 0,
-  string_count = 5,
-  offset_to_str = 21,
-].pack("a4 a4 I I I") + [ # string data table
-  # flags, soundresref, volvariance, pitchvariance, offset_to_str, sz, soundlen
-  0x1, "", 0, 0, -1 + 40 * string_count, 1, 0.0,
-  0x3, "textsnd", 0, 0, -1 + 40 * string_count + 1, 2, 0.0,
-  0x7, "textsndlen", 0, 0, -1 + 40 * string_count + 3, 3, 2.0,
-  0x1, "", 0, 0, -1 + 40 * string_count + 6, 4, 0.0,
-  0x2, "justsnd", 0, 0, -1 + 40 * string_count + 10, 0, 0.0,
-].pack("I A16 I I I I f" * string_count) + [
-  "1", "22", "333", "4444"
-].join("")).freeze
-
-
 describe "Tlk::Tlk" do
 
   def wellformed_verify binary

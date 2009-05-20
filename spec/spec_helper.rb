@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'tempfile'
 
 Thread.abort_on_exception = true
 
@@ -73,3 +74,87 @@ WELLFORMED_ERF_11 = ([
 ].pack("II" * entry_count) + [
   "resref", "help", "yegods"
 ].pack("a* a* a*")).freeze
+
+WELLFORMED_TLK = ([
+  "TLK", "V3.0",
+  language_id = 0,
+  string_count = 5,
+  offset_to_str = 21,
+].pack("a4 a4 I I I") + [ # string data table
+  # flags, soundresref, volvariance, pitchvariance, offset_to_str, sz, soundlen
+  0x1, "", 0, 0, -1 + 40 * string_count, 1, 0.0,
+  0x3, "textsnd", 0, 0, -1 + 40 * string_count + 1, 2, 0.0,
+  0x7, "textsndlen", 0, 0, -1 + 40 * string_count + 3, 3, 2.0,
+  0x1, "", 0, 0, -1 + 40 * string_count + 6, 4, 0.0,
+  0x2, "justsnd", 0, 0, -1 + 40 * string_count + 10, 0, 0.0,
+].pack("I A16 I I I I f" * string_count) + [
+  "1", "22", "333", "4444"
+].join("")).freeze
+
+TWODA_WELLFORMED = <<-EOT
+2DA V2.0
+
+    Col1  Col2
+0   a     b
+1   c     d
+EOT
+
+TWODA_MISALIGNED = <<-EOT
+2DA V2.0
+
+   Col1
+0  a
+1  b
+2  c
+3  d
+4  e
+6  f
+2  g
+7  h
+EOT
+
+TWODA_WHITESPACE = <<-EOT
+2DA   V2.0  
+
+
+       Col1
+0   4
+EOT
+
+TWODA_MISSING_COLUMN = <<-EOT
+2DA V2.0
+
+    Col1   Col2  Col3
+0   a1     b1    c1
+1   a2     b2
+EOT
+
+TWODA_TOO_MANY_CELLS = <<-EOT
+2DA V2.0
+
+    Col1
+0   a1     b1    c1
+1   a2     b2
+2   "a2     b2    c1"
+EOT
+
+
+TWODA_EMPTY_AND_QUOTES = <<-EOT
+2DA V2.0
+
+    Col1  Col2
+0   ****  b
+1   c     d
+2   ""    f
+3   "g g" h
+EOT
+
+TWODA_MISSING_ID = <<-EOT
+2DA V2.0
+
+   Col1
+   a
+0  b
+1  c
+2  d
+EOT
