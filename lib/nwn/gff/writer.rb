@@ -1,10 +1,25 @@
 class NWN::Gff::Writer
-  include NWN
   include NWN::Gff
+
+  private_class_method :new
 
   attr_reader :bytes
 
-  def initialize(gff, data_type = nil)
+  # Takes a NWN::Gff::Gff object and dumps it to +io+,
+  # including the header.
+  # If +io+ is nil, return the raw bytes, otherwise
+  # the number of bytes written.
+  def self.dump(gff, io = nil, data_type = nil)
+    ret = new(gff, data_type).bytes
+    if io
+      io.write(ret)
+      ret.size
+    else
+      ret
+    end
+  end
+
+  def initialize(gff, data_type = nil) #:nodoc:
     @gff = gff
     @data_type = data_type
 
@@ -16,12 +31,6 @@ class NWN::Gff::Writer
     @field_data = ""
 
     write_all
-  end
-
-  # Takes a NWN::Gff::Gff object and dumps it as raw bytes,
-  # including the header.
-  def self.dump(gff, data_type = nil)
-    self.new(gff, data_type).bytes
   end
 
 private

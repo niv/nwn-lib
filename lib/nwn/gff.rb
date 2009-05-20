@@ -94,7 +94,7 @@ module NWN
     def self.write(io, format, data)
       case format
         when :gff
-          io.print NWN::Gff::Writer.dump(data)
+          NWN::Gff::Writer.dump(data, io)
         when :yaml
           io.puts data.to_yaml
         when :marshal

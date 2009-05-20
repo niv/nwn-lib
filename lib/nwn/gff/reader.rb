@@ -4,22 +4,26 @@ class NWN::Gff::Reader
 
   attr_reader :root_struct
 
-  # Create a new Reader with the given +bytes+ and immediately parse it.
-  # This is not needed usually; use Reader.read instead.
-  def initialize bytes
-    @bytes = bytes
+  private_class_method :new
 
-    read_all
+  # Create a new Reader with the given +io+ and immediately parse it.
+  def self.read io
+    t = new(io)
+    t.root_struct
   end
 
-  # Reads +bytes+ as gff data and returns a NWN::Gff:Gff object.
-  def self.read bytes
-    self.new(bytes).root_struct
+  def initialize io #:nodoc:
+    @io = io
+    read_all
   end
 
   private
 
   def read_all
+    header = @io.read(160)
+    raise IOError, "Cannot read header" unless header &&
+      header.size == 160
+
     type, version,
     struct_offset, struct_count,
     field_offset, field_count,
@@ -27,9 +31,9 @@ class NWN::Gff::Reader
     field_data_offset, field_data_count,
     field_indices_offset, field_indices_count,
     list_indices_offset, list_indices_count =
-      @bytes.unpack("a4a4 VV VV VV VV VV VV")
+      header.unpack("a4a4 VV VV VV VV VV VV")
 
-    raise GffError, "Unknown version #{@version}; not a gff?" unless
+    raise GffError, "Unknown version #{version}; not a gff?" unless
       version == "V3.2"
 
     raise GffError, "struct offset at wrong place, not a gff?" unless
@@ -39,12 +43,35 @@ class NWN::Gff::Reader
     field_len  = field_count * 16
     label_len  = label_count * 16
 
-    @structs = @bytes[struct_offset, struct_len].unpack("V*")
-    @fields  = @bytes[field_offset, field_len].unpack("V*")
-    @labels  = @bytes[label_offset, label_len].unpack("A16" * label_count)
-    @field_data = @bytes[field_data_offset, field_data_count]
-    @field_indices = @bytes[field_indices_offset, field_indices_count].unpack("V*")
-    @list_indices = @bytes[list_indices_offset, list_indices_count].unpack("V*")
+    @io.seek(struct_offset)
+    @structs = @io.read(struct_len)
+    raise IOError, "cannot read structs" unless @structs && @structs.size == struct_len
+    @structs = @structs.unpack("V*")
+
+    @io.seek(field_offset)
+    @fields  = @io.read(field_len)
+    raise IOError, "cannot read fields" unless @fields && @fields.size == field_len
+    @fields  = @fields.unpack("V*")
+
+    @io.seek(label_offset)
+    @labels  = @io.read(label_len)
+    raise IOError, "cannot read labels" unless @labels && @labels.size == label_len
+    @labels = @labels.unpack("A16" * label_count)
+
+    @io.seek(field_data_offset)
+    @field_data = @io.read(field_data_count)
+    raise IOError, "cannot read field_data" unless @field_data && @field_data.size == field_data_count
+
+    @io.seek(field_indices_offset)
+    @field_indices = @io.read(field_indices_count)
+    raise IOError, "cannot read field_indices" unless @field_indices && @field_indices.size == field_indices_count
+    @field_indices = @field_indices.unpack("V*")
+
+    @io.seek(list_indices_offset)
+    @list_indices = @io.read(list_indices_count)
+    raise IOError, "cannot read list_indices" unless @list_indices && @list_indices.size == list_indices_count
+    @list_indices = @list_indices.unpack("V*")
+
     @root_struct = read_struct 0, type.strip, version
   end
 

@@ -103,7 +103,7 @@ module NWN::Gff::Scripting
       fn = what.shift
       io = case fn
         when String
-          IO.read(fn)
+          File.new(fn, "r")
         when IO
           fn
         else
