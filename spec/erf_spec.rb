@@ -57,6 +57,12 @@ describe "Erf V1.0" do
   end
 
   it_should_behave_like "Erf::Erf"
+
+  it "returns unknown for unknown-N file types" do
+    @erf[174 + 16 + 4, 2] = [9995].pack("v")
+    t = Erf::Erf.new(StringIO.new @erf)
+    t.content[0].filename.should == "resref.unknown-9995"
+  end
 end
 
 describe "Erf V1.1" do
@@ -65,4 +71,10 @@ describe "Erf V1.1" do
   end
 
   it_should_behave_like "Erf::Erf"
+
+  it "returns unknown for unknown-N file types" do
+    @erf[174 + 32 + 4, 2] = [9995].pack("v")
+    t = Erf::Erf.new(StringIO.new @erf)
+    t.content[0].filename.should == "resref.unknown-9995"
+  end
 end

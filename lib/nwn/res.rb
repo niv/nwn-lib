@@ -13,7 +13,7 @@ module NWN
       def self.new_from filename, io = nil
         filename = File.expand_path(filename)
         base = File.basename(filename).split(".")[0..-2].join(".").downcase
-        ext = File.extname(filename)[1..-1].downcase
+        ext = File.extname(filename)[1..-1].downcase rescue ""
         res_type = NWN::Resources::Extensions[ext] or raise ArgumentError,
           "Not a valid extension: #{ext.inspect} (while packing #{filename})"
 
@@ -52,7 +52,7 @@ module NWN
 
       # Get the canonical filename of this object.
       def filename
-        @resref + "." + self.extension
+        @resref + "." + (self.extension || "unknown-#{@res_type}")
       end
 
       # Get the extension of this object.
