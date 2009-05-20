@@ -192,6 +192,6 @@ if $options[:backup] && FileTest.exists?($options[:outfile])
   FileUtils.cp($options[:outfile], bdest) if bdest
 end
 
-write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'w')
+write_to = $options[:outfile] == '-' ? $stdout : File.open($options[:outfile], 'wb')
 
 NWN::Gff.write(write_to, $options[:outformat], data_in)

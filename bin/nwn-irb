@@ -18,7 +18,7 @@ def save destination = nil
 
   File.expand_path(destination ||= $file)
   $stderr.puts "Saving to `#{destination}' .."
-  File.open(destination, "w") {|d|
+  File.open(destination, "wb") {|d|
     NWN::Gff.write(d, NWN::Gff.guess_file_format(destination), $gff)
   }
   $stderr.puts "saved."

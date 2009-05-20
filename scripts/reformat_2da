@@ -4,6 +4,6 @@
 ARGV.each {|f|
   log "Working on #{f} .."
   t = TwoDA::Table.parse(IO.read(f))
-  File.open(f, "w") {|n| n.puts t.to_2da }
+  File.open(f, "wb") {|n| n.puts t.to_2da }
   log "done."
 }

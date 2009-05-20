@@ -98,15 +98,15 @@ def input filename = nil
   if $file.nil?
     yield $stdin
   else
-    File.open(filename || $file, "r") {|f| yield f}
+    File.open(filename || $file, "rb") {|f| yield f}
   end
 end
 
-def output mode = "w", filename = nil
+def output filename = nil
   if $file.nil?
     yield $stdout
   else
-    File.open(filename || $file, mode) {|f| yield f}
+    File.open(filename || $file, "wb") {|f| yield f}
   end
 end
 
@@ -133,7 +133,7 @@ case $action
       erf = NWN::Erf::Erf.new(f)
       erf.content.each {|c|
         $stderr.puts "%s" % [c.filename] if $verbose
-        File.open(c.filename, "w") {|ff|
+        output(c.filename) {|ff|
           ff.write(c.get)
         }
       }
@@ -181,7 +181,7 @@ case $action
       }
 
       tempfile = Tempfile.new("nwn-erf", File.dirname($file || "."))
-      output("w", tempfile.path) do |f|
+      output(tempfile.path) do |f|
         erf.write_to(f)
       end
 

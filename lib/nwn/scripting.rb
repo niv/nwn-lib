@@ -33,7 +33,7 @@ module NWN::Gff::Scripting
     fn, hash = $satisfy_loaded[object.object_id]
     if fn
       if hash != object.hash
-        File.open(fn, "w") {|f|
+        File.open(fn, "wb") {|f|
           NWN::Gff.write(f, NWN::Gff.guess_file_format(fn), object)
         }
         log "saved #{object.to_s} -> #{fn}"
