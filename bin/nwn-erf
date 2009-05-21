@@ -114,12 +114,12 @@ case $action
   when :t
     input {|f|
       erf = NWN::Erf::Erf.new(f)
-      $stderr.puts "# %14s %16s %-10s %-4s %s" % %w{offset size date type filename} if $verbose
+      puts "# %14s %16s %-10s %-4s %s" % %w{offset size date type filename} if $verbose
       erf.content.each {|c|
         if !$verbose
-          $stderr.puts "%s" % [c.filename]
+          puts "%s" % [c.filename]
         else
-          $stderr.puts "%16d %16d %10s %4d %s" % [
+          puts "%16d %16d %10s %4d %s" % [
             c.offset, c.size,
             Date.ordinal(1900 + erf.year, 1 + erf.day_of_year).strftime("%Y-%m-%d"),
             c.res_type, c.filename
@@ -132,7 +132,7 @@ case $action
     input {|f|
       erf = NWN::Erf::Erf.new(f)
       erf.content.each {|c|
-        $stderr.puts "%s" % [c.filename] if $verbose
+        puts "%s" % [c.filename] if $verbose
         output(c.filename) {|ff|
           ff.write(c.get)
         }
@@ -150,7 +150,7 @@ case $action
     end
 
     ARGV.each {|a|
-      $stderr.puts File.basename(a) if $verbose
+      puts File.basename(a) if $verbose
       raise ArgumentError, "#{File.basename(a)} already present in erf." if
         !$allow_duplicates && erf.has?(a)
       erf.add a
