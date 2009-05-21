@@ -121,7 +121,7 @@ case $action
         else
           $stderr.puts "%16d %16d %10s %4d %s" % [
             c.offset, c.size,
-            Date.ordinal(1900 + erf.year, erf.day_of_year).strftime("%Y-%m-%d"),
+            Date.ordinal(1900 + erf.year, 1 + erf.day_of_year).strftime("%Y-%m-%d"),
             c.res_type, c.filename
           ]
         end
