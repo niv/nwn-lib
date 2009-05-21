@@ -109,9 +109,6 @@ module NWN
       # Will raise an ArgumentError if the given +bytes+ do
       # not contain a valid 2DA header, or the file is so badly
       # misshaped that it will not ever be parsed correctly by NWN1.
-      #
-      # Will complain about everything mismatching it finds
-      # on $stderr if $DEBUG is set (-d).
       def parse bytes
         magic, *data = *bytes.split(/\r?\n/).map {|v| v.strip }
 
@@ -135,27 +132,27 @@ module NWN
         data.each_with_index {|row, idx|
           id = row.shift
 
-          $stderr.puts "Warning: invalid ID in line #{idx}: #{id.inspect}" if $DEBUG && $id !~ /^\d+$/
+          NWN.log_debug "Warning: invalid ID in line #{idx}: #{id.inspect}" if $id !~ /^\d+$/
 
           id = id.to_i + id_offset
 
           # Its an empty row - NWN strictly numbers by counted lines - then so do we.
           while id > idx + idx_offset
-            $stderr.puts "Warning: missing ID at #{id - id_offset}, fixing that for you." if $DEBUG
+            NWN.log_debug "Warning: missing ID at #{id - id_offset}, fixing that for you."
             idx_offset += 1
           end
 
           # NWN automatically increments duplicate IDs - so do we.
           while id < idx + idx_offset
-            $stderr.puts "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you." if $DEBUG
+            NWN.log_debug "Warning: duplicate ID found at row #{idx} (id: #{id}); fixing that for you."
             id_offset += 1
             id += 1
           end
 
           # NWN fills in missing columns with an empty value - so do we.
-          $stderr.puts "Warning: row #{id} (real: #{id - id_offset}) misses " +
+          NWN.log_debug "Warning: row #{id} (real: #{id - id_offset}) misses " +
             "#{header.size - row.size} columns at the end, fixed" if
-              row.size < header.size if $DEBUG
+              row.size < header.size
 
           row << "" while row.size < header.size
 
@@ -170,8 +167,8 @@ module NWN
             end
           }
 
-          $stderr.puts "Warning: row #{idx} has too many cells (has #{k_row.size}, want <= #{header.size})" if
-            $DEBUG && k_row.size > header.size
+          NWN.log_debug "Warning: row #{idx} has too many cells (has #{k_row.size}, want <= #{header.size})" if
+            k_row.size > header.size
 
           k_row.pop while k_row.size > header.size
         }
