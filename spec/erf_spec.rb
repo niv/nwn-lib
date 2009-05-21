@@ -38,11 +38,9 @@ describe "Erf::Erf", :shared => true do
     wellformed_verify io.read
   end
 
-  it "does not read ERF with locstr_size = 0 and locstr_count > 0" do
+  it "reads ERF with locstr_size = 0 and locstr_count > 0" do
     @erf[12,4] = [0].pack("V")
-    proc {
-      wellformed_verify @erf
-    }.should raise_error IOError
+    wellformed_verify @erf, false
   end
 
   it "reads ERF with locstr_size > 0 and locstr_count = 0" do

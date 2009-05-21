@@ -64,14 +64,28 @@ module NWN
         locstr = @io.read(locstr_size)
 
         for lstr in 0...locstr_count do
-          raise IOError, "locstr table does not contain enough entries or locstr_size is too small" if
-            locstr.nil? || locstr.size < 8
+          if locstr.nil? || locstr.size == 0
+            NWN.log_debug "locstr table: not enough entries (expected: #{locstr_count}, got: #{lstr})"
+            break
+          end
+
+          if locstr.size < 8
+            NWN.log_debug "locstr table: not enough entries (expected: #{locstr_count}, got: #{lstr})" +
+              " partial data: #{locstr.inspect}"
+            break
+          end
 
           lid, strsz = locstr.unpack("V V")
+          if strsz > locstr.size - 8
+            NWN.log_debug "locstr table: given strsz is bigger than available data, truncating"
+            strsz = locstr.size - 8
+          end
           str = locstr.unpack("x8 a#{strsz}")[0]
-          raise IOError,
-            "Expected locstr size does not match actual string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if
-              strsz != str.size
+
+          # This just means that the given locstr size was encoded wrongly -
+          # the old erf.exe is known to do that.
+          NWN.log_debug "Expected locstr size does not match actual " +
+            "string size (want: #{strsz}, got #{str.size} of #{str.inspect})" if strsz != str.size
 
           @localized_strings[lid] = str
           locstr = locstr[8 + str.size .. -1]
