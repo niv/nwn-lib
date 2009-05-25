@@ -11,6 +11,8 @@ module NWN
 
       # Create a new index to +filename+, optionally specifying +io+.
       def self.new_from filename, io = nil
+        FileTest.exists?(filename) or raise Errno::ENOENT unless io
+
         filename = File.expand_path(filename)
         base = File.basename(filename).split(".")[0..-2].join(".").downcase
         ext = File.extname(filename)[1..-1].downcase rescue ""
