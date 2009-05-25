@@ -28,6 +28,20 @@ module NWN
         read_from io if io
       end
 
+      def add_file filename, io = nil
+        fnlen = filename_length @file_version
+        raise ArgumentError, "Invalid filename: #{filename.inspect}" if
+          filename.size == 0 || filename.size > (fnlen + 4)
+        super(filename, io)
+      end
+
+      def add o
+        fnlen = filename_length @file_version
+        raise ArgumentError, "Invalid filename: #{o.filename.inspect}" if
+          o.resref.size == 0 || o.resref.size > fnlen
+        super(o)
+      end
+
     private
 
       def filename_length version

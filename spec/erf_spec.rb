@@ -56,6 +56,18 @@ describe "Erf V1.0" do
 
   it_should_behave_like "Erf::Erf"
 
+  it "accepts valid filenames" do
+    t = Erf::Erf.new(StringIO.new @erf)
+    t.add_file("a" * 1 + ".txt", StringIO.new("blargh"))
+    t.add_file("a" * 16 + ".txt", StringIO.new("blargh"))
+  end
+
+  it "fails on invalid filenames" do
+    t = Erf::Erf.new(StringIO.new @erf)
+    proc { t.add_file("a" * 0 + ".txt", StringIO.new("blargh")) }.should raise_error ArgumentError
+    proc { t.add_file("a" * 17 + ".txt", StringIO.new("blargh")) }.should raise_error ArgumentError
+  end
+
   it "returns unknown for unknown-N file types" do
     @erf[174 + 16 + 4, 2] = [9995].pack("v")
     t = Erf::Erf.new(StringIO.new @erf)
@@ -69,6 +81,18 @@ describe "Erf V1.1" do
   end
 
   it_should_behave_like "Erf::Erf"
+
+  it "accepts valid filenames" do
+    t = Erf::Erf.new(StringIO.new @erf)
+    t.add_file("a" * 1 + ".txt", StringIO.new("blargh"))
+    t.add_file("a" * 32 + ".txt", StringIO.new("blargh"))
+  end
+
+  it "fails on invalid filenames" do
+    t = Erf::Erf.new(StringIO.new @erf)
+    proc { t.add_file("a" * 0 + ".txt", StringIO.new("blargh")) }.should raise_error ArgumentError
+    proc { t.add_file("a" * 33 + ".txt", StringIO.new("blargh")) }.should raise_error ArgumentError
+  end
 
   it "returns unknown for unknown-N file types" do
     @erf[174 + 32 + 4, 2] = [9995].pack("v")
