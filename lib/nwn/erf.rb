@@ -138,7 +138,14 @@ module NWN
           NWN.log_debug "truncating filename #{c.resref}, longer than #{fnlen}" if c.resref.size > fnlen
           [c.resref, @content.index(c), c.res_type, 0].pack("a#{fnlen} V v v")
         }.join("")
-        reslist = @content.map {|c| [c.offset, c.size].pack("V V") }.join("")
+
+        pre_offset = 160 + locstr.size + keylist.size + 8 * @content.size
+
+        reslist = @content.map {|c|
+          offset = pre_offset +
+            @content[0, @content.index(c)].inject(0) {|sum,x| sum + x.size }
+          [offset, c.size].pack("V V")
+        }.join("")
 
         offset_to_locstr = 160
         offset_to_keylist = offset_to_locstr + locstr.size
