@@ -17,7 +17,7 @@ module NWN
         res_type = NWN::Resources::Extensions[ext] or raise ArgumentError,
           "Not a valid extension: #{ext.inspect} (while packing #{filename})"
 
-        ContentObject.new(base, res_type, io || filename, 0, io.size || File.stat(filename).size)
+        ContentObject.new(base, res_type, io || filename, 0, io ? io.size : File.stat(filename).size)
       end
 
       def initialize resref, res_type, io = nil, offset = nil, size = nil
@@ -39,7 +39,7 @@ module NWN
       # and do it yourself, observing ContentObject#offset and ContentObject#size.
       def get
         if @io.respond_to?(:read)
-          @io.seek(@offset) if @offset
+          @io.seek(@offset ? @offset : 0)
           d = @io.read(self.size)
           raise IOError,
             "not enough data available while reading #{self.filename}" if
