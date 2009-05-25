@@ -35,7 +35,9 @@ describe "Erf::Erf", :shared => true do
     io = StringIO.new
     t.write_to(io)
     io.seek(0)
-    wellformed_verify io.read
+    n = io.read
+    wellformed_verify n
+    n.should == @erf
   end
 
   it "reads ERF with locstr_size = 0 and locstr_count > 0" do
