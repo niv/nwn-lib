@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'tempfile'
+require 'open3'
 
 Thread.abort_on_exception = true
 
@@ -158,3 +159,40 @@ TWODA_MISSING_ID = <<-EOT
 1  c
 2  d
 EOT
+
+describe "bin helper", :shared => true do
+  before do
+    @tmp = Dir.tmpdir
+  end
+
+  def run_bin *va
+    binary = File.join(File.expand_path(File.dirname(__FILE__)), "..", "bin", subject.to_s)
+    incl = File.join(File.expand_path(File.dirname(__FILE__)), "..", "lib")
+    old = Dir.pwd
+    begin
+    Dir.chdir(@tmp)
+    Open3.popen3(
+      "ruby", "-I#{incl}",
+      binary,
+      *va
+    ) do |i,o,e|
+      yield i, o, e
+    end
+    ensure
+    Dir.chdir(old)
+    end
+  end
+
+  def run *va
+    run_bin *va do |i, o, e|
+      e = e.read
+      e.should == ""
+    end
+  end
+
+  def run_fail *va
+    run_bin *va do |i, o, e|
+      e.read.size.should > 0
+    end
+  end
+end
