@@ -58,4 +58,25 @@ describe "Gff::Struct" do
     end
   }
 
+  it "returns proper fields" do
+    t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
+    t['Plot'].should respond_to :t
+    t['Plot'].should respond_to :l
+    t['Plot'].should respond_to :v
+    t['Plot'].l.should == "Plot"
+    t['Plot'].t.should == :byte
+  end
+
+  it "yields all and correct values in each_by_flat_path" do
+    t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
+    t.each_by_flat_path do |k,v|
+      k.class.should == String
+      k.should =~ %r{^/}
+    end
+  end
+
+  it "responds_to to_gff" do
+    t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
+    Gff::Reader.read(StringIO.new t.to_gff).should == t
+  end
 end
