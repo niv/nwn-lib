@@ -136,7 +136,7 @@ private
 
         when :struct
           raise GffError, "type = struct, but value not a hash" unless
-            v.field_value.is_a?(Gff::Struct)
+            v.field_value.is_a?(Struct)
 
           fields_of_this_struct << add_data_field(v.field_type, k, write_struct(v.field_value))
 

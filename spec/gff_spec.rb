@@ -1,5 +1,34 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
+describe "Gff.read/write API" do
+  it "reads correctly" do
+    i = StringIO.new WELLFORMED_GFF
+    g = Gff.read(i, :gff)
+  end
+
+  it "writes correctly" do
+    i = StringIO.new WELLFORMED_GFF
+    gff = Gff.read(i, :gff)
+
+    out = StringIO.new
+    ret = Gff.write(out, :gff, gff)
+    ret.should == out.size
+  end
+
+  {
+    :gff => %w{utc utd ute uti utm utp uts utt utw git are gic mod ifo fac ssf dlg itp bic},
+    :yaml => %w{yml yaml},
+    :kivinen => %w{k kivinen},
+    :marshal => %w{marshal}
+  }.each {|expect, arr|
+    arr.each {|ext|
+      it "guesses the file format #{expect} for extension #{ext} correctly" do
+        Gff.guess_file_format("xxy.#{ext}").should == expect
+      end
+    }
+  }
+end
+
 describe "Gff::*" do
 
   def wellformed_verify binary
