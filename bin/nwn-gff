@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 require 'optparse'
 require 'nwn/all'
+require 'fileutils'
 
 Thread.abort_on_exception = true
 
