@@ -25,7 +25,7 @@ GffFieldValidations = {
   :word => [[0, 0xffff], [-1, 0xffff + 1]],
 }.freeze
 
-WELLFORMED_GFF_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "wellformed_gff.binary").freeze
+WELLFORMED_GFF_PATH = File.join(File.expand_path(File.dirname(__FILE__)), "wellformed_gff.bic").freeze
 WELLFORMED_GFF = IO.read(WELLFORMED_GFF_PATH).freeze
 
 WELLFORMED_ERF = ([
