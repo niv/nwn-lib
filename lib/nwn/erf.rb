@@ -57,17 +57,13 @@ module NWN
 
 
       def read_from io
-        header = @io.read(160)
-        raise IOError, "Cannot read header: Not a erf file?" unless
-          header && header.size == 160
-
         @file_type, @file_version,
         locstr_count, locstr_size,
         entry_count,
         offset_to_locstr, offset_to_keys,
         offset_to_res,
-        @year, @day_of_year, @description_str_ref = header.
-          unpack("A4 A4 VV VV VV VV V a116")
+        @year, @day_of_year, @description_str_ref =
+          @io.read(160, "header").unpack("A4 A4 VV VV VV VV V a116")
 
         raise IOError, "Cannot read erf stream: invalid type #{@file_type.inspect}" unless
           NWN::Erf::ValidTypes.index(@file_type)
@@ -75,7 +71,7 @@ module NWN
         fnlen = filename_length @file_version
 
         @io.seek(offset_to_locstr)
-        locstr = @io.read(locstr_size)
+        locstr = @io.e_read(locstr_size, "locstr_size")
 
         for lstr in 0...locstr_count do
           if locstr.nil? || locstr.size == 0
@@ -107,8 +103,7 @@ module NWN
 
         keylist_entry_size = fnlen + 4 + 2 + 2
         @io.seek(offset_to_keys)
-        keylist = @io.read(keylist_entry_size * entry_count)
-        raise IOError, "keylist too short" if keylist.size != keylist_entry_size * entry_count
+        keylist = @io.e_read(keylist_entry_size * entry_count, "keylist")
         keylist = keylist.unpack("A#{fnlen} V v v" * entry_count)
         keylist.each_slice(4) {|resref, res_id, res_type, unused|
           @content << NWN::Resources::ContentObject.new(resref, res_type, @io)
@@ -116,8 +111,7 @@ module NWN
 
         resourcelist_entry_size = 4 + 4
         @io.seek(offset_to_res)
-        resourcelist = @io.read(resourcelist_entry_size * entry_count)
-        raise IOError, "resource list too short" if resourcelist.size != resourcelist_entry_size * entry_count
+        resourcelist = @io.e_read(resourcelist_entry_size * entry_count, "reslist")
         resourcelist = resourcelist.unpack("I I" * entry_count)
         _index = -1
         resourcelist.each_slice(2) {|offset, size|

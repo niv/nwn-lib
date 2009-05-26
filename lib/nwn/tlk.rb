@@ -35,7 +35,7 @@ module NWN
         # Read the header
         @file_type, @file_version, language_id,
           string_count, string_entries_offset =
-            @io.read(HEADER_SIZE).unpack("A4 A4 I I I")
+            @io.e_read(HEADER_SIZE, "header").unpack("A4 A4 I I I")
 
         raise IOError, "The given IO does not describe a valid tlk table" unless
           @file_type == "TLK" && @file_version == "V3.0"
@@ -62,18 +62,14 @@ module NWN
         raise ArgumentError, "No such string ID: #{id.inspect}" if id > self.highest_id || id < 0
         seek_to = HEADER_SIZE + (id) * DATA_ELEMENT_SIZE
         @io.seek(seek_to)
-        data = @io.read(DATA_ELEMENT_SIZE)
-
-        raise IOError, "Cannot read TLK file, missing string header data." if !data || data.size != 40
+        data = @io.e_read(DATA_ELEMENT_SIZE, "tlk entry = #{id}")
 
         flags, sound_resref, v_variance, p_variance, offset,
           size, sound_length = data.unpack("I A16 I I I I f")
         flags = flags.to_i
 
         @io.seek(@entries_offset + offset)
-        text = @io.read(size)
-
-        raise IOError, "Cannot read TLK file, missing string text data." if !text || text.size != size
+        text = @io.e_read(size, "tlk entry = #{id}, offset = #{@entries_offset + offset}")
 
         text = flags & 0x1 > 0 ? text : ""
         sound = flags & 0x2 > 0 ? sound_resref : ""

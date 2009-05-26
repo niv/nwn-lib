@@ -1,3 +1,5 @@
+require 'stringio'
+require 'nwn/io'
 require 'nwn/twoda'
 require 'nwn/res'
 require 'nwn/gff'

@@ -20,10 +20,6 @@ class NWN::Gff::Reader
   private
 
   def read_all
-    header = @io.read(160)
-    raise IOError, "Cannot read header" unless header &&
-      header.size == 160
-
     type, version,
     struct_offset, struct_count,
     field_offset, field_count,
@@ -31,7 +27,7 @@ class NWN::Gff::Reader
     field_data_offset, field_data_count,
     field_indices_offset, field_indices_count,
     list_indices_offset, list_indices_count =
-      header.unpack("a4a4 VV VV VV VV VV VV")
+      @io.e_read(160, "header").unpack("a4a4 VV VV VV VV VV VV")
 
     raise GffError, "Unknown version #{version}; not a gff?" unless
       version == "V3.2"
@@ -44,32 +40,26 @@ class NWN::Gff::Reader
     label_len  = label_count * 16
 
     @io.seek(struct_offset)
-    @structs = @io.read(struct_len)
-    raise IOError, "cannot read structs" unless @structs && @structs.size == struct_len
+    @structs = @io.e_read(struct_len, "structs")
     @structs = @structs.unpack("V*")
 
     @io.seek(field_offset)
-    @fields  = @io.read(field_len)
-    raise IOError, "cannot read fields" unless @fields && @fields.size == field_len
+    @fields  = @io.e_read(field_len, "fields")
     @fields  = @fields.unpack("V*")
 
     @io.seek(label_offset)
-    @labels  = @io.read(label_len)
-    raise IOError, "cannot read labels" unless @labels && @labels.size == label_len
+    @labels  = @io.e_read(label_len, "labels")
     @labels = @labels.unpack("A16" * label_count)
 
     @io.seek(field_data_offset)
-    @field_data = @io.read(field_data_count)
-    raise IOError, "cannot read field_data" unless @field_data && @field_data.size == field_data_count
+    @field_data = @io.e_read(field_data_count, "field_data")
 
     @io.seek(field_indices_offset)
-    @field_indices = @io.read(field_indices_count)
-    raise IOError, "cannot read field_indices" unless @field_indices && @field_indices.size == field_indices_count
+    @field_indices = @io.e_read(field_indices_count, "field_indices")
     @field_indices = @field_indices.unpack("V*")
 
     @io.seek(list_indices_offset)
-    @list_indices = @io.read(list_indices_count)
-    raise IOError, "cannot read list_indices" unless @list_indices && @list_indices.size == list_indices_count
+    @list_indices = @io.e_read(list_indices_count, "list_indices")
     @list_indices = @list_indices.unpack("V*")
 
     @root_struct = read_struct 0, type.strip, version

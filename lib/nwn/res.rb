@@ -42,11 +42,7 @@ module NWN
       def get
         if @io.respond_to?(:read)
           @io.seek(@offset ? @offset : 0)
-          d = @io.read(self.size)
-          raise IOError,
-            "not enough data available while reading #{self.filename}" if
-              d.size != self.size
-          d
+          @io.e_read(self.size, "filename = #{filename}")
         else
           IO.read(@io)
         end

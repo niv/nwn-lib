@@ -58,8 +58,9 @@ describe "Gff::*" do
   end
 
   it "fails on not enough data" do
-    proc {wellformed_verify WELLFORMED_GFF[0 .. -2] }.should
-      raise_error IOError, "cannot read list_indices"
+    proc {
+      wellformed_verify WELLFORMED_GFF[0 .. -2]
+    }.should raise_error IOError
   end
 
 end
