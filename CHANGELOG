@@ -203,3 +203,38 @@ Bernhard Stoeckner <elven@swordcoast.net> (26):
       to the newly-added specs.
 
       Please browse the commit log for a full list of changes.
+
+Bernhard Stoeckner <elven@swordcoast.net> (25):
+      bin/*: do not require rubygems explicitly
+      remove obsolete Gff::Helpers module
+      Erf: add support for ERF V1.1
+      env var NWN_LIB_DEBUG sends debug messages to stderr when set
+      add support for Microsoft Windows
+      R::ContentObject: do not fail on missing io, seek properly
+      R::ContentObject#filename: "unknown-N" instead of nil for unknown res_types
+      R::ContentObject: properly raise ENOENT on invalid io and file
+      G::Reader, Writer: work on io objects instead of strings
+      G::Writer: fix struct verify exception on reading substructs
+      specs: move all test stubs into _helper
+      Erf: improve broken locstr header handling
+      Erf: raise errors for invalid filenames on add, add_file
+      Erf: fix misaligned offsets in reslist
+      nwn-erf: fix parsing erf files where day_of_year = 0
+      nwn-erf: output non-errors to stdout instead of stderr
+      nwn-erf: fix packing up files
+      nwn-erf: add specs
+      Erf: reproduction spec checks for binary equality with sample
+      Gff: add specs for each_by_flat_path, to_gff
+      nwn-gff: fix backup strategy handler missing FileUtils
+      nwn-gff: add specs
+      rename spec/wellformed_gff.binary to .bic
+      nwn-dsl: add specs
+      0.4.7-rel
+
+      A real bugfix-release, this takes care of a whole swad of fixes
+      in erf and gff handling, and also improves Windows compatibility.
+
+      Particularily, erf writing was kind of broken in the previous release,
+      putting wrong offsets for files created with nwn-erf.
+
+      Please browse the commit log for a full list of changes.

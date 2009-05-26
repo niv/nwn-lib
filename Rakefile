@@ -9,7 +9,7 @@ include FileUtils
 # Configuration
 ##############################################################################
 NAME = "nwn-lib"
-VERS = "0.4.6"
+VERS = "0.4.7"
 CLEAN.include ["**/.*.sw?", "pkg", ".config", "rdoc", "coverage"]
 RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
   'nwn-lib: a ruby library for accessing NWN resource files', \
