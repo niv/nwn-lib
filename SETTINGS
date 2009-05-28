@@ -4,8 +4,17 @@ There are various environment variables you can configure to adjust various part
 
 Under linux, just add them to your shell environment (usually .bashrc), like so:
 
-  export NWN_LIB_FILTER_EMPTY_EXOLOCSTR=1
+  export NWN_LIB_DEBUG=0
 
+
+== NWN_LIB_DEBUG
+
+nwn-lib prints, by default, various informational and warning messages to stderr.
+This is a non-optimal solution, but needed to indicate various problems or misshapes with
+resource files you are working with.
+
+If you want to suppress them for some reason, set NWN_LIB_DEBUG to "0" or "off". Any
+other value will indicate that you want to see the messages.
 
 == NWN_LIB_2DA_LOCATION
 

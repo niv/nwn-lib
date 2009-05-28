@@ -1,11 +1,20 @@
 module NWN
 
-  # This writes a debug message to stderr if the environment
-  # variable +NWN_LIB_DEBUG+ is set to non-nil or $DEBUG is
-  # true (ruby -d).
+  # This writes a internal warnings and debug messages to stderr.
+  #
+  # Leaving this on is recommended, since it usually points to
+  # (fixable) errors in your resource files. You can turn this off
+  # anyways by setting the environment variable +NWN_LIB_DEBUG+
+  # to "0" or "off".
+  #
+  # Will return true when printed, false otherwise.
   def self.log_debug msg
-    return false unless ENV['NWN_LIB_DEBUG'] || $DEBUG
-    $stderr.puts "(nwn-lib debug) %s: %s" % [caller[0].to_s, msg]
+    # Do not print debug messages if explicitly turned off
+    return false if [false, "off"].index(setting(:debug))
+
+    pa = caller[0].to_s
+    pa = pa[(pa.size - 36) .. -1] if pa.size > 36
+    $stderr.puts "(nwn-lib) %s: %s" % [pa, msg]
     true
   end
 

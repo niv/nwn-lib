@@ -41,13 +41,17 @@ describe "Erf::Erf", :shared => true do
   end
 
   it "reads ERF with locstr_size = 0 and locstr_count > 0" do
+    old_debug = NWN.setting(:debug, "0")
     @erf[12,4] = [0].pack("V")
     wellformed_verify @erf, false
+    NWN.setting(:debug, old_debug)
   end
 
   it "reads ERF with locstr_size > 0 and locstr_count = 0" do
+    old_debug = NWN.setting(:debug, "0")
     @erf[8,4] = [0].pack("V")
     wellformed_verify @erf, false
+    NWN.setting(:debug, old_debug)
   end
 end
 
