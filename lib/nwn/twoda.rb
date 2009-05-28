@@ -285,8 +285,8 @@ module NWN
         # Append an empty newline.
         ret << ""
 
-        ret.join(case ENV['NWN_LIB_2DA_NEWLINE']
-          when "0"
+        ret.join(case NWN.setting("2da_newline")
+          when "0", false
             "\r\n"
           when "1"
             "\n"
