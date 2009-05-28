@@ -126,7 +126,16 @@ module NWN::Gff::Field
         value.is_a?(Float)
 
       when :resref
-        value.is_a?(String) && (0..16).member?(value.size)
+        if !NWN.setting(:resref32) && value.is_a?(String) && value.size > 16
+          NWN.log_debug("Warning: :resref too long for NWN1, set env NWN_LIB_RESREF32=1 to turn off warning for NWN2.")
+          NWN.log_debug("  Value found: #{value.inspect}")
+        end
+
+        if NWN.setting(:resref16)
+          value.is_a?(String) && (0..16).member?(value.size)
+        else
+          value.is_a?(String) && (0..32).member?(value.size)
+        end
 
       when :cexostr
         value.is_a?(String)

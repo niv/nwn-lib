@@ -49,6 +49,15 @@ begin OptionParser.new do |o|
     $options[:backup] = b.nil? ? true : b
   end
 
+  o.on "-1", "--nwn1", "Allow 16 byte resrefs." do
+    ENV['NWN_LIB_RESREF32'] = nil
+    ENV['NWN_LIB_RESREF16'] = "1"
+  end
+  o.on "-2", "--nwn2", "Allow 32 byte resrefs. This is needed for NWN2 files." do
+    ENV['NWN_LIB_RESREF32'] = "1"
+    ENV['NWN_LIB_RESREF16'] = nil
+  end
+
   o.on "--force", "Force write even when the resulting data would be the same" do
     $options[:force] = true
   end

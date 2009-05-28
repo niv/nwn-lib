@@ -13,9 +13,11 @@ describe "Gff::Field" do
     end
 
     it "rejects bad values for type '#{t.inspect}'" do
+      NWN.setting(:resref16, "1")
       invalid.each do |v|
         Gff::Field.valid_for?(v, t).should == false
       end
+      NWN.setting(:resref16, nil)
     end
   end
 end
