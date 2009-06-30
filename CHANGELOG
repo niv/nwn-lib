@@ -204,6 +204,7 @@ Bernhard Stoeckner <elven@swordcoast.net> (26):
 
       Please browse the commit log for a full list of changes.
 
+=== 0.4.7
 Bernhard Stoeckner <elven@swordcoast.net> (25):
       bin/*: do not require rubygems explicitly
       remove obsolete Gff::Helpers module
@@ -238,3 +239,15 @@ Bernhard Stoeckner <elven@swordcoast.net> (25):
       putting wrong offsets for files created with nwn-erf.
 
       Please browse the commit log for a full list of changes.
+
+=== 0.4.8
+Bernhard Stoeckner <elven@swordcoast.net> (6):
+      IO: add special e_read call to wrap size checks with custom exception msgs
+      NWN.setting: generic setting get/set mechanism
+      NWN.log_debug: messages always print unless explicitly turned off
+      Field :resref validate: warn when too long and not explicitly turned off
+      nwn-gff: fix reading from stdin throwing an exception
+      0.4.8-rel
+
+      Another bugfix and compatibility release. This adds real NWN2 support
+      to gff reading, adds a few new SETTINGS, and adds proper IO reading.
