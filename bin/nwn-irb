@@ -29,7 +29,7 @@ def read file
   file = File.expand_path(file || $file)
   $stderr.puts "Reading `#{file}' .."
   fmt = NWN::Gff.guess_file_format(file)
-  $gff = NWN::Gff.read(IO.read(file), fmt)
+  $gff = NWN::Gff.read(File.open(file, "rb"), fmt)
 
   $stderr.puts "Your GFF file is in `$gff' (data_type: #{$gff.data_type.inspect})."
   $stderr.puts "Type `save' to save to the filename it came from (make a backup!), `exit' (or Ctrl+D) to exit (without saving)."
