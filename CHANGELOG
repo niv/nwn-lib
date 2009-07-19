@@ -251,3 +251,21 @@ Bernhard Stoeckner <elven@swordcoast.net> (6):
 
       Another bugfix and compatibility release. This adds real NWN2 support
       to gff reading, adds a few new SETTINGS, and adds proper IO reading.
+
+=== 0.4.9
+Bernhard Stoeckner <elven@swordcoast.net> (10):
+      Gff::Reader/YAML: do not taint read objects
+      Scripting: satisfy win32 compatibility
+      nwn-irb: work on IO object instead of string
+      nwn-erf: fix typo in -h: -1 saying ERF 1.0 instead of ERF 1.1
+      Scripting: satisfy: close opened fds after loading GFF data
+      api.rb: merge into field.rb and struct.rb
+      Gff::Struct#by_path: print list index in current_path on error
+      Gff::Struct#by_path: / alias, $ and % mods, substruct & locname paths
+      TwoDA::Table: fix always printing errors for invalid IDs on table reading
+      Update documentation, add HOWTO
+      0.4.9-rel
+
+      Some medium rare bugfixes, and a overloaded operator for GFF structs,
+      which can be used to comfortable walk on trees.
+
