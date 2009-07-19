@@ -1,0 +1,170 @@
+=== Writing scripts to do the work for you
+
+First, read SCRIPTING. Since an example is more worth than a thousand words,
+here is a quick introduction in the form of a script that handles input
+files from ARGV, does nothing with them, and then saves them back to the same
+file from which they came from.
+
+ #!/usr/bin/env nwn-dsl
+
+ ARGV.each_with_index {|file, index|
+   # The script will abort hard if file is not an ARE.
+   # This looks up the data_type, which are usually the
+   # first four bytes of a file.
+   gff = need file, :are
+
+   # This will save gff back to 'file'.
+   save gff
+
+   # This will prefix all lines printed with log with
+   # a percentage. It's usage is optional, and the sole
+   # reason for using each_with_index instead of each above.
+   progress index
+ }
+
+To run this example, type the following in a directory containing some .are
+files, with script.rb being the name you saved the above script in.
+
+ nwn-dsl path/to/script.rb *.are
+
+The shebang (#!/..) is for unixoid systems and Cygwin, and as such optional.
+
+For all available commands to nwn-dsl scripts, see NWN::Gff::Scripting.
+
+<b>All code snippets shown here assume that you put <tt>include NWN</tt>
+in your application. It is not needed for nwn-dsl, which imports that
+namespace for you.</b>
+
+=== Accessing GFF paths
+
+You can access GFF paths within structs by using the overloaded division
+operator.
+
+ #!/usr/bin/env nwn-dsl
+
+ ARGV.each_with_index {|file, index|
+   gff = need file, :are
+
+   log (gff / 'Name/0')
+
+   progress index
+ }
+
+For a full reference of the path syntax, see NWN::Gff::Struct#by_path.
+
+You cannot use paths to assign new values to structs - you can only
+modify existing values:
+
+ (gff / 'Name').v[0] = "New Localized Name with Language ID 0"
+
+Wrong, will raise error:
+
+ (gff / 'Name/0') = "New .."
+
+Please note that using the [] method will NOT evaluate paths, just
+access labels in the CURRENT struct (which is actually a hash).
+
+=== Creating new GFF Structs and Elements
+
+You can add new fields to existing structs via NWN::Gff::Struct#add_field:
+
+ gff.add_field 'LocalVersion', :int, 1
+
+ # This will print "1"
+ log (gff / 'LocalVersion$')
+
+You can also the dynamic methods to save some typing:
+
+ gff.add_int 'LocalVersion', 1
+
+You can just as well create whole GFF structures on the fly:
+
+ Gff::Struct.new do |s|
+   s.add_byte 'ImaByte', :int, 1
+   list = s.add_list 'ImaList', [] do |l|
+     l.add_struct(1) do |ss|
+       ss.add_byte 'ImaByteToo', 2
+     end
+   end
+ end
+
+Further reading: NWN::Gff::Struct#add_field, NWN::Gff::List#add_struct.
+
+=== Working with .2da files
+
+Working with TwoDA files is easy and painless:
+
+ #!/usr/bin/env nwn-dsl
+
+ data = IO.read('path/to/baseitems.2da')
+ table = TwoDA::Table.parse(data)
+
+ # This will print "twobladedsword" with NWN1 1.69
+ log table[12].Label
+
+ # You can re-format (and save) any valid table:
+ File.open("/tmp/out", "wb") {|f|
+   f.write(table.to_2da)
+   # OR
+   table.write_to(f)
+ }
+
+For more documentation, see NWN::TwoDA::Table and
+NWN::TwoDA::Row.
+
+You can also set up a default location for 2da files,
+after which you can simply use the following to read
+2da files:
+
+ table = TwoDA.get('baseitems')
+
+You can set up the TwoDA::Cache by either setting the
+environment variable (recommended, see SETTINGS), or
+like this (see NWN::TwoDA::Cache.setup):
+
+ TwoDA::Cache.setup("path_a:path_b/blah:path_c")
+
+=== Accessing .tlk data
+
+You can access individual .tlk files, or use a TlkSet,
+which will emulate the way NWN1/2 reads it's .tlk files.
+
+Read a simple .tlk file:
+
+ io = File.open("/path/to/dialog.tlk", "rb")
+ tlk = NWN::Tlk::Tlk.new(io)
+
+Note that Tlk::Tlk seeks and reads from +io+ as needed,
+so if you close the file handle, any further accesses
+will fail.
+
+ # Retrieve strref 12
+ tlk[12][:text]
+
+ # Retrieve the attached sound resref, if any:
+ tlk[12][:sound]
+
+ # prints the highest strref used
+ log tlk.highest_id
+
+ # Add a new strrref.
+ new_strref = tlk.add 'New text'
+
+ # And save the new TLK somewhere else.
+ File.open("/tmp/new.tlk", "wb") {|another_io|
+   tlk.write_to(another_io)
+ }
+
+Now read-only access with a TlkSet:
+
+ # The arguments are dialog.tlk, dialogf.tlk,
+ # custom.tlk and a customf.tlk each wrapped in
+ # a Tlk::Tlk as shown above.
+ set = Tlk::TlkSet.new(tlk, tlkf, custom, customf)
+
+ # Retrieve str_ref 12 as the female variant (dialogf.tlk)
+ # if present, :male otherwise.
+ log set[12, :female]
+
+You cannot use TlkSet to write out .tlk files or modify
+existing entries - it is merely a wrapper.

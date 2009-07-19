@@ -3,7 +3,7 @@
 # Include this if you want to eval nwn-gff-dsl scripts.
 module NWN::Gff::Scripting
 
-  class Sandbox
+  class Sandbox #:nodoc:
     include NWN
     include NWN::Gff::Scripting
   end

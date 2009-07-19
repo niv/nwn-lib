@@ -310,7 +310,7 @@ module NWN
 
       # Set the file system path spec where all 2da files reside.
       # Call this on application startup.
-      # path spec is a colon-separated list of pathes, just like $PATH.
+      # path spec is a colon-separated list of paths, just like $PATH.
       def self.setup root_directories
         @_roots = root_directories.split(':').compact.reject {|x| "" == x.strip }
       end

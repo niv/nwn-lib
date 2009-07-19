@@ -50,7 +50,7 @@ And do the following in a script of your own devising:
   require 'rubygems'
   require 'nwn/all'
 
-Also, Read BINARIES.
+Also, read BINARIES and HOWTO.
 
 For nwn-lib scripts, see SCRIPTING.
 
