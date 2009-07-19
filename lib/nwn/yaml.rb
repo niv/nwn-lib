@@ -74,7 +74,7 @@ end
 
 # This parses the struct and extends all fields with their proper type.
 YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
-  struct = {}.taint
+  struct = {}
   struct.extend(NWN::Gff::Struct)
 
   # The metadata
@@ -96,7 +96,7 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
     element.extend_meta_classes
     element.validate
 
-    struct[label] = element.taint
+    struct[label] = element
   }
 
   struct

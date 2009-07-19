@@ -107,7 +107,7 @@ module NWN::Gff::Struct
 
 
   # Iterates this struct, yielding flat, absolute
-  # pathes and the Gff::Field for each element found.
+  # paths and the Gff::Field for each element found.
 
   # Example:
   # "/AddCost" => {"type"=>:dword, ..}
@@ -125,21 +125,46 @@ module NWN::Gff::Struct
   #
   # Prefixed/postfixed slashes are optional.
   #
-  # Examples:
-  # /
-  # /AddCost
-  # /PropertiesList/
-  # /PropertiesList[0]/CostValue
-  # /LocalizedName/0
+  # You can retrieve CExoLocString values by giving the
+  # language ID as the last label:
+  #  /FirstName/0
+  #
+  # You can retrieve list values by specifying the index
+  # in square brackets:
+  #  /SkillList[0]
+  #  /SkillList[0]/Rank   => {"Rank"=>{"label"=>"Rank", "value"=>0, "type"=>:byte}}
+  #
+  # You can directly retrieve field values and types
+  # instead of the field itself:
+  #  /SkillList[0]/Rank$  => 0
+  #  /SkillList[0]/Rank?   => :byte
+  #
+  # This will raise an error for non-field paths, naturally:
+  #  SkillList[0]$        => undefined method `field_value' for {"Rank"=>{"label"=>"Rank", "value"=>0, "type"=>:byte}}:Hash
+  #  SkillList[0]?        => undefined method `field_type' for {"Rank"=>{"label"=>"Rank", "value"=>0, "type"=>:byte}}:Hash
+  #
+  # For CExoLocStrings, you can retrieve the str_ref:
+  #  FirstName%           => 4294967295
+  # This will return DEFAULT_STR_REF (0xffffffff) if the given path does not have
+  # a str_ref.
   def by_path path
     struct = self
     current_path = ""
     path = path.split('/').map {|v| v.strip }.reject {|v| v.empty?}.join('/')
 
-    path.split('/').each {|v|
-      if v =~ /^(.+?)\[(\d+)\]$/
-        v, index = $1, $2
+    path, mod = $1, $2 if path =~ /^(.+?)([\$\?%])?$/
+
+    path.split('/').each_with_index {|v, path_index|
+      if struct.is_a?(NWN::Gff::Field) && struct.field_type == :cexolocstr &&
+          v =~ /^\d+$/ && path_index == path.split('/').size - 1
+        struct = struct.field_value[v.to_i]
+        break
       end
+
+      v, index = $1, $2 if v =~ /^(.+?)\[(\d+)\]$/
+
+      struct = struct.v if struct.is_a?(NWN::Gff::Field) &&
+        struct.field_type == :struct
 
       struct = struct[v]
       if index
@@ -149,6 +174,7 @@ module NWN::Gff::Struct
         struct = struct.field_value[index.to_i]
       end
 
+
       raise NWN::Gff::GffPathInvalidError,
         "Cannot find a path to /#{path} (at: #{current_path})." unless struct
 
@@ -156,7 +182,22 @@ module NWN::Gff::Struct
       current_path += "[#{index}]" if index
     }
 
-    struct
+    case mod
+      when "$"
+        struct.field_value
+      when "?"
+        struct.field_type
+      when "%"
+        struct.has_str_ref? ? struct.str_ref :
+          NWN::Gff::Cexolocstr::DEFAULT_STR_REF
+      else
+        struct
+    end
+  end
+
+  # An alias for +by_path+.
+  def / path
+    by_path(path)
   end
 
 end
