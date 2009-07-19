@@ -132,7 +132,7 @@ module NWN
         data.each_with_index {|row, idx|
           id = row.shift
 
-          NWN.log_debug "Warning: invalid ID in line #{idx}: #{id.inspect}" if $id !~ /^\d+$/
+          NWN.log_debug "Warning: invalid ID in line #{idx}: #{id.inspect}" if id !~ /^\d+$/
 
           id = id.to_i + id_offset
 
