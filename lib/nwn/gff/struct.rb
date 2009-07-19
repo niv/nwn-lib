@@ -150,9 +150,10 @@ module NWN::Gff::Struct
       end
 
       raise NWN::Gff::GffPathInvalidError,
-        "Cannot find a path to /#{path} (at: /#{current_path})." unless struct
+        "Cannot find a path to /#{path} (at: #{current_path})." unless struct
 
-      current_path += v
+      current_path += "/" + v
+      current_path += "[#{index}]" if index
     }
 
     struct
