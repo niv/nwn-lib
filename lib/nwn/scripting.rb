@@ -99,10 +99,12 @@ module NWN::Gff::Scripting
   # If only a filename/string is given and no further arguments,
   # the read object will be returned as-is.
   def satisfy *what
+    close_me = false
     if $standalone
       fn = what.shift
       io = case fn
         when String
+          close_me = true
           File.new(fn, "rb")
         when IO
           fn
@@ -112,7 +114,12 @@ module NWN::Gff::Scripting
           #  "`need', `want' and `satisfy' need a filename or a IO " +
           #  "object to read from (usually the first script argument)."
       end
-      obj = NWN::Gff.read(io, NWN::Gff.guess_file_format(fn))
+
+      obj = begin
+        NWN::Gff.read(io, NWN::Gff.guess_file_format(fn))
+      ensure
+        io.close if close_me
+      end
       log "satisfied #{fn} -> #{obj.to_s}"
       $satisfy_loaded[obj.object_id] = [fn, obj.hash]
 
