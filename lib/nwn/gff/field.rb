@@ -158,4 +158,36 @@ module NWN::Gff::Field
         false
     end
   end
+
+#:stopdoc:
+  # Used by NWN::Gff::Struct#by_flat_path
+  def each_by_flat_path &block
+    case field_type
+      when :cexolocstr
+        yield("", self)
+        field_value.sort.each {|lid, str|
+          yield("/" + lid.to_s, str)
+        }
+
+      when :struct
+        yield("", self)
+        field_value.each_by_flat_path {|v, x|
+          yield(v, x)
+        }
+
+      when :list
+        yield("", self)
+        field_value.each_with_index {|item, index|
+          yield("[" + index.to_s + "]", item)
+          item.each_by_flat_path("/") {|v, x|
+            yield("[" + index.to_s + "]" + v, x)
+          }
+        }
+
+      else
+        yield("", self)
+    end
+  end
+#:startdoc:
+
 end
