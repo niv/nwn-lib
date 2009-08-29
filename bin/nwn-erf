@@ -9,6 +9,8 @@ $type = 'ERF'
 $allow_duplicates = false
 $descriptions = {}
 $version = "V1.0"
+$file = nil
+$error = 0
 
 # tar-compat mode: first argument is options if no dash is specified.
 ARGV[0] = "-" + ARGV[0] if ARGV.size > 0 && ARGV[0][0] != ?-
@@ -191,4 +193,9 @@ case $action
 
   else
     raise ArgumentError, "You need to specify a mode of operation (try -h)."
+end
+
+if $error == 1
+  $stderr.puts "nwn-erf: Exiting with failure status due to previous errors"
+  exit(1)
 end
