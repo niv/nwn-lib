@@ -30,7 +30,7 @@ begin OptionParser.new do |o|
   o.on "-c", "--create", "Create a new archive with the given files as contents." do
     $action = :c
   end
-  o.on "-x", "--extract", "Extract all files to current directory." do
+  o.on "-x", "--extract", "Extract FILEs (or all) to current directory." do
     $action = :x
   end
   o.on "-a", "--add", "Add files to the given archive.",
@@ -133,7 +133,17 @@ case $action
   when :x
     input {|f|
       erf = NWN::Erf::Erf.new(f)
+      ARGV.each {|x|
+        wot = erf.content.select {|cc| cc.filename == x }
+        if wot.size == 0
+          $stderr.puts "nwn-erf: #{x}: not found in erf"
+          $error = 1
+        end
+      }
+      what = ARGV.map {|x| x.downcase }
       erf.content.each {|c|
+        next if what.size > 0 && !what.index(c.filename.downcase)
+
         puts "%s" % [c.filename] if $verbose
         output(c.filename) {|ff|
           ff.write(c.get)
