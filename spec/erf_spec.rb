@@ -30,6 +30,13 @@ describe "Erf::Erf", :shared => true do
     wellformed_verify @erf
   end
 
+  it "sets the correct default parameters" do
+    t = Erf::Erf.new
+    t.year.should == Time.now.year - 1900
+    t.day_of_year.should == Time.now.yday
+    t.content.size.should == 0
+  end
+
   it "reproduces correct ERF binary data" do
     t = Erf::Erf.new(StringIO.new @erf)
     io = StringIO.new

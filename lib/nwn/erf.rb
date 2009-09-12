@@ -22,7 +22,7 @@ module NWN
         @localized_strings = {}
         @io = io
         @file_type, @file_version = "ERF", "V1.0"
-        @year = Time.now.year
+        @year = Time.now.year - 1900
         @description_str_ref = 0xffffffff
         @day_of_year = Time.now.yday
         read_from io if io
