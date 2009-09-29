@@ -125,7 +125,7 @@ elsif :in == $options[:outformat]
 end
 
 vputs "Reading: #{$options[:infile]}"
-data_in = $options[:infile] == '-' ? $stdin : File.open($options[:infile], "rb")
+data_in = $options[:infile] == '-' ? StringIO.new($stdin.read) : File.open($options[:infile], "rb")
 data_in = NWN::Gff.read(data_in, $options[:informat])
 
 # verify that we read a GFF struct
