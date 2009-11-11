@@ -204,4 +204,38 @@ module NWN::Gff::Struct
     by_path(path)
   end
 
+  # Deep-unboxes a Hash, e.g. iterating down.
+  def self.unbox! o, parent = nil, str_handler = proc {|x| x}
+    o.extend(NWN::Gff::Struct)
+    o.struct_id = o.delete('__struct_id')
+    o.data_type = if o['__data_type']
+      o.delete('__data_type')
+    else
+      o.path
+    end
+    o.data_version = o.delete('__data_version')
+
+    o.element = parent if parent
+
+    o.each {|label,element|
+      o[label] = NWN::Gff::Field.unbox!(element, label, o, str_handler)
+    }
+
+    o
+  end
+
+  # Returns a hash of this Struct without the API calls mixed in,
+  # all language-strings transformed by str_handler.
+  def box str_handler = proc {|x| x}
+    t = Hash[self]
+    t.merge!({
+      '__struct_id' => self.struct_id,
+      '__data_version' => self.data_version,
+    })
+    t.merge!({
+      '__data_type' => self.data_type
+    }) if self.element == nil
+    t
+  end
+
 end

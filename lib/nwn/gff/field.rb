@@ -195,4 +195,47 @@ module NWN::Gff::Field
   end
 #:startdoc:
 
+  # Deep-unboxes a Hash, e.g. iterating down.
+  def self.unbox! element, parent_label, parent = nil, str_handler = proc {|x| x}
+    element.extend(NWN::Gff::Field)
+    element.field_label = parent_label
+    element.parent = parent
+    element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF if element.respond_to?('str_ref=')
+
+    element.extend_meta_classes
+    case element.field_type
+      when :cexolocstr
+        element.field_value.each {|x,y|
+          element.field_value[x.to_i] = str_handler.call(element.field_value.delete(x))
+        }
+      when :cexostr
+        element.field_value = str_handler.call(element.field_value)
+
+      when :list
+        element.field_value.each_with_index {|x,idx|
+          element.field_value[idx] = NWN::Gff::Struct.unbox!(x, element, str_handler)
+        }
+      when :struct
+        element.field_value = NWN::Gff::Struct.unbox!(element.field_value, element, str_handler)
+    end
+    element.validate
+    element
+  end
+
+  # Returns a hash of this Field without the API calls mixed in,
+  # all language-strings transformed by str_handler.
+  def box str_handler = proc {|x| x}
+    t = Hash[self]
+    t.delete('label')
+    case field_type
+      when :cexolocstr
+        t['value'].each {|x,y|
+          t['value'][x] = str_handler.call(y)
+        }
+      when :cexostr
+        t['value'] = str_handler.call(t['value'])
+    end
+    t
+  end
+
 end
