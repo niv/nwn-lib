@@ -26,6 +26,10 @@ module NWN::Gff::JSON
   end
 
   def self.dump struct
-    JSON.pretty_generate(struct)
+    if NWN.setting(:pretty_json)
+      JSON.pretty_generate(struct)
+    else
+      JSON.generate(struct)
+    end
   end
 end

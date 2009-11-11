@@ -10,6 +10,11 @@ Under linux, just add them to your shell environment (usually .bashrc), like so:
 
 The character encoding your local data files are in. Defaults to ISO-8859-1.
 
+== NWN_LIB_PRETTY_JSON
+
+Set to non-nil to make :json print pretty output (with whitespace) instead of a spaghetti
+bowl. nwn-lib returns compact json output, by default. Does not affect reading json.
+
 == NWN_LIB_DEBUG
 
 nwn-lib prints, by default, various informational and warning messages to stderr.
