@@ -16,10 +16,15 @@ module NWN::Gff::Field
   # This is set internally by Gff::Reader on load.
   attr_accessor :parent
 
+  # Transform type to symbol on extend.
+  def self.extended p1 #:nodoc:
+    p1['type'] = p1['type'].to_sym if p1['type']
+  end
+
   # Create a new NWN::Gff::Field
   def self.new label, type, value
     s = {}.extend(self)
-    s['label'], s['type'], s['value'] = label, type, value
+    s['label'], s['type'], s['value'] = label, type.to_sym, value
     s.extend_meta_classes
     s.validate
     s
