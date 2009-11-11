@@ -6,6 +6,9 @@ Under linux, just add them to your shell environment (usually .bashrc), like so:
 
   export NWN_LIB_DEBUG=0
 
+== NWN_LIB_IN_ENCODING
+
+The character encoding your local data files are in. Defaults to ISO-8859-1.
 
 == NWN_LIB_DEBUG
 

@@ -204,8 +204,9 @@ module NWN::Gff::Struct
     by_path(path)
   end
 
-  # Deep-unboxes a Hash, e.g. iterating down.
-  def self.unbox! o, parent = nil, str_handler = proc {|x| x}
+  # Deep-unboxes a Hash, e.g. iterating down, converting it to
+  # the native charset.
+  def self.unbox! o, parent = nil
     o.extend(NWN::Gff::Struct)
     o.struct_id = o.delete('__struct_id')
     o.data_type = if o['__data_type']
@@ -218,15 +219,15 @@ module NWN::Gff::Struct
     o.element = parent if parent
 
     o.each {|label,element|
-      o[label] = NWN::Gff::Field.unbox!(element, label, o, str_handler)
+      o[label] = NWN::Gff::Field.unbox!(element, label, o)
     }
 
     o
   end
 
   # Returns a hash of this Struct without the API calls mixed in,
-  # all language-strings transformed by str_handler.
-  def box str_handler = proc {|x| x}
+  # converting it from the native charset.
+  def box
     t = Hash[self]
     t.merge!({
       '__struct_id' => self.struct_id,

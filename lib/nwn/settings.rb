@@ -1,4 +1,9 @@
+require 'iconv'
+
 module NWN
+  SETTING_DEFAULT_VALUES = {
+    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1'
+  }
 
   # This writes a internal warnings and debug messages to stderr.
   #
@@ -28,9 +33,12 @@ module NWN
       ENV[name] = value.to_s if value != :_invalid_
       ret
     else
-      ENV[name] == "0" ? false : ENV[name]
+      ENV[name] == "0" ? false : (ENV[name] || SETTING_DEFAULT_VALUES[name])
     end
   end
+
+  IconvGffToNative = proc { Iconv.new('utf-8', NWN.setting(:in_encoding)) }
+  IconvNativeToGff = proc { Iconv.new(NWN.setting(:in_encoding), 'utf-8') }
 end
 
 NWN::TwoDA::Cache.setup NWN.setting("2da_location") if

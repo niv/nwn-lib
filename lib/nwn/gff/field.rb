@@ -195,8 +195,9 @@ module NWN::Gff::Field
   end
 #:startdoc:
 
-  # Deep-unboxes a Hash, e.g. iterating down.
-  def self.unbox! element, parent_label, parent = nil, str_handler = proc {|x| x}
+  # Deep-unboxes a Hash, e.g. iterating down, converting all strings
+  # from the native charset.
+  def self.unbox! element, parent_label, parent = nil
     element.extend(NWN::Gff::Field)
     element.field_label = parent_label
     element.parent = parent
@@ -206,17 +207,17 @@ module NWN::Gff::Field
     case element.field_type
       when :cexolocstr
         element.field_value.each {|x,y|
-          element.field_value[x.to_i] = str_handler.call(element.field_value.delete(x))
+          element.field_value[x.to_i] = NWN::IconvNativeToGff.call.iconv(element.field_value.delete(x))
         }
       when :cexostr
-        element.field_value = str_handler.call(element.field_value)
+        element.field_value = NWN::IconvNativeToGff.call.iconv(element.field_value)
 
       when :list
         element.field_value.each_with_index {|x,idx|
-          element.field_value[idx] = NWN::Gff::Struct.unbox!(x, element, str_handler)
+          element.field_value[idx] = NWN::Gff::Struct.unbox!(x, element)
         }
       when :struct
-        element.field_value = NWN::Gff::Struct.unbox!(element.field_value, element, str_handler)
+        element.field_value = NWN::Gff::Struct.unbox!(element.field_value, element)
     end
     element.validate
     element
@@ -224,16 +225,16 @@ module NWN::Gff::Field
 
   # Returns a hash of this Field without the API calls mixed in,
   # all language-strings transformed by str_handler.
-  def box str_handler = proc {|x| x}
+  def box
     t = Hash[self]
     t.delete('label')
     case field_type
       when :cexolocstr
         t['value'].each {|x,y|
-          t['value'][x] = str_handler.call(y)
+          t['value'][x] = NWN::IconvGffToNative.call.iconv(y)
         }
       when :cexostr
-        t['value'] = str_handler.call(t['value'])
+        t['value'] = NWN::IconvGffToNative.call.iconv(t['value'])
     end
     t
   end
