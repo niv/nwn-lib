@@ -189,7 +189,7 @@ class NWN::Gff::Reader
         @field_data[data_or_offset + 4, len].unpack("H*")[0]
 
       when :struct
-        read_struct data_or_offset, field.path, field.parent.data_version
+        read_struct data_or_offset, nil, field.parent.data_version
 
       when :list
         list = []
@@ -210,7 +210,7 @@ class NWN::Gff::Reader
         data_or_offset += 1
 
         for i in data_or_offset...(data_or_offset + count)
-          list << read_struct(@list_indices[i], field.path, field.parent.data_version)
+          list << read_struct(@list_indices[i], nil, field.parent.data_version)
         end
 
         list

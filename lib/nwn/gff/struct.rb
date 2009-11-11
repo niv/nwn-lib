@@ -30,7 +30,11 @@ module NWN::Gff::Struct
 
   # Returns the path to this struct (which is usually __data_type)
   def path
-    @data_type.to_s
+    if @element
+      @element.path
+    else
+      @data_type.to_s
+    end
   end
 
   def element= e #:nodoc:
