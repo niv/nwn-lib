@@ -1,3 +1,5 @@
+require 'pp'
+
 module NWN
   module Gff
     # This error gets thrown if reading or writing fails.
@@ -59,7 +61,7 @@ module NWN
     # These field types can never be inlined in YAML.
     YAMLNonInlineableFields = [:struct, :list, :cexolocstr]
 
-    FileFormats = [:gff, :yaml, :kivinen, :marshal]
+    FileFormats = [:gff, :yaml, :kivinen, :marshal, :pretty]
 
     FileFormatGuesses = {
       /^ut[cdeimpstw]$/ => :gff,
@@ -103,6 +105,8 @@ module NWN
           data.kivinen_format $options[:types], nil, nil do |l,v|
             io.puts "%s:\t%s" % [l, v]
           end
+        when :pretty
+          old = $> ; $> = io ; pp data ; $> = old
         else
           raise NotImplementedError, "Don't know how to write data-format #{format.inspect}"
       end
