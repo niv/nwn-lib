@@ -61,7 +61,7 @@ module NWN
     # These field types can never be inlined in YAML.
     YAMLNonInlineableFields = [:struct, :list, :cexolocstr]
 
-    FileFormats = [:gff, :yaml, :kivinen, :marshal, :pretty]
+    FileFormats = [:gff, :yaml, :json, :kivinen, :marshal, :pretty]
 
     FileFormatGuesses = {
       /^ut[cdeimpstw]$/ => :gff,
@@ -69,6 +69,7 @@ module NWN
       /^(mod|ifo|fac|ssf|dlg|itp)$/ => :gff,
       /^(bic)$/ => :gff,
       /^ya?ml$/ => :yaml,
+      /^json$/ => :json,
       /^marshal$/ => :marshal,
       /^k(ivinen)?$/ => :kivinen,
     }
@@ -84,6 +85,8 @@ module NWN
           NWN::Gff::Reader.read(io)
         when :yaml
           YAML.load(io)
+        when :json
+          NWN::Gff::JSON.load(io)
         when :marshal
           Marshal.load(io)
         when :kivinen
@@ -99,6 +102,8 @@ module NWN
           NWN::Gff::Writer.dump(data, io)
         when :yaml
           io.puts data.to_yaml
+        when :json
+          io.puts NWN::Gff::JSON.dump(data)
         when :marshal
           io.print Marshal.dump(data)
         when :kivinen
