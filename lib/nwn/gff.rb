@@ -111,7 +111,7 @@ module NWN
             io.puts "%s:\t%s" % [l, v]
           end
         when :pretty
-          old = $> ; $> = io ; pp data ; $> = old
+          old = $> ; $> = io ; pp data.box ; $> = old
         else
           raise NotImplementedError, "Don't know how to write data-format #{format.inspect}"
       end
