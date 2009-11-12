@@ -90,7 +90,7 @@ module NWN
         when :marshal
           Marshal.load(io)
         when :kivinen
-          raise NotImplementedError, "Reading kivinen-style data is not supported."
+          NWN::Gff::Kivinen.load(io)
         else
           raise NotImplementedError, "Don't know how to read #{format}."
       end
@@ -107,9 +107,7 @@ module NWN
         when :marshal
           io.print Marshal.dump(data)
         when :kivinen
-          data.kivinen_format $options[:types], nil, nil do |l,v|
-            io.puts "%s:\t%s" % [l, v]
-          end
+          io.puts NWN::Gff::Kivinen.dump(data)
         when :pretty
           old = $> ; $> = io ; pp data.box ; $> = old
         else
