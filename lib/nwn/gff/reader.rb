@@ -180,8 +180,6 @@ class NWN::Gff::Reader
           exostr[id] = str
         }
         len = total_size + 4
-        # Filter out empty strings.
-        exostr.reject! {|k,v| v.nil? || v.empty?}
         exostr
 
       when :void
