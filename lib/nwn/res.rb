@@ -61,18 +61,18 @@ module NWN
 
     # Wraps n ContentObjects; a baseclass for erf/key encapsulation.
     class Container
+
+      # An array of all ContentObjects indexed by this Container.
       attr_reader :content
 
       def initialize
         @content = []
       end
 
+      # Returns true if the given filename is contained herein.
+      # Case-insensitive.
       def has?(filename)
-        base = File.basename(filename)
-        @content.each {|f|
-          return true if f.filename.downcase == base.downcase
-        }
-        return false
+        filenames.index(filename.downcase) != nil
       end
 
       # Add a content object giving a +filename+ and a optional
@@ -86,17 +86,18 @@ module NWN
         @content << o
       end
 
-      # Returns a list of filenames
+      # Returns a list of filenames, all lowercase.
       def filenames
-        @content.map {|x| x.filename }
+        @content.map {|x| x.filename.downcase }
       end
 
       # Get the ContentObject pointing to the given filename.
       # Raises ENOENT if not mapped.
       def get_content_object filename
-        ret = @content.select {|x| filename.downcase == x.filename }
+        filename = filename.downcase
+        ret = @content.select {|x| filename == x.filename }
         raise Errno::ENOENT,
-          "No ContentObject with the given filename found." if
+          "No ContentObject with the given filename #{filename.inspect} found." if
             ret.size == 0
         ret[0]
       end
@@ -104,7 +105,7 @@ module NWN
       # Get the contents of the given filename.
       # Raises ENOENT if not mapped.
       def get filename
-        get_content_object(filename.downcase).get
+        get_content_object(filename).get
       end
     end
 
@@ -138,7 +139,7 @@ module NWN
           con.has?(filename) or next
           return con.get_content_object(filename)
         }
-        raise Errno::ENOENT, "No ContentObject with the given filename found."
+        raise Errno::ENOENT, "No ContentObject with the given filename #{filename.inspect} found."
       end
 
       # Get the contents of the given filename.
