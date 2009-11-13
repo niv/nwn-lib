@@ -81,8 +81,6 @@ require "spec/rake/spectask"
 desc "Run specs with coverage"
 Spec::Rake::SpecTask.new("spec") do |t|
   t.spec_files = FileList["spec/*_spec.rb"]
-  t.spec_opts  = File.read("spec/spec.opts").split("\n")
-  t.rcov_opts  = File.read("spec/rcov.opts").split("\n")
   t.rcov = true
 end
 
@@ -90,13 +88,10 @@ desc "Run specs without coverage"
 task :default => [:spec_no_cov]
 Spec::Rake::SpecTask.new("spec_no_cov") do |t|
   t.spec_files = FileList["spec/*_spec.rb"]
-  t.spec_opts  = File.read("spec/spec.opts").split("\n")
 end
 
 desc "Run rcov only"
 Spec::Rake::SpecTask.new("rcov") do |t|
-  t.rcov_opts  = File.read("spec/rcov.opts").split("\n")
-  t.spec_opts  = File.read("spec/spec.opts").split("\n")
   t.spec_files = FileList["spec/*_spec.rb"]
   t.rcov = true
 end
