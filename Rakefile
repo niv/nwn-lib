@@ -44,6 +44,7 @@ spec = Gem::Specification.new do |s|
   s.files = %w(COPYING CHANGELOG README Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts,data}/**/*")
   s.require_path = "lib"
   s.bindir = "bin"
+  s.add_dependency('json', '>= 1.1.9')
 end
 
 Rake::GemPackageTask.new(spec) do |p|

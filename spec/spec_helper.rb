@@ -172,7 +172,7 @@ describe "bin helper", :shared => true do
     begin
     Dir.chdir(@tmp)
     Open3.popen3(
-      "ruby", "-I#{incl}",
+      "ruby", "-rubygems", "-I#{incl}",
       binary,
       *va
     ) do |i,o,e|
