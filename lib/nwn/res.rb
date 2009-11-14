@@ -116,7 +116,10 @@ module NWN
         super()
         @path = path
         Dir[path + "/*.*"].each {|x|
-          add_file x
+          begin add_file x
+          rescue ArgumentError => e
+            NWN.log_debug e.to_s
+          end
         }
       end
     end
