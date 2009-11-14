@@ -15,11 +15,17 @@ They should work with NWN2 just as well, since the file format specifications di
 * 2DA V2.0
 * TLK
 
-==== nwn-lib can read and write the following representations of GFF data:
+==== nwn-lib can handle the following representations of GFF data:
 
-* kivinen-style ("gffprint.pl") presentation of data
+===== read & write:
+* native gff
 * yaml presentation of data
+* json presentation of data (with proper UTF-8 conversion)
 * ruby-native marshalling of gff data
+
+===== just write, for now:
+* kivinen-style ("gffprint.pl") presentation of data
+* prettyprint (ruby-specific)
 
 ==== Also in the box:
 
