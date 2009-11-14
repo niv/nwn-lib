@@ -92,6 +92,36 @@ WELLFORMED_TLK = ([
   "1", "22", "333", "4444"
 ].join("")).freeze
 
+WELLFORMED_BIF_0 = ([
+  "BIFF", "V1",
+  var_res_count = 2,
+  fix_res_count = 0,
+  var_table_offset = 20
+].pack("a4 a4 V V V") + [
+  id0 = 124, var_table_offset + (16 * var_res_count),         size0 = 10, type0 = 0,
+  id1 = 125, var_table_offset + (16 * var_res_count) + size0, size1 = 10, type1 = 0,
+].pack("VVVV VVVV") + [
+  "abcdefghij", "0123456789"
+].pack("a* a*")
+).freeze
+
+WELLFORMED_KEY = ([
+  "KEY", "V1",
+  bif_count = 1, key_count = 2,
+  offset_to_file_table = 8 + (4 * 6) + 32,
+  offset_to_key_table = offset_to_file_table + bif_count * 12 + 8,
+  100, 126, ""
+].pack("a4 a4 VVVVVV a32") + [ # file table containing bifs
+  bifsize = WELLFORMED_BIF_0.size, bifname0offset = offset_to_file_table + 12, fnsize = 8, drives = 0,
+].pack("VVvv") + [ #filename table
+  "bif0.bif"
+].pack("a*") + [ # key table
+  "abcdef", 0, 124,
+  "123456", 0, 125
+].pack("a16 v V a16 v V")
+).freeze
+
+
 TWODA_WELLFORMED = <<-EOT
 2DA V2.0
 

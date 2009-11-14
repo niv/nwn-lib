@@ -168,3 +168,43 @@ Now read-only access with a TlkSet:
 
 You cannot use TlkSet to write out .tlk files or modify
 existing entries - it is merely a wrapper.
+
+=== Accessing .key index files
+
+A key file is an index into all shipped game resources.
+
+ key = Key::Key.new(File.new("/path/to/chitin.key", "r"), "/path/to/")
+
+This will lookup all indexed bif files and the resources
+contained within.
+
+=== Resource Manager
+
+The resource manager can be used to simulate a NWN-style
+resource manager to read files from .key/bifs, override,
+haks, and similar sources. Files are located in the reverse
+order that their containers are added to the Manager.
+
+Example detailing the usual NWN lookup procedure:
+
+ nwn_path = "/path/to/nwn/"
+ mgr = Resources::Manager.new
+
+ # First, all the base data files.
+ for key in %w{chitin.key xp1.key xp1patch.key xp2.key xp2patch.key xp3.key}
+   mgr.add_container(Key::Key.new(File.new(nwn_path + key, "r"), nwn_path))
+ end
+
+ # Override
+ mgr.add_container(Resources::DirectoryContainer.new(nwn_path + "override"))
+
+ # All custom haks
+ for hak in %w{a.hak b.hak c.hak}
+   mgr.add_container(Erf::Erf.new(File.new(nwn_path + "hak/" + hak, "r")))
+ end
+
+ # Now you can retrieve any indexed file:
+ puts mgr.get("actions.2da")
+
+Note that initialising the whole Resource Manager this way takes
+a few seconds depending on IO and CPU speed.

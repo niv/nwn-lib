@@ -11,6 +11,7 @@ They should work with NWN2 just as well, since the file format specifications di
 
 * GFF 3.2 (are, git, gic, dlg, itp, ifo, jrl, fac, ssf, ut*, among others)
 * ERF (mod, hak, erf, among others)
+* KEY, BIF (key, data/*.bif)
 * 2DA V2.0
 * TLK
 
