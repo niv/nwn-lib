@@ -269,3 +269,33 @@ Bernhard Stoeckner <elven@swordcoast.net> (10):
       Some medium rare bugfixes, and a overloaded operator for GFF structs,
       which can be used to comfortable walk on trees.
 
+=== 0.4.10
+Bernhard Stoeckner <elven@swordcoast.net> (23):
+      bin/nwn-erf: exit(1) on errors
+      bin/nwn-erf: support extracting parts of archive with -x
+      Erf::Erf: set correct internal year on initialize
+      bin/nwn-gff: fix reading gff data from stdin
+      Gff::Field: transform type to symbols on extend
+      Gff::Struct#path: return full data type by walking the tree on the fly
+      Gff: add :pretty format that prettyprints
+      Gff::Struct, Gff::Field: add generic box/unbox methods
+      Gff: JSON support
+      new ENV NWN_LIB_IN_ENCODING specifies nwn-gff encoding
+      :pretty-print boxes before printing
+      Gff: JSON support adheres NWN_LIB_PRETTY_JSON env var
+      Kivinen-format: refactor into Marshal load/dump interface
+      Res/ContentObject: minor internal cleanups
+      Gff::Reader: do not compact exolocstrs on read-in
+      YAML/JSON support: fix spec, add dep, fix files to not clash with gem names
+      Rakefile: spec support for >= 1.1.9
+      NWN::Key: .key, .bif reading support
+      Resources::DirectoryContainer: do not fail on invalid files in directory
+      documentation updates
+      bin/nwn-erf: do not set description str_ref to 0x0
+      NWN::Gff: refactor API to properly partition different file format handlers
+
+      A swath of bugfixes, JSON read/write, and finally .key and .bif reading support.
+      Also, Resources::Manager got some documentation and a few touches here and there,
+      as did bin/nwn-erf, which supports partial extraction now.
+      For our non-ASCII users, there is a ENV variable that can be used to specify the
+      encoding in which local GFF data is supposed to be in.
