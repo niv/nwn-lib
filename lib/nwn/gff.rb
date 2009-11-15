@@ -58,21 +58,35 @@ module NWN
       :double => 'd',
     }.freeze
 
-    # These field types can never be inlined in YAML.
-    YAMLNonInlineableFields = [:struct, :list, :cexolocstr]
+    # Registers a new format handler that can deal with file formats for nwn-lib gff handling.
+    def self.register_format_handler name, fileFormatRegexp, klass, reads = true, writes = true
+      InputFormats[name.to_sym] = klass if reads
+      OutputFormats[name.to_sym] = klass if writes
+      FileFormatGuesses[fileFormatRegexp] = name.to_sym
+    end
 
-    FileFormats = [:gff, :yaml, :json, :kivinen, :marshal, :pretty]
+    class Handler
+      def self.load io
+        NWN::Gff::Reader.read(io)
+      end
+      def self.dump data, io
+        NWN::Gff::Writer.dump(data, io)
+      end
+    end
 
-    FileFormatGuesses = {
-      /^ut[cdeimpstw]$/ => :gff,
-      /^(git|are|gic)$/ => :gff,
-      /^(mod|ifo|fac|ssf|dlg|itp)$/ => :gff,
-      /^(bic)$/ => :gff,
-      /^ya?ml$/ => :yaml,
-      /^json$/ => :json,
-      /^marshal$/ => :marshal,
-      /^k(ivinen)?$/ => :kivinen,
-    }
+    class Pretty
+      def self.dump data, io
+        old = $> ; $> = io ; pp data.box ; $> = old
+      end
+    end
+
+    InputFormats = {}
+    OutputFormats = {}
+    FileFormatGuesses = {}
+
+    register_format_handler :gff, /^(ut[cdeimpstw]|git|are|gic|mod|ifo|fac|ssf|dlg|itp|bic)$/, NWN::Gff::Handler
+    register_format_handler :marshal, /^marshal$/, Marshal
+    register_format_handler :pretty, /^$/, Pretty, false, true
 
     def self.guess_file_format(filename)
       extension = File.extname(filename.downcase)[1..-1]
@@ -80,38 +94,18 @@ module NWN
     end
 
     def self.read(io, format)
-      return case format
-        when :gff
-          NWN::Gff::Reader.read(io)
-        when :yaml
-          YAML.load(io)
-        when :json
-          NWN::Gff::JSON.load(io)
-        when :marshal
-          Marshal.load(io)
-        when :kivinen
-          NWN::Gff::Kivinen.load(io)
-        else
-          raise NotImplementedError, "Don't know how to read #{format}."
+      if InputFormats[format]
+        InputFormats[format].load(io)
+      else
+        raise NotImplementedError, "Don't know how to read #{format}."
       end
     end
 
     def self.write(io, format, data)
-      case format
-        when :gff
-          NWN::Gff::Writer.dump(data, io)
-        when :yaml
-          io.puts data.to_yaml
-        when :json
-          io.puts NWN::Gff::JSON.dump(data)
-        when :marshal
-          io.print Marshal.dump(data)
-        when :kivinen
-          io.puts NWN::Gff::Kivinen.dump(data)
-        when :pretty
-          old = $> ; $> = io ; pp data.box ; $> = old
-        else
-          raise NotImplementedError, "Don't know how to write data-format #{format.inspect}"
+      if OutputFormats[format]
+        OutputFormats[format].dump(data, io)
+      else
+        raise NotImplementedError, "Don't know how to write #{format}."
       end
     end
   end

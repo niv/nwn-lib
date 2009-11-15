@@ -1,8 +1,20 @@
 # This file contains all YAML-specific loading and dumping code.
 require 'yaml'
 
-# See http://www.taguri.org/ for the exact meaning of this.
-NWN::YAML_DOMAIN = "nwn-lib.elv.es,2008-12"
+class NWN::Gff::YAML
+  # These field types can never be inlined in YAML.
+  NonInlineableFields = [:struct, :list, :cexolocstr]
+
+  # See http://www.taguri.org/ for the exact meaning of this.
+  Domain = "nwn-lib.elv.es,2008-12"
+
+  def self.load io
+    YAML.load(io)
+  end
+  def self.dump data, io
+    io.puts data.to_yaml
+  end
+end
 
 #:stopdoc:
 class Array
@@ -34,7 +46,7 @@ end
 
 module NWN::Gff::Struct
   def to_yaml_type
-    "!#{NWN::YAML_DOMAIN}/struct"
+    "!#{NWN::Gff::YAML::Domain}/struct"
   end
 
   def to_yaml(opts = {})
@@ -43,7 +55,7 @@ module NWN::Gff::Struct
         # Inline certain structs that are small enough.
         map.style = :inline if self.size <= 1 &&
           self.values.select {|x|
-            NWN::Gff::YAMLNonInlineableFields.index(x['type'])
+            NWN::Gff::YAML::NonInlineableFields.index(x['type'])
           }.size == 0
 
         map.add('__' + 'data_type', @data_type) if @data_type
@@ -63,7 +75,7 @@ module NWN::Gff::Field
   def to_yaml(opts = {})
     YAML::quick_emit(nil, opts) do |out|
       out.map(taguri, to_yaml_style) do |map|
-        map.style = :inline unless NWN::Gff::YAMLNonInlineableFields.index(self['type'])
+        map.style = :inline unless NWN::Gff::YAML::NonInlineableFields.index(self['type'])
         map.add('type', self['type'])
         map.add('str_ref', self['str_ref']) if has_str_ref?
         map.add('value', self['value'])
@@ -73,7 +85,7 @@ module NWN::Gff::Field
 end
 
 # This parses the struct and extends all fields with their proper type.
-YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
+YAML.add_domain_type(NWN::Gff::YAML::Domain,'struct') {|t,hash|
   struct = {}
   struct.extend(NWN::Gff::Struct)
 
@@ -101,3 +113,5 @@ YAML.add_domain_type(NWN::YAML_DOMAIN,'struct') {|t,hash|
 
   struct
 }
+
+NWN::Gff.register_format_handler :yaml, /^(y|yml|yaml)$/, NWN::Gff::YAML

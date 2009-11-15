@@ -25,11 +25,13 @@ module NWN::Gff::JSON
     NWN::Gff::Struct.unbox!(JSON.parse(json), nil)
   end
 
-  def self.dump struct
+  def self.dump struct, io
     if NWN.setting(:pretty_json)
-      JSON.pretty_generate(struct)
+      io.puts JSON.pretty_generate(struct)
     else
-      JSON.generate(struct)
+      io.print JSON.generate(struct)
     end
   end
 end
+
+NWN::Gff.register_format_handler :json, /^json$/, NWN::Gff::JSON

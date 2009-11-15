@@ -1,22 +1,14 @@
 module NWN::Gff::Kivinen
   def self.load io
     raise NotImplementedError, "Reading kivinen not supported"
-
-    kv = if io.respond_to?(:to_str)
-      io.to_str
-    elsif io.respond_to?(:to_io)
-      io.to_io.read
-    else
-      io.read
-    end
   end
 
-  def self.dump struct
+  def self.dump struct, io
     ret = ""
     kivinen_format struct, $options[:types], nil, nil do |l,v|
       ret += "%s:\t%s\n" % [l, v]
     end
-    ret
+    io.puts ret
   end
 
   # Parses +s+ as an arbitary GFF object and yields for each field found,
@@ -71,3 +63,5 @@ module NWN::Gff::Kivinen
     }
   end
 end
+
+NWN::Gff.register_format_handler :kivinen, /^k(ivinen)?$/, NWN::Gff::Kivinen, false, true

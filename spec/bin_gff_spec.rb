@@ -3,10 +3,10 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 describe "nwn-gff" do
   it_should_behave_like "bin helper"
 
-  NWN::Gff::FileFormats.each do |in_format|
+  NWN::Gff::InputFormats.each do |in_format, handler|
     inf = in_format.to_s
 
-    NWN::Gff::FileFormats.each do |out_format|
+    NWN::Gff::OutputFormats.each do |out_format, handler|
       otf = out_format.to_s
 
       it "converts #{inf} to #{otf}" do

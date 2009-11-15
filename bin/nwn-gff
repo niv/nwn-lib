@@ -26,8 +26,8 @@ begin OptionParser.new do |o|
   o.on "-i", "--infile FILE", "Input file (default: stdin)" do |f|
     $options[:infile] = f
   end
-  o.on "-l, ""--infile-format FORMAT", [:auto] + NWN::Gff::FileFormats,
-      "Input format (#{([:auto] + NWN::Gff::FileFormats).join(', ')})",
+  o.on "-l, ""--infile-format FORMAT", [:auto] + NWN::Gff::InputFormats.keys,
+      "Input format (#{([:auto] + NWN::Gff::InputFormats.keys).join(', ')})",
       "(default: auto - try to guess based on extension)" do |f|
     $options[:informat] = f
   end
@@ -35,8 +35,8 @@ begin OptionParser.new do |o|
   o.on "-o", "--outfile FILE", "Output file (default: stdout)" do |f|
     $options[:outfile] = f
   end
-  o.on "-k", "--outfile-format FORMAT", [:in, :none] + NWN::Gff::FileFormats,
-      "Output format (#{([:none, :in] + NWN::Gff::FileFormats).join(', ')})",
+  o.on "-k", "--outfile-format FORMAT", [:in, :none] + NWN::Gff::OutputFormats.keys,
+      "Output format (#{([:none, :in] + NWN::Gff::OutputFormats.keys).join(', ')})",
       "(default: in when stdout, try to guess based on extension otherwise)" do |f|
     $options[:outformat] = f
   end
