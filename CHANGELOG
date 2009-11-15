@@ -293,9 +293,18 @@ Bernhard Stoeckner <elven@swordcoast.net> (23):
       documentation updates
       bin/nwn-erf: do not set description str_ref to 0x0
       NWN::Gff: refactor API to properly partition different file format handlers
+      0.4.10-rel
 
       A swath of bugfixes, JSON read/write, and finally .key and .bif reading support.
       Also, Resources::Manager got some documentation and a few touches here and there,
       as did bin/nwn-erf, which supports partial extraction now.
       For our non-ASCII users, there is a ENV variable that can be used to specify the
       encoding in which local GFF data is supposed to be in.
+
+=== 0.4.10.1
+Bernhard Stoeckner <elven@swordcoast.net> (2):
+      JSON support: remove hard dep from Rakefile, load if available
+      Rakefile release target: use new rubyforge binary version API
+      0.4.10.1-rel
+
+      Late night Rakefile fun.
