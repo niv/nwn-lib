@@ -158,7 +158,6 @@ case $action
 
     if $descriptions
       erf.localized_strings.merge! $descriptions
-      erf.description_str_ref = 0
     end
 
     ARGV.each {|a|
@@ -175,7 +174,6 @@ case $action
 
       if $descriptions
         erf.localized_strings.merge! $descriptions
-        erf.description_str_ref = 0
       end
 
       ARGV.each {|arg|
