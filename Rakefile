@@ -70,7 +70,6 @@ end
 
 desc "Upload nwn-lib gem to rubyforge"
 task :release => [:package] do
-  sh %{rubyforge login}
   sh %{rubyforge add_release nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.tgz}
   sh %{rubyforge add_file nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.gem}
 end
