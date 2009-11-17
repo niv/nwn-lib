@@ -218,7 +218,7 @@ module NWN::Gff::Field
 
   # Deep-unboxes a Hash, e.g. iterating down, converting all strings
   # from the native charset.
-  def self.unbox! element, parent_label, parent = nil
+  def self.unbox! element, parent_label, parent
     element.extend(NWN::Gff::Field)
     element.field_label = parent_label
     element.parent = parent
