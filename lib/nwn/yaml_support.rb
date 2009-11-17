@@ -106,6 +106,8 @@ YAML.add_domain_type(NWN::Gff::YAML::Domain,'struct') {|t,hash|
     element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF if element.respond_to?('str_ref=')
 
     element.extend_meta_classes
+
+    element.field_value.element = element if element.field_value.is_a?(NWN::Gff::Struct)
     element.validate
 
     struct[label] = element
