@@ -10,6 +10,8 @@ unless Object.const_defined?('NWN')
   include NWN
 end
 
+NWN.setting(:debug, 0)
+
 GffFieldValidations = {
   :void => [[""], []],
   :byte => [[0, 255], [256, -1]],

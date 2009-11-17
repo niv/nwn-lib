@@ -1,13 +1,6 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe TwoDA::Table do
-  before do
-    NWN.setting(:debug, "0")
-  end
-  after do
-    NWN.setting(:debug, nil)
-  end
-
   it "parses wellformed files" do
     proc { subject.parse(TWODA_WELLFORMED) }.should_not raise_error ArgumentError
   end
