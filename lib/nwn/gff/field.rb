@@ -12,6 +12,27 @@
 #
 #  field['value'], field['type'], field['str_ref'], field['label']
 module NWN::Gff::Field
+
+  # The default values of fields.
+  DEFAULT_VALUES = {
+    :byte => 0,
+    :char => 0,
+    :word => 0,
+    :short => 0,
+    :dword => 0,
+    :int => 0,
+    :dword64 => 0,
+    :int64 => 0,
+    :float => 0.0,
+    :double => 0.0,
+    :cexostr => '',
+    :resref => '',
+    :cexolocstr => {}.extend(NWN::Gff::CexolocstrValue),
+    :void => '',
+    :struct => NWN::Gff::Struct.new,
+    :list => [],
+  }
+
   # The parent struct.
   # This is set internally by Gff::Reader on load.
   attr_accessor :parent

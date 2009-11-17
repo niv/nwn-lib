@@ -112,8 +112,8 @@ module NWN
 end
 
 require 'nwn/gff/struct'
+require 'nwn/gff/cexolocstr'
 require 'nwn/gff/field'
 require 'nwn/gff/list'
-require 'nwn/gff/cexolocstr'
 require 'nwn/gff/reader'
 require 'nwn/gff/writer'

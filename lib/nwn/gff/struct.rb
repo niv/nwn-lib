@@ -83,19 +83,28 @@ module NWN::Gff::Struct
   #      ..
   #    end
   #  end
-  def add_field label, type, value, &block
+  def add_field label, type, value = nil, &block
+    value ||= NWN::Gff::Field::DEFAULT_VALUES[type] || raise(ArgumentError,
+      "type #{type.inspect} requires explicit value")
     self[label] = NWN::Gff::Field.new(label, type, value)
     self[label].parent = self
     yield(self[label]) if block_given?
+    if self[label].field_value.is_a?(NWN::Gff::Struct)
+      self[label].field_value.element = self[label]
+    end
     self[label]
   end
+
 
   def method_missing meth, *av, &block # :nodoc:
     if meth.to_s =~ /^add_(.+)$/
       if NWN::Gff::Types.index($1.to_sym)
-        av.size == 2 or super
+        av.size >= 1 || av.size <= 2 or raise(NoMethodError,
+          "undefined method #{meth} (requires two arguments to infer add_any)")
         t = $1.to_sym
-        f = add_field(av[0], t, av[1], &block)
+        b = av[1] || NWN::Gff::Field::DEFAULT_VALUES[t] || raise(NoMethodError,
+          "undefined method #{meth} (type #{t.inspect} requires explicit value)")
+        f = add_field(av[0], t, b, &block)
         return f
       else
         super

@@ -79,4 +79,14 @@ describe "Gff::Struct" do
     t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
     Gff::Reader.read(StringIO.new t.to_gff).should == t
   end
+
+  Gff::Field::DEFAULT_VALUES.each {|type, val|
+    it "uses default values for add_#{type}, add_field .., #{type}" do
+      struct = Gff::Struct.new
+      struct.add_field 'explicit', type
+      struct.send("add_#{type}".to_sym, 'implicit')
+      (struct / 'explicit$').should == val
+      (struct / 'implicit$').should == val
+    end
+  }
 end
