@@ -94,7 +94,7 @@ module NWN::Gff::Field
       parent_path + "[#{idx}]/" + field_label
     else
       parent_path + "/" + field_label
-    end
+    end.gsub(%r{/+}, "/")
   end
 
   # This extends this field object and its' value with the

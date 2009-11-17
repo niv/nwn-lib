@@ -3,16 +3,6 @@
 module NWN::Gff::Struct
   DEFAULT_DATA_VERSION = "V3.2"
 
-  # Each Gff::Struct has a data_type, which describes the type of data the struct contains.
-  # For top-level structs, this equals the data type written to the GFF file ("UTI",
-  # for example); for sub structures, this is usually the top-level data type + the
-  # field label ("UTI/PropertiesList", for example).
-  #
-  # This is set for completeness' sake, but is not required to save the struct.
-  # Scripts could use this, for example, to reliably re-attach a Item within
-  # /ItemList/ somewhere else, or export it as .uti.
-  attr_accessor :data_type
-
   # The file version. Usually "V3.2" for root structs,
   # and nil for sub-structs.
   attr_accessor :data_version
@@ -28,18 +18,35 @@ module NWN::Gff::Struct
   # point to this object).
   attr_reader :element
 
-  # Returns the path to this struct (which is usually __data_type)
   def path
     if @element
       @element.path
     else
-      @data_type.to_s
+      "/"
     end
+  end
+
+  # Each Gff::Struct has a data_type, which describes the type of data the struct contains.
+  # For top-level structs, this equals the data type written to the GFF file ("UTI",
+  # for example); for sub structures, this is usually nil, but can be overriden by
+  # users explicitly to carry some meta-data (e.g. explicitly set UTC/ItemList[0] to UTI).
+  # This is not done automatically, however.
+  #
+  # Scripts could use this, for example, to reliably re-attach a Item within
+  # /ItemList/ somewhere else, or export it as .uti.
+  def data_type
+    @data_type
+  end
+
+  # Overrides the data type (used by the built-in file format readers).
+  def data_type= k
+    NWN.log_debug("Setting explicit data_type for parented element") if @element
+    @data_type = k
   end
 
   def element= e #:nodoc:
     @element = e
-    @data_type = self.element.parent.path + "/" + self.element.l
+    NWN.log_debug("Re-parenting a struct with explicit data_type #{@data_type.inspect}") if @data_type
   end
 
   # Dump this struct as GFF binary data.
@@ -217,15 +224,15 @@ module NWN::Gff::Struct
   # the native charset.
   def self.unbox! o, parent = nil
     o.extend(NWN::Gff::Struct)
+    o.element = parent if parent
     o.struct_id = o.delete('__struct_id')
-    o.data_type = if o['__data_type']
-      o.delete('__data_type')
-    else
-      o.path
-    end
+    o.data_type = o.delete('__data_type')
     o.data_version = o.delete('__data_version')
 
-    o.element = parent if parent
+    NWN.log_debug("Unboxed without a root data type") if
+      !parent && !o.data_type
+    NWN.log_debug("Unboxed with explicit data type #{o.data_type.inspect}") if
+      parent && o.data_type
 
     o.each {|label,element|
       o[label] = NWN::Gff::Field.unbox!(element, label, o)
@@ -239,12 +246,14 @@ module NWN::Gff::Struct
   def box
     t = Hash[self]
     t.merge!({
-      '__struct_id' => self.struct_id,
-      '__data_version' => self.data_version,
+      '__struct_id' => self.struct_id
     })
     t.merge!({
+      '__data_version' => self.data_version,
+    }) if self.data_version && self.data_version != DEFAULT_DATA_VERSION
+    t.merge!({
       '__data_type' => self.data_type
-    }) if self.element == nil
+    }) if @data_type
     t
   end
 
