@@ -308,3 +308,18 @@ Bernhard Stoeckner <elven@swordcoast.net> (2):
       0.4.10.1-rel
 
       Late night Rakefile fun.
+
+=== 0.4.11
+Bernhard Stoeckner <elven@swordcoast.net> (7):
+      Gff::Struct.add_*: support default values for new fields
+      Gff::YAML: fix setting proper .element for direct child-structs
+      specs: run without debug logs, un-breaks bin/* specs
+      Field.unbox! always takes parent parameter
+      Gff::Struct: API chg, path w/o data_type, data_type changes
+      Gff::JSON: specs
+      Gff::Kivinen: rename kivinen_format -> format, add spec
+      0.4.11-rel
+
+      A mostly-maintenance release with some API changes. The most invasive changes
+      are some method renames. New are some sane default values for Struct#add_*,
+      and a few more specs. YAML now sets correct .element references.
