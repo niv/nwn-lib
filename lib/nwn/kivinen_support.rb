@@ -5,7 +5,7 @@ module NWN::Gff::Kivinen
 
   def self.dump struct, io
     ret = ""
-    kivinen_format struct, $options[:types], nil, nil do |l,v|
+    format struct, $options[:types], nil, nil do |l,v|
       ret += "%s:\t%s\n" % [l, v]
     end
     io.puts ret
@@ -20,7 +20,7 @@ module NWN::Gff::Kivinen
   # [+add_prefix+] Add a prefix <tt>(unknown type)</tt> of no type information can be derived from the input.
   # [+file_type+]  File type override. If non-null, add a global struct header with the given file type (useful for passing to gffencode.pl)
   # [+struct_id+]  Provide a struct_id override (if printing a struct).
-  def self.kivinen_format struct, types_too = false, add_prefix = true, file_type = nil, struct_id = nil, &block
+  def self.format struct, types_too = false, add_prefix = true, file_type = nil, struct_id = nil, &block
 
     if types_too
       yield("/", "")
