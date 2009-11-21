@@ -12,7 +12,7 @@ module NWN::Gff::Field
   end
 end
 
-module NWN::Gff::JSON
+module NWN::Gff::Handler::JSON
   def self.load io
     json = if io.respond_to?(:to_str)
       io.to_str
@@ -26,12 +26,16 @@ module NWN::Gff::JSON
   end
 
   def self.dump struct, io
-    if NWN.setting(:pretty_json)
-      io.puts JSON.pretty_generate(struct)
+    d = if NWN.setting(:pretty_json)
+      d = ::JSON.pretty_generate(struct)
+      io.puts d
+      d.size
     else
-      io.print JSON.generate(struct)
+      d = ::JSON.generate(struct)
+      io.print d
+      d.size
     end
   end
 end
 
-NWN::Gff.register_format_handler :json, /^json$/, NWN::Gff::JSON
+NWN::Gff::Handler.register :json, /^json$/, NWN::Gff::Handler::JSON

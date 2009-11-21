@@ -17,6 +17,58 @@ module NWN
     # not exist.
     class GffPathInvalidError < RuntimeError; end
 
+    # A namesoace for all Gff file format handlers.
+    module Handler
+      # Registers a new format handler that can deal with file formats for nwn-lib gff handling.
+      #
+      # [+name+]   The name of this format as a symbol. Must be unique.
+      # [+fileFormatRegexp+] A regular expression matching file extensions for auto-detection.
+      # [+klass+]  A object that responds to load(io) and dump(gff,io). load(io) reads from io
+      #            and always returns a NWN::Gff::Struct describing a root struct, dump(gff, io)
+      #            dumps the gff root struct in the handlers format to io and returns the number
+      #            of bytes written.
+      # [+reads+]  Boolean, indicates if this handler can read it's format and return gff data.
+      # [+writes+] Boolean, indicates if this handler can emit gff data in it's format.
+      def self.register name, fileFormatRegexp, klass, reads = true, writes = true
+        NWN::Gff::InputFormats[name.to_sym] = klass if reads
+        NWN::Gff::OutputFormats[name.to_sym] = klass if writes
+        NWN::Gff::FileFormatGuesses[fileFormatRegexp] = name.to_sym
+      end
+
+      module Gff
+        def self.load io
+          NWN::Gff::Reader.read(io)
+        end
+        def self.dump data, io
+          NWN::Gff::Writer.dump(data, io)
+        end
+      end
+
+      module Pretty
+        def self.dump data, io
+          old = $> ; $> = StringIO.new
+          pp data.box
+          sz = $>.pos
+          $>.seek(0)
+          io.write $>.read
+          $> = old
+          sz
+        end
+      end
+
+      module Marshal
+        def self.dump data, io
+          d = ::Marshal.dump(data)
+          io.write(d)
+          d.size
+        end
+
+        def self.load io
+          ::Marshal.load(io)
+        end
+      end
+    end
+
     # This hash lists all possible NWN::Gff::Field types.
     Types = {
       0 => :byte,
@@ -58,35 +110,13 @@ module NWN
       :double => 'd',
     }.freeze
 
-    # Registers a new format handler that can deal with file formats for nwn-lib gff handling.
-    def self.register_format_handler name, fileFormatRegexp, klass, reads = true, writes = true
-      InputFormats[name.to_sym] = klass if reads
-      OutputFormats[name.to_sym] = klass if writes
-      FileFormatGuesses[fileFormatRegexp] = name.to_sym
-    end
-
-    class Handler
-      def self.load io
-        NWN::Gff::Reader.read(io)
-      end
-      def self.dump data, io
-        NWN::Gff::Writer.dump(data, io)
-      end
-    end
-
-    class Pretty
-      def self.dump data, io
-        old = $> ; $> = io ; pp data.box ; $> = old
-      end
-    end
-
     InputFormats = {}
     OutputFormats = {}
     FileFormatGuesses = {}
 
-    register_format_handler :gff, /^(ut[cdeimpstw]|git|are|gic|mod|ifo|fac|ssf|dlg|itp|bic)$/, NWN::Gff::Handler
-    register_format_handler :marshal, /^marshal$/, Marshal
-    register_format_handler :pretty, /^$/, Pretty, false, true
+    Handler.register :gff, /^(ut[cdeimpstw]|git|are|gic|mod|ifo|fac|ssf|dlg|itp|bic)$/, NWN::Gff::Handler::Gff
+    Handler.register :marshal, /^marshal$/, NWN::Gff::Handler::Marshal
+    Handler.register :pretty, /^$/, NWN::Gff::Handler::Pretty, false, true
 
     def self.guess_file_format(filename)
       extension = File.extname(filename.downcase)[1..-1]

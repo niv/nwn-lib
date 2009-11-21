@@ -1,4 +1,4 @@
-module NWN::Gff::Kivinen
+module NWN::Gff::Handler::Kivinen
   def self.load io
     raise NotImplementedError, "Reading kivinen not supported"
   end
@@ -9,6 +9,7 @@ module NWN::Gff::Kivinen
       ret += "%s:\t%s\n" % [l, v]
     end
     io.puts ret
+    ret.size
   end
 
   # Parses +s+ as an arbitary GFF object and yields for each field found,
@@ -64,4 +65,4 @@ module NWN::Gff::Kivinen
   end
 end
 
-NWN::Gff.register_format_handler :kivinen, /^k(ivinen)?$/, NWN::Gff::Kivinen, false, true
+NWN::Gff::Handler.register :kivinen, /^k(ivinen)?$/, NWN::Gff::Handler::Kivinen, false, true

@@ -18,6 +18,7 @@ describe "Gff.read/write API" do
   {
     :gff => %w{utc utd ute uti utm utp uts utt utw git are gic mod ifo fac ssf dlg itp bic},
     :yaml => %w{yml yaml},
+    :json => %w{json},
     :kivinen => %w{k kivinen},
     :marshal => %w{marshal}
   }.each {|expect, arr|
@@ -46,21 +47,28 @@ describe "Gff::*" do
     t2.should == t
   end
 
-  it "writes to io and returns the number of written bytes" do
-    t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
-    out = StringIO.new
-    v = Gff::Writer.dump(t, out)
-    v.should == out.size
-    out.seek(0)
-    v = out.read(v)
-    t2 = wellformed_verify v
-    t2.should == t
+  NWN::Gff::OutputFormats.keys.each do |fmt|
+    it "#{fmt} writes to io and returns the number of written bytes" do
+      t = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
+      out = StringIO.new
+      v = Gff.write(out, fmt, t)
+      v.should == out.pos
+    end
   end
 
-  it "fails on not enough data" do
-    proc {
-      wellformed_verify WELLFORMED_GFF[0 .. -2]
-    }.should raise_error IOError
+  (NWN::Gff::OutputFormats.keys & NWN::Gff::InputFormats.keys).each do |fmt|
+    it "#{fmt} fails on not enough data" do
+      proc {
+        gff = Gff::Reader.read(StringIO.new WELLFORMED_GFF)
+        out = StringIO.new
+        Gff.write(out, fmt, gff)
+        size = out.pos
+        out.seek(0)
+        out.truncate(size - 20)
+        Gff.read(out, fmt)
+      }.should raise_error
+    end
+
   end
 
 end

@@ -8,7 +8,7 @@ describe "Kivinen Support" do
 
     expected = KIVINEN_EXPECT.dup
 
-    NWN::Gff::Kivinen.format(g, true) do |label, entry|
+    NWN::Gff::Handler::Kivinen.format(g, true) do |label, entry|
       w = expected.shift
       label.should == w[0]
       case entry
