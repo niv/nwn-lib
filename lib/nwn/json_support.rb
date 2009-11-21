@@ -27,14 +27,12 @@ module NWN::Gff::Handler::JSON
 
   def self.dump struct, io
     d = if NWN.setting(:pretty_json)
-      d = ::JSON.pretty_generate(struct)
-      io.puts d
-      d.size
+      ::JSON.pretty_generate(struct)
     else
-      d = ::JSON.generate(struct)
-      io.print d
-      d.size
+      ::JSON.generate(struct)
     end
+    io.puts d
+    d.size + 1
   end
 end
 
