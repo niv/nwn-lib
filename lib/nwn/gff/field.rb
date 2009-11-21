@@ -228,10 +228,10 @@ module NWN::Gff::Field
     case element.field_type
       when :cexolocstr
         element.field_value.each {|x,y|
-          element.field_value[x.to_i] = NWN::IconvNativeToGff.call.iconv(element.field_value.delete(x))
+          element.field_value[x.to_i] = NWN.iconv_native_to_gff(element.field_value.delete(x))
         }
       when :cexostr
-        element.field_value = NWN::IconvNativeToGff.call.iconv(element.field_value)
+        element.field_value = NWN.iconv_native_to_gff(element.field_value)
 
       when :list
         element.field_value.each_with_index {|x,idx|
@@ -252,10 +252,10 @@ module NWN::Gff::Field
     case field_type
       when :cexolocstr
         t['value'].each {|x,y|
-          t['value'][x] = NWN::IconvGffToNative.call.iconv(y)
+          t['value'][x] = NWN.iconv_gff_to_native(y)
         }
       when :cexostr
-        t['value'] = NWN::IconvGffToNative.call.iconv(t['value'])
+        t['value'] = NWN.iconv_gff_to_native(t['value'])
     end
     t
   end

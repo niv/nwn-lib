@@ -2,7 +2,8 @@ require 'iconv'
 
 module NWN
   SETTING_DEFAULT_VALUES = {
-    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1'
+    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1',
+    'NWN_LIB_OUT_ENCODING' => 'UTF-8'
   }
 
   # This writes a internal warnings and debug messages to stderr.
@@ -37,8 +38,25 @@ module NWN
     end
   end
 
-  IconvGffToNative = proc { Iconv.new('utf-8', NWN.setting(:in_encoding)) }
-  IconvNativeToGff = proc { Iconv.new(NWN.setting(:in_encoding), 'utf-8') }
+  IconvState = {} #:nodoc:
+
+  # Converts text from native format (such as json) to Gff (required by NWN).
+  def self.iconv_native_to_gff text
+    if IconvState[:in] != NWN.setting(:in_encoding) ||
+        IconvState[:out] != NWN.setting(:out_encoding)
+      IconvState[:in_i] = Iconv.new(NWN.setting(:in_encoding), NWN.setting(:out_encoding))
+    end
+    IconvState[:in_i].iconv(text)
+  end
+
+  # Converts text from Gff format to native/external, such as json (usually UTF-8).
+  def self.iconv_gff_to_native text
+    if IconvState[:in] != NWN.setting(:in_encoding) ||
+        IconvState[:out] != NWN.setting(:out_encoding)
+      IconvState[:out_i] = Iconv.new(NWN.setting(:out_encoding), NWN.setting(:in_encoding))
+    end
+    IconvState[:out_i].iconv(text)
+  end
 end
 
 NWN::TwoDA::Cache.setup NWN.setting("2da_location") if
