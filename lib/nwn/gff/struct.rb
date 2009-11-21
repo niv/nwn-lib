@@ -40,7 +40,8 @@ module NWN::Gff::Struct
 
   # Overrides the data type (used by the built-in file format readers).
   def data_type= k
-    NWN.log_debug("Setting explicit data_type for parented element") if @element
+    k = nil if k == ""
+    NWN.log_debug("Setting explicit data_type for parented element") if k && @element
     @data_type = k
   end
 
