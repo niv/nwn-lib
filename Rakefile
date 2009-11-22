@@ -68,12 +68,6 @@ task :uninstall => [:clean] do
   sh %{sudo gem1.8 uninstall #{NAME}}
 end
 
-desc "Upload nwn-lib gem to rubyforge"
-task :release => [:package] do
-  sh %{rubyforge add_release nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.tgz}
-  sh %{rubyforge add_file nwn-lib #{NAME} #{VERS} pkg/#{NAME}-#{VERS}.gem}
-end
-
 require "spec/rake/spectask"
 
 desc "Run specs with coverage"
