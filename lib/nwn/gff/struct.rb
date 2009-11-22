@@ -47,7 +47,7 @@ module NWN::Gff::Struct
 
   def element= e #:nodoc:
     @element = e
-    NWN.log_debug("Re-parenting a struct with explicit data_type #{@data_type.inspect}") if @data_type
+    NWN.log_debug("Re-parenting a struct with explicit data_type #{@data_type.inspect}") if e && @data_type
   end
 
   # Dump this struct as GFF binary data.
