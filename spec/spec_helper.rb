@@ -10,6 +10,8 @@ unless Object.const_defined?('NWN')
   include NWN
 end
 
+$options = {}
+
 NWN.setting(:debug, 0)
 
 GffFieldValidations = {
