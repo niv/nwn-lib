@@ -30,9 +30,11 @@ module NWN
       # [+reads+]  Boolean, indicates if this handler can read it's format and return gff data.
       # [+writes+] Boolean, indicates if this handler can emit gff data in it's format.
       def self.register name, fileFormatRegexp, klass, reads = true, writes = true
+        raise ArgumentError, "Handler for #{name.inspect} already registered." if
+          NWN::Gff::InputFormats[name.to_sym] || NWN::Gff::OutputFormats[name.to_sym]
         NWN::Gff::InputFormats[name.to_sym] = klass if reads
         NWN::Gff::OutputFormats[name.to_sym] = klass if writes
-        NWN::Gff::FileFormatGuesses[fileFormatRegexp] = name.to_sym
+        NWN::Gff::FileFormatGuesses[name.to_sym] = fileFormatRegexp
       end
 
       module Gff
@@ -120,7 +122,12 @@ module NWN
 
     def self.guess_file_format(filename)
       extension = File.extname(filename.downcase)[1..-1]
-      FileFormatGuesses[FileFormatGuesses.keys.select {|key| extension =~ key}[0]]
+      matches = FileFormatGuesses.select {|fmt,rx| extension =~ rx }
+      if matches.size == 1
+        matches[0][0]
+      else
+        nil
+      end
     end
 
     def self.read(io, format)
