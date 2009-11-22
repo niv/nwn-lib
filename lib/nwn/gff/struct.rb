@@ -229,6 +229,7 @@ module NWN::Gff::Struct
     o.struct_id = o.delete('__struct_id')
     o.data_type = o.delete('__data_type')
     o.data_version = o.delete('__data_version')
+    o.data_version ||= NWN::Gff::Struct::DEFAULT_DATA_VERSION
 
     NWN.log_debug("Unboxed without a root data type") if
       !parent && !o.data_type
@@ -251,7 +252,8 @@ module NWN::Gff::Struct
     })
     t.merge!({
       '__data_version' => self.data_version,
-    }) if self.data_version && self.data_version != DEFAULT_DATA_VERSION
+    }) if self.data_version && self.data_version !=
+      NWN::Gff::Struct::DEFAULT_DATA_VERSION
     t.merge!({
       '__data_type' => self.data_type
     }) if @data_type
