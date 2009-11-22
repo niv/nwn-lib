@@ -29,9 +29,6 @@ class NWN::Gff::Reader
     list_indices_offset, list_indices_count =
       @io.e_read(160, "header").unpack("a4a4 VV VV VV VV VV VV")
 
-    raise GffError, "Unknown version #{version}; not a gff?" unless
-      version == "V3.2"
-
     raise GffError, "struct offset at wrong place, not a gff?" unless
       struct_offset == 56
 
