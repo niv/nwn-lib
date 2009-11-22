@@ -8,6 +8,7 @@ Thread.abort_on_exception = true
 $options = {
   :backup => nil,
   :encoding => nil,
+  :out_encoding => nil,
   :force => false,
   :infile => '-',
   :outfile => '-',
@@ -52,6 +53,10 @@ begin OptionParser.new do |o|
   o.on "--encoding ENCODING", "sets the used input encoding in which your NWN",
       "files are encoded in" do |e|
     $options[:encoding] = e
+  end
+  o.on "--out-encoding ENCODING", "sets the used output encoding",
+      "(defaults to UTF-8)" do |e|
+    $options[:out_encoding] = e
   end
 
   o.on "-1", "--nwn1", "Allow 16 byte resrefs." do
@@ -115,9 +120,8 @@ end
 $options[:informat] or fail "No input format specified."
 $options[:outformat] or fail "No output format specified."
 
-if $options[:encoding]
-  NWN.setting(:in_encoding, $options[:encoding])
-end
+NWN.setting(:in_encoding, $options[:encoding]) if $options[:encoding]
+NWN.setting(:out_encoding, $options[:out_encoding]) if $options[:out_encoding]
 
 if :auto == $options[:informat]
   $options[:informat] = NWN::Gff.guess_file_format($options[:infile].downcase)
