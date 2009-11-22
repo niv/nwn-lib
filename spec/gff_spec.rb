@@ -19,6 +19,7 @@ describe "Gff.read/write API" do
     :gff => %w{utc utd ute uti utm utp uts utt utw git are gic mod ifo fac ssf dlg itp bic},
     :yaml => %w{yml yaml},
     :json => %w{json},
+    :nxml => %w{nxml},
     :kivinen => %w{k kivinen},
     :marshal => %w{marshal}
   }.each {|expect, arr|

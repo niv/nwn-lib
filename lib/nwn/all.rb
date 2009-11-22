@@ -15,4 +15,11 @@ rescue LoadError => e
   NWN.log_debug "json support not available, install json or json_pure to enable"
 end
 require 'nwn/kivinen_support'
+begin
+  require 'xml'
+  require 'nwn/xml_support'
+rescue LoadError => e
+  NWN.log_debug "nxml and modpacker support not available, install libxml-ruby to enable"
+end
+
 require 'nwn/scripting'

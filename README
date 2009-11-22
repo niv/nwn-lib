@@ -22,6 +22,8 @@ They should work with NWN2 just as well, since the file format specifications di
 * yaml presentation of data
 * json presentation of data (with proper UTF-8 conversion)
 * ruby-native marshalling of gff data
+* a compact native xml format
+* nwntools.sf.net-style xml files ("modpacker")
 
 ===== just write, for now:
 * kivinen-style ("gffprint.pl") presentation of data
