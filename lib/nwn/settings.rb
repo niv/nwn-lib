@@ -30,7 +30,7 @@ module NWN
   def self.setting sym, value = :_invalid_
     name = "NWN_LIB_#{sym.to_s.upcase}"
     if value != :_invalid_
-      ret = ENV[name] == "0" ? false : ENV[name]
+      ret = setting(sym)
       ENV[name] = value.to_s if value != :_invalid_
       ret
     else
