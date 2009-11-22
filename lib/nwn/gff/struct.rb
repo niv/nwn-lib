@@ -3,8 +3,8 @@
 module NWN::Gff::Struct
   DEFAULT_DATA_VERSION = "V3.2"
 
-  # The file version. Usually "V3.2" for root structs,
-  # and nil for sub-structs.
+  # The file version. Usually "V3.2". If not given in a source
+  # format, DEFAULT_DATA_VERSION is inferred and set for all structs.
   attr_accessor :data_version
 
   # GFF struct type. The default is 0xffffffff.
@@ -63,7 +63,7 @@ module NWN::Gff::Struct
   #
   # You can pass a block to this method, which will receive the newly-created
   # Struct as the only argument.
-  def self.new struct_id = 0xffffffff, data_type = nil, data_version = nil
+  def self.new struct_id = 0xffffffff, data_type = nil, data_version = DEFAULT_DATA_VERSION
     s = {}.extend(self)
     s.struct_id = struct_id
     s.data_type = data_type
