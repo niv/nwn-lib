@@ -24,6 +24,11 @@ resource files you are working with.
 If you want to suppress them for some reason, set NWN_LIB_DEBUG to "0" or "off". Any
 other value will indicate that you want to see the messages.
 
+== NWN_LIB_DEBUG_TRACES
+
+Set to non-nil to print full stack traces for each debug message emitted by NWN_LIB_DEBUG.
+Default is not to print them, just the first non-library-frame.
+
 == NWN_LIB_RESREF16
 
 Set this to "1" if you are sure that you are only working with NWN1 files. This will

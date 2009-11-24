@@ -18,9 +18,18 @@ module NWN
     # Do not print debug messages if explicitly turned off
     return false if [false, "off"].index(setting(:debug))
 
-    pa = caller[0].to_s
-    pa = pa[(pa.size - 36) .. -1] if pa.size > 36
-    $stderr.puts "(nwn-lib) %s: %s" % [pa, msg]
+    if NWN.setting(:debug_traces)
+      $stderr.puts "(nwn-lib): %s" % [msg]
+      $stderr.puts "  " + caller.join("\n  ") + "\n"
+    else
+      dir = File.expand_path(File.dirname(File.expand_path(__FILE__)) + "/../../")
+      pa = caller.reject {|x| x.index(dir) }[0]
+      pa ||= caller[0]
+      pa ||= "(no frames)"
+      pa = pa[(pa.size - 36) .. -1] if pa.size > 36
+      $stderr.puts "(nwn-lib) %s: %s" % [pa, msg]
+    end
+
     true
   end
 
