@@ -144,9 +144,9 @@ module NWN::Gff::Field
         value.is_a?(Integer) && value >= 0 && value <= 0xffffffff
 
       when :int64
-        value.is_a?(Integer) && value >= -0x800000000000 && value <= 0x7fffffffffff
+        value.is_a?(Integer) && value >= -0x8000000000000000 && value <= 0x7fffffffffffffff
       when :dword64
-        value.is_a?(Integer) && value >= 0 && value <= 0xffffffffffff
+        value.is_a?(Integer) && value >= 0 && value <= 0xffffffffffffffff
 
       when :float, :double
         value.is_a?(Float)
