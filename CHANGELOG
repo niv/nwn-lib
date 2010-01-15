@@ -323,3 +323,32 @@ Bernhard Stoeckner <elven@swordcoast.net> (7):
       A mostly-maintenance release with some API changes. The most invasive changes
       are some method renames. New are some sane default values for Struct#add_*,
       and a few more specs. YAML now sets correct .element references.
+
+=== 0.4.12
+Bernhard Stoeckner (18):
+      Gff read/write API: documentation, Handler#dump always returns bytes written
+      Settings: iconv: refactor into methods
+      data_type_spec: refactor to be more concise
+      Gff::Struct#data_type=: only emit debug message when new type is non-nil
+      Gff::Handler::JSON: emit terminating newline regardless of :pretty_json
+      JSON: infer data_version like yaml, omit if DEFAULT
+      Gff: error if registering format of same name twice, reverse FileFormatRX hash
+      Gff::Struct: reparenting struct emits debug message only if element != nil
+      Gff::Reader: allow reading of arbitary Gff version files
+      Gff::Struct: data_version allow more freedom in inferring, update spec
+      NWN::Gff: custom xml data format, nwntools.sf.net modpacker read/write support
+      Rakefile: spec output in spec-style format
+      Rakefile: remove obsolete rubyforge target
+      bin/nwn-gff: --out-encoding specified output encoding
+      NWN.setting: return default values for setting new values too
+      spec_helper: set $options to unbreak kivinen spec
+      NWN.log_debug: non-lib frame if available, :debug_trace prints full traces
+      Gff::Field: fix data ranges for int64, dword64
+	  0.4.12-rel
+
+      A few new features and some bugfixes this release:
+      - more concise yaml dumps (but backwards-compatible)
+      - some iconv fixes
+      - dword64 and int64 data ranges now correct
+      - support for parsing/dumping modpacker XML
+      - support for parsing/dumping a custom, cleaner XML format
