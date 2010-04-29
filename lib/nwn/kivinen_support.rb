@@ -50,6 +50,8 @@ module NWN::Gff::Handler::Kivinen
               yield(path + "/", path)
               yield(path + "/ ____struct_type", field.field_value.struct_id)
             when :cexolocstr
+            when :void
+              yield(path, field.field_value.unpack("H*")[0])
             else
               yield(path, field.field_value)
           end

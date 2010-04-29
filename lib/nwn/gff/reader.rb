@@ -181,7 +181,7 @@ class NWN::Gff::Reader
 
       when :void
         len = @field_data[data_or_offset, 4].unpack("V")[0]
-        @field_data[data_or_offset + 4, len].unpack("H*")[0]
+        @field_data[data_or_offset + 4, len].unpack("a*")[0]
 
       when :struct
         read_struct data_or_offset, nil, field.parent.data_version

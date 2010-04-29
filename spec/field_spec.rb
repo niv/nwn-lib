@@ -20,4 +20,13 @@ describe "Gff::Field" do
       NWN.setting(:resref16, nil)
     end
   end
+
+  describe ":void" do
+    it "stores data in binary" do
+      gff = Gff::Struct.new do |root|
+        root.add_void 'Test', "\xde\xad\xbe\xef"
+      end.to_gff
+      gff.index("\xde\xad\xbe\xef").should_not be_nil
+    end
+  end
 end

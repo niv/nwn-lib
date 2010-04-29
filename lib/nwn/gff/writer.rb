@@ -129,7 +129,7 @@ private
                 v.field_value % (2**32)
               ].pack("II")
             when :void
-              [ v.field_value.size / 2, v.field_value ].pack("VH*")
+              [ v.field_value.size, v.field_value ].pack("Va*")
             else
               [v.field_value].pack(format)
           end
