@@ -312,7 +312,8 @@ module NWN
       # Call this on application startup.
       # path spec is a colon-separated list of paths, just like $PATH.
       def self.setup root_directories
-        @_roots = root_directories.split(':').compact.reject {|x| "" == x.strip }
+        @_roots = root_directories.split(File::PATH_SEPARATOR).
+          compact.reject {|x| "" == x.strip }
       end
 
       # Get the 2da file with the given name. +name+ is without extension.
@@ -327,7 +328,7 @@ module NWN
 
       def self.read_2da name # :nodoc:
         @_roots.each {|root|
-          file = root + '/' + name + '.2da'
+          file = root + File::SEPARATOR + name + '.2da'
           next unless FileTest.exists?(file)
           return Table.parse(IO.read(file))
         }
