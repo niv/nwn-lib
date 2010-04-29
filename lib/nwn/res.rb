@@ -115,7 +115,7 @@ module NWN
       def initialize path
         super()
         @path = path
-        Dir[path + "/*.*"].each {|x|
+        Dir[path + File::SEPARATOR + "*.*"].each {|x|
           begin add_file x
           rescue ArgumentError => e
             NWN.log_debug e.to_s
