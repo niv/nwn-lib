@@ -87,8 +87,8 @@ module NWN
           size, name_offset, name_size, drives = x.unpack("VVvv")
           io.seek(name_offset)
           name = io.e_read(name_size, "name table").unpack("A*")[0]
-          name.gsub!("\\", "/")
-          name = File.expand_path(@root + "/" + name)
+          name.gsub!("\\", File::SEPARATOR)
+          name = File.expand_path(@root + File::SEPARATOR + name)
 
           _io = File.new(name, "r")
           @bif << Bif.new(self, _io)
