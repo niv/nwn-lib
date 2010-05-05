@@ -1,5 +1,3 @@
-require 'shellwords'
-
 class Integer
   # Returns the level that this amount experience resolves to.
   # Depends on a set-up TwoDA::Cache, and reads from <tt>exptable</tt>.
@@ -120,9 +118,9 @@ module NWN
 
         header = data.shift
 
-        header = Shellwords.shellwords(header.strip)
+        header = colsplit(header.strip)
         data.map! {|line|
-          Shellwords.shellwords(line.strip)
+          colsplit(line.strip)
         }
 
         new_row_data = []
@@ -295,6 +293,35 @@ module NWN
           when nil
             @newline
         end)
+      end
+
+    private
+
+      def colsplit(line)
+        line = String.new(line) rescue
+          raise(ArgumentError, "Argument must be a string")
+        line.lstrip!
+        words = []
+        until line.empty?
+          field = ''
+          loop do
+        if line.sub!(/\A"(([^"\\]|\\.)*)"/, '') then
+          snippet = $1.gsub(/\\(.)/, '\1')
+        elsif line =~ /\A"/ then
+          raise ArgumentError, "Unmatched double quote: #{line}"
+        elsif line.sub!(/\A\\(.)?/, '') then
+          snippet = $1 || '\\'
+        elsif line.sub!(/\A([^\s\\"]+)/, '') then
+          snippet = $1
+        else
+          line.lstrip!
+          break
+        end
+        field.concat(snippet)
+          end
+          words.push(field)
+        end
+        words
       end
     end
 
