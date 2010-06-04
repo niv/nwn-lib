@@ -39,8 +39,17 @@ module NWN
       end
 
       def method_missing meth, *args
-        if idx = @table.columns.index(meth.to_s.downcase) || idx = @table.columns.index(meth.to_s)
-          if meth.to_s =~ /=$/
+        col = meth.to_s
+        assignment = if col =~ /(.+?)=$/
+          col = $1
+          true
+        else
+          false
+        end
+
+        if idx = @table.columns.index(col.downcase) ||
+            idx = @table.columns.index(col)
+          if assignment
             self[idx] = args.shift or raise ArgumentError,
               "Need a paramenter for assignments .."
           else
