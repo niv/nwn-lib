@@ -1,9 +1,14 @@
 #!/usr/bin/env nwn-dsl
 # vim: ft=ruby
 
-ARGV.each {|f|
-  log "Working on #{f} .."
-  t = TwoDA::Table.parse(IO.read(f))
-  File.open(f, "wb") {|n| n.puts t.to_2da }
-  log "done."
-}
+if ARGV.size == 0
+  t = TwoDA::Table.parse($stdin.read)
+  $stdout.puts t.to_2da
+else
+  ARGV.each {|f|
+    log "Working on #{f} .."
+    t = TwoDA::Table.parse(IO.read(f))
+    File.open(f, "wb") {|n| n.puts t.to_2da }
+    log "done."
+  }
+end
