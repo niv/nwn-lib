@@ -1,7 +1,8 @@
 require "rake"
 require "rake/clean"
-require "rake/gempackagetask"
-require "hanna/rdoctask" rescue require "rake/rdoctask"
+require "rubygems/package_task"
+require "rdoc/task"
+require "rspec/core/rake_task"
 require "fileutils"
 include FileUtils
 
@@ -31,7 +32,6 @@ spec = Gem::Specification.new do |s|
   s.rubyforge_project = 'nwn-lib'
   s.version = VERS
   s.platform = Gem::Platform::RUBY
-  s.has_rdoc = true
   s.extra_rdoc_files = DOCS + Dir["doc/*.rdoc"]
   s.rdoc_options += RDOC_OPTS + ["--exclude", "^(examples|extras)\/"]
   s.summary = "a ruby library for accessing Neverwinter Nights resource files"
@@ -46,48 +46,32 @@ spec = Gem::Specification.new do |s|
   s.bindir = "bin"
 end
 
-Rake::GemPackageTask.new(spec) do |p|
+
+Gem::PackageTask.new(spec) do |p|
   p.need_tar = true
   p.gem_spec = spec
 end
 
-desc "Install nwn-lib gem"
-task :install do
-  sh %{rake package}
-  sh %{sudo gem1.8 install pkg/#{NAME}-#{VERS}}
-end
-
-desc "Install nwn-lib gem without docs"
-task :install_no_docs do
-  sh %{rake package}
-  sh %{sudo gem1.8 install pkg/#{NAME}-#{VERS} --no-rdoc --no-ri}
-end
-
-desc "Uninstall nwn-lib gem"
-task :uninstall => [:clean] do
-  sh %{sudo gem1.8 uninstall #{NAME}}
-end
-
-require "spec/rake/spectask"
-
 desc "Run specs with coverage"
-Spec::Rake::SpecTask.new("spec") do |t|
-  t.spec_files = FileList["spec/*_spec.rb"]
-  t.spec_opts = ["--format s"]
+RSpec::Core::RakeTask.new("spec") do |t|
+  t.pattern = "spec/*_spec.rb"
+  t.rspec_opts  = File.read("spec/spec.opts").split("\n")
+  t.rcov_opts  = File.read("spec/rcov.opts").split("\n")
   t.rcov = true
 end
 
 desc "Run specs without coverage"
 task :default => [:spec_no_cov]
-Spec::Rake::SpecTask.new("spec_no_cov") do |t|
-  t.spec_files = FileList["spec/*_spec.rb"]
-  t.spec_opts = ["--format s"]
+RSpec::Core::RakeTask.new("spec_no_cov") do |t|
+  t.pattern = "spec/*_spec.rb"
+  t.rspec_opts  = File.read("spec/spec.opts").split("\n")
 end
 
 desc "Run rcov only"
-Spec::Rake::SpecTask.new("rcov") do |t|
-  t.spec_files = FileList["spec/*_spec.rb"]
-  t.spec_opts = ["--format s"]
+RSpec::Core::RakeTask.new("rcov") do |t|
+  t.pattern = "spec/*_spec.rb"
+  t.rcov_opts  = File.read("spec/rcov.opts").split("\n")
+  t.rspec_opts  = File.read("spec/spec.opts").split("\n")
   t.rcov = true
 end
 
