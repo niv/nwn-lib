@@ -13,7 +13,7 @@ describe "Kivinen Support" do
       label.should == w[0]
       case entry
         when Float
-          entry.should be_close(w[1], 0.001)
+          entry.should be_within(0.001).of(w[1])
         else
           entry.should == w[1]
       end

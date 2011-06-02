@@ -194,11 +194,7 @@ TWODA_MISSING_ID = <<-EOT
 2  d
 EOT
 
-describe "bin helper", :shared => true do
-  before do
-    @tmp = Dir.tmpdir
-  end
-
+module BinHelper
   def run_bin *va
     binary = File.join(File.expand_path(File.dirname(__FILE__)), "..", "bin", subject.to_s)
     incl = File.join(File.expand_path(File.dirname(__FILE__)), "..", "lib")

@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe "Erf::Erf", :shared => true do
+shared_examples_for "Erf::Erf" do
   def wellformed_verify binary, expect_locstr = true
     t = Erf::Erf.new(StringIO.new binary)
 

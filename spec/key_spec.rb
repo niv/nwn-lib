@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-describe "Key::Key", :shared => true do
+shared_examples_for "Key::Key" do
   def wellformed_verify binary
     t = Key::Key.new(StringIO.new(binary), Dir.tmpdir)
 

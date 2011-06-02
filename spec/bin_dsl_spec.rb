@@ -1,7 +1,10 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "nwn-dsl" do
-  it_should_behave_like "bin helper"
+  include BinHelper
+  before do
+    @tmp = Dir.tmpdir
+  end
 
   it "runs empty scripts" do
     t = Tempfile.new(@tmp)

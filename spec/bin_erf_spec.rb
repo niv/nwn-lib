@@ -1,7 +1,10 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "nwn-erf" do
-  it_should_behave_like "bin helper"
+  include BinHelper
+  before do
+    @tmp = Dir.tmpdir
+  end
 
   # Create temporary testcase files.
   before do
