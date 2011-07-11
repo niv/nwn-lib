@@ -50,7 +50,7 @@ This will be worked around in a future release until the release of ruby 1.9, wh
 
 === Quickstart
 
-To use it, simply install the gem (available on rubyforge):
+To use it, simply install the gem:
 
  gem1.8 install nwn-lib
 
@@ -67,7 +67,7 @@ For using the developer API, I suggest you start reading NWN::Gff::Struct.
 
 === Latest code & developer contact
 
-The latest source is available through git[http://git.swordcoast.net/?p=nwn/nwn-lib.git;a=summary].
+The latest source is available through git[https://github.com/elven/nwn-lib].
 
 All stable releases are tagged properly.
 
