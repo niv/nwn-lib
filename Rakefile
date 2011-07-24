@@ -16,8 +16,8 @@ RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
   'nwn-lib: a ruby library for accessing NWN resource files', \
   '--main', 'README.rdoc']
 
-DOCS = ["README.rdoc", "BINARIES", "HOWTO", "SCRIPTING", "SETTINGS",
-  "CHEATSHEET", "CHANGELOG", "COPYING"]
+DOCS = ["README.rdoc", "BINARIES.rdoc", "HOWTO.rdoc", "SCRIPTING.rdoc",
+  "SETTINGS.rdoc", "CHEATSHEET.rdoc", "CHANGELOG.rdoc", "COPYING"]
 
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = "rdoc"
@@ -35,14 +35,14 @@ spec = Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = DOCS + Dir["doc/*.rdoc"]
   s.rdoc_options += RDOC_OPTS + ["--exclude", "^(examples|extras)\/"]
-  s.summary = "a ruby library for accessing Neverwinter Nights resource files"
+  s.summary = "Neverwinter Nights 1/2 file formats ruby library"
   s.description = s.summary
   s.author = "Bernhard Stoeckner"
   s.email = "elven@swordcoast.net"
   s.homepage = "http://nwn-lib.elv.es"
   s.executables = ["nwn-gff", "nwn-erf", "nwn-dsl", "nwn-irb"]
   s.required_ruby_version = ">= 1.8.4"
-  s.files = %w(COPYING CHANGELOG README.rdoc Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts,data}/**/*")
+  s.files = %w(COPYING CHANGELOG.rdoc README.rdoc Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts,data}/**/*")
   s.require_path = "lib"
   s.bindir = "bin"
 end
