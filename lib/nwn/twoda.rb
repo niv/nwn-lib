@@ -284,6 +284,7 @@ module NWN
           row.each_with_index {|cell, column_idx|
             cell = "****" if cell == ""
             cell = '"%s"' % cell if cell =~ /\s/
+            cell = cell.to_s
             rv << cell + " " * (max_cell_size_by_column[column_idx] - cell.size)
           }
           ret << rv.join("").rstrip
