@@ -17,7 +17,7 @@ RDOC_OPTS = ["--quiet", "--line-numbers", "--inline-source", '--title', \
   '--main', 'README.rdoc']
 
 DOCS = ["README.rdoc", "BINARIES.rdoc", "HOWTO.rdoc", "SCRIPTING.rdoc",
-  "SETTINGS.rdoc", "CHEATSHEET.rdoc", "CHANGELOG.rdoc", "COPYING"]
+  "SETTINGS.rdoc", "CHEATSHEET.rdoc", "LICENCE"]
 
 Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_dir = "rdoc"
@@ -42,7 +42,7 @@ spec = Gem::Specification.new do |s|
   s.homepage = "http://nwn-lib.elv.es"
   s.executables = ["nwn-gff", "nwn-erf", "nwn-dsl", "nwn-irb"]
   s.required_ruby_version = ">= 1.8.4"
-  s.files = %w(COPYING CHANGELOG.rdoc README.rdoc Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts,data}/**/*")
+  s.files = %w(LICENCE README.rdoc Rakefile) + Dir.glob("{bin,doc,spec,lib,tools,scripts,data}/**/*")
   s.require_path = "lib"
   s.bindir = "bin"
 end

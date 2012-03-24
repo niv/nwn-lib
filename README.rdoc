@@ -52,7 +52,7 @@ This will be worked around in a future release until the release of ruby 1.9, wh
 
 To use it, simply install the gem:
 
- gem1.8 install nwn-lib
+ gem install nwn-lib
 
 And do the following in a script of your own devising:
 
@@ -70,5 +70,3 @@ For using the developer API, I suggest you start reading NWN::Gff::Struct.
 The latest source is available through git[https://github.com/elven/nwn-lib].
 
 All stable releases are tagged properly.
-
-You can reach me via email[mailto:elven@swordcoast.net].
