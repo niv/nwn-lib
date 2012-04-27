@@ -2,18 +2,15 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "nwn-dsl" do
   include BinHelper
-  before do
-    @tmp = Dir.tmpdir
-  end
 
   it "runs empty scripts" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new(["nwn-lib", "dsl"])
     t.close
     run(t.path)
   end
 
   it "runs want/need scripts" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new(["nwn-lib", "dsl"])
     t.write("need ARGV.shift, :bic")
     t.close
     run_bin(t.path, WELLFORMED_GFF_PATH) do |i,o,e|
@@ -25,7 +22,7 @@ describe "nwn-dsl" do
   end
 
   it "logs to stderr" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new(["nwn-lib", "dsl"])
     t.write("log 'hey'")
     t.close
     run_bin(t.path, WELLFORMED_GFF_PATH) do |i,o,e|

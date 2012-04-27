@@ -21,7 +21,7 @@ module NWN::Gff::Scripting
     catch(:exit) {
       begin
         run_on.instance_eval $code
-      rescue => e
+      rescue
         raise
       end
     }

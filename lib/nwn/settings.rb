@@ -1,5 +1,3 @@
-require 'iconv'
-
 module NWN
   SETTING_DEFAULT_VALUES = {
     'NWN_LIB_IN_ENCODING' => 'ISO-8859-1',
@@ -51,20 +49,12 @@ module NWN
 
   # Converts text from native format (such as json) to Gff (required by NWN).
   def self.iconv_native_to_gff text
-    if IconvState[:in] != NWN.setting(:in_encoding) ||
-        IconvState[:out] != NWN.setting(:out_encoding)
-      IconvState[:in_i] = Iconv.new(NWN.setting(:in_encoding), NWN.setting(:out_encoding))
-    end
-    IconvState[:in_i].iconv(text)
+    text.encode(NWN.setting(:out_encoding))
   end
 
   # Converts text from Gff format to native/external, such as json (usually UTF-8).
   def self.iconv_gff_to_native text
-    if IconvState[:in] != NWN.setting(:in_encoding) ||
-        IconvState[:out] != NWN.setting(:out_encoding)
-      IconvState[:out_i] = Iconv.new(NWN.setting(:out_encoding), NWN.setting(:in_encoding))
-    end
-    IconvState[:out_i].iconv(text)
+    text.encode('UTF-8')
   end
 end
 

@@ -103,10 +103,11 @@ module NWN::Gff::Field
     return if field_type == :struct
 
     field_klass_name = field_type.to_s.capitalize
-    field_klass = NWN::Gff.const_defined?(field_klass_name) ?
-      NWN::Gff.const_get(field_klass_name) : nil
-    field_value_klass = NWN::Gff.const_defined?(field_klass_name + 'Value') ?
-      NWN::Gff.const_get(field_klass_name + 'Value') : nil
+
+    field_klass = NWN::Gff.const_defined?(field_klass_name, false) ?
+      NWN::Gff.const_get(field_klass_name, false) : nil
+    field_value_klass = NWN::Gff.const_defined?(field_klass_name + 'Value', false) ?
+      NWN::Gff.const_get(field_klass_name + 'Value', false) : nil
 
     self.extend(field_klass) unless field_klass.nil? ||
       self.is_a?(field_klass)
@@ -227,15 +228,24 @@ module NWN::Gff::Field
     element.extend_meta_classes
     case element.field_type
       when :cexolocstr
+        mod = {}
         element.field_value.each {|x,y|
-          element.field_value[x.to_i] = NWN.iconv_native_to_gff(element.field_value.delete(x))
+          mod[x] = NWN.iconv_native_to_gff(y)
+        }
+        mod.each {|x,y|
+          element.field_value.delete(x)
+          element.field_value[x.to_i] = y
         }
       when :cexostr
         element.field_value = NWN.iconv_native_to_gff(element.field_value)
 
       when :list
+        mod = {}
         element.field_value.each_with_index {|x,idx|
-          element.field_value[idx] = NWN::Gff::Struct.unbox!(x, element)
+          mod[idx] = NWN::Gff::Struct.unbox!(x, element)
+        }
+        mod.each {|x,y|
+          element.field_value[x] = y
         }
       when :struct
         element.field_value = NWN::Gff::Struct.unbox!(element.field_value, element)

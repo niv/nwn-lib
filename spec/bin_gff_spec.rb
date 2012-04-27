@@ -2,8 +2,13 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe "nwn-gff" do
   include BinHelper
+
   before do
-    @tmp = Dir.tmpdir
+    @tmpdir = Dir.mktmpdir
+  end
+
+  after do
+    FileUtils.rm_r(@tmpdir)
   end
 
   NWN::Gff::InputFormats.each do |in_format, handler|
@@ -14,7 +19,7 @@ describe "nwn-gff" do
 
       it "converts #{inf} to #{otf}" do
         # prepare the temp file
-        t = Tempfile.new(@tmp)
+        t = Tempfile.new('nwn-gff', @tmpdir)
         t.close
 
         run("-lg", "-i", WELLFORMED_GFF_PATH, "-k", inf, "-o", t.path)
@@ -25,7 +30,7 @@ describe "nwn-gff" do
   end
 
   it "supports none GNU-style backup" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new('nwn-gff', @tmpdir)
     t.close
     run("-b", "none", "-lg", "-i", WELLFORMED_GFF_PATH, "-kg", "-o", t.path)
     FileTest.exists?(t.path).should == true
@@ -33,7 +38,7 @@ describe "nwn-gff" do
   end
 
   it "supports numbered GNU-style backup" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new('nwn-gff', @tmpdir)
     t.close
 
     run("-b", "numbered", "-lg", "-i", WELLFORMED_GFF_PATH, "-kg", "-o", t.path)
@@ -52,7 +57,7 @@ describe "nwn-gff" do
   end
 
   it "supports existing with no numbered backups GNU-style backup" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new('nwn-gff', @tmpdir)
     t.close
 
     FileTest.exists?(t.path + "~").should == false
@@ -77,7 +82,7 @@ describe "nwn-gff" do
 
 
   it "supports simple GNU-style backup" do
-    t = Tempfile.new(@tmp)
+    t = Tempfile.new('nwn-gff', @tmpdir)
     t.close
 
     FileTest.exists?(t.path + "~").should == false

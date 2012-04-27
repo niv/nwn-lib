@@ -1,5 +1,6 @@
 # This file contains all YAML-specific loading and dumping code.
 require 'yaml'
+Psych::ENGINE.yamler = 'syck'
 
 module NWN::Gff::Handler::YAML
   # These field types can never be inlined in YAML.

@@ -124,7 +124,7 @@ module NWN
       extension = File.extname(filename.downcase)[1..-1]
       matches = FileFormatGuesses.select {|fmt,rx| extension =~ rx }
       if matches.size == 1
-        matches[0][0]
+        matches.keys[0]
       else
         nil
       end

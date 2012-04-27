@@ -42,7 +42,7 @@ private
 
   def add_data_field type, label, content
     label_id = get_label_id_for_label label
-    @fields.push Types.index(type), label_id, content
+    @fields.push Types.key(type), label_id, content
     (@fields.size - 1) / 3
   end
 

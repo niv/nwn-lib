@@ -20,8 +20,7 @@ describe "Gff.read/write API" do
     :yaml => %w{yml yaml},
     :json => %w{json},
     :nxml => %w{nxml},
-    :kivinen => %w{k kivinen},
-    :marshal => %w{marshal}
+    :kivinen => %w{k kivinen}
   }.each {|expect, arr|
     arr.each {|ext|
       it "guesses the file format #{expect} for extension #{ext} correctly" do

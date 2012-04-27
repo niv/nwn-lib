@@ -55,7 +55,7 @@ module NWN
 
       # Get the extension of this object.
       def extension
-        NWN::Resources::Extensions.index(@res_type)
+        NWN::Resources::Extensions.key(@res_type)
       end
     end
 

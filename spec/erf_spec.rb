@@ -40,6 +40,7 @@ shared_examples_for "Erf::Erf" do
   it "reproduces correct ERF binary data" do
     t = Erf::Erf.new(StringIO.new @erf)
     io = StringIO.new
+    io.set_encoding 'BINARY'
     t.write_to(io)
     io.seek(0)
     n = io.read

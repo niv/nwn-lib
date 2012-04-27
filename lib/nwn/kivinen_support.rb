@@ -59,7 +59,7 @@ module NWN::Gff::Handler::Kivinen
           yield(path + ". ____string_ref",field.str_ref) if
             field.has_str_ref? || field.field_type == :cexolocstr
 
-          yield(path + ". ____type", NWN::Gff::Types.index(field.field_type)) if
+          yield(path + ". ____type", NWN::Gff::Types.key(field.field_type)) if
             types_too
 
       end

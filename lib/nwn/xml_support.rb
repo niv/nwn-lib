@@ -17,7 +17,7 @@ private
           struct.data_version != NWN::Gff::Struct::DEFAULT_DATA_VERSION
     end
 
-    struct.sort.each {|(k,v)|
+    struct.sort.each {|(*,v)|
       s << field_to_xml(v)
     }
     s
@@ -33,12 +33,12 @@ private
     e['name'] = field.field_label
     e['type'] = case @format
       when :modpacker
-        NWN::Gff::Types.index(field.field_type).to_s
+        NWN::Gff::Types.key(field.field_type).to_s
       when :nxml
         field.field_type.to_s
     end
 
-    vv = case field.field_type
+    case field.field_type
       when :cexolocstr
         case @format
           when :modpacker

@@ -19,7 +19,7 @@ module NWN::Gff::Struct
   attr_reader :element
 
   def path
-    if @element
+    if defined?(@element) && !@element.nil?
       @element.path
     else
       "/"
@@ -41,13 +41,15 @@ module NWN::Gff::Struct
   # Overrides the data type (used by the built-in file format readers).
   def data_type= k
     k = nil if k == ""
-    NWN.log_debug("Setting explicit data_type for parented element") if k && @element
+    NWN.log_debug("Setting explicit data_type for parented element") if k &&
+      defined?(@element) && !@element.nil?
     @data_type = k
   end
 
   def element= e #:nodoc:
     @element = e
-    NWN.log_debug("Re-parenting a struct with explicit data_type #{@data_type.inspect}") if e && @data_type
+    NWN.log_debug("Re-parenting a struct with explicit data_type #{@data_type.inspect}") if !e.nil? &&
+      defined?(@data_type) && !@data_type.nil?
   end
 
   # Dump this struct as GFF binary data.
@@ -106,7 +108,7 @@ module NWN::Gff::Struct
 
   def method_missing meth, *av, &block # :nodoc:
     if meth.to_s =~ /^add_(.+)$/
-      if NWN::Gff::Types.index($1.to_sym)
+      if NWN::Gff::Types.key($1.to_sym)
         av.size >= 1 || av.size <= 2 or raise(NoMethodError,
           "undefined method #{meth} (requires two arguments to infer add_any)")
         t = $1.to_sym

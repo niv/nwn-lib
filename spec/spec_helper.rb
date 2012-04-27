@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'tempfile'
+require 'fileutils'
 require 'open3'
 
 Thread.abort_on_exception = true
@@ -195,12 +196,16 @@ TWODA_MISSING_ID = <<-EOT
 EOT
 
 module BinHelper
+  def tmpfile
+    Tempfile.new('nwn-lib', @tmpdir, :encoding => 'BINARY')
+  end
+
   def run_bin *va
     binary = File.join(File.expand_path(File.dirname(__FILE__)), "..", "bin", subject.to_s)
     incl = File.join(File.expand_path(File.dirname(__FILE__)), "..", "lib")
     old = Dir.pwd
+    Dir.chdir(@tmpdir) if defined?(@tmpdir)
     begin
-    Dir.chdir(@tmp)
     Open3.popen3(
       "ruby", "-rubygems", "-I#{incl}",
       binary,
@@ -209,11 +214,12 @@ module BinHelper
       yield i, o, e
     end
     ensure
-    Dir.chdir(old)
     end
+    Dir.chdir(old)
   end
 
   def run *va
+    puts "run: #{va.inspect}"
     run_bin *va do |i, o, e|
       e = e.read
       e.should == ""
