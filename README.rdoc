@@ -31,15 +31,15 @@ They should work with NWN2 just as well, since the file format specifications di
 
 ==== Also in the box:
 
-* shell scripts and tools to simplify your life (see BINARIES.rdoc)
+* shell scripts and tools to simplify your life (see {file:BINARIES})
 * extensive developer API
-* a powerful get-out-of-my-way scripting system for data transformation (see SCRIPTING.rdoc)
+* a powerful get-out-of-my-way scripting system for data transformation (see {file:SCRIPTING})
 
 
 === Upgrade from 0.3.6 to 0.4.x
 
 With the release of 0.4.0, the API changed significantly. Previous yaml dumps made with 0.3.x are INCOMPATIBLE, and so are all scripts.
-I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see BINARIES.rdoc).
+I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see {file:BINARIES}).
 
 
 === Attention Unicode/UTF-users
@@ -59,14 +59,10 @@ And do the following in a script of your own devising:
   require 'rubygems'
   require 'nwn/all'
 
-Also, read BINARIES.rdoc and HOWTO.rdoc.
+Also, read {file:BINARIES} and {file:HOWTO}.
 
-For nwn-lib scripts, see SCRIPTING.rdoc.
+For nwn-lib scripts, see {file:SCRIPTING}.
 
 For using the developer API, I suggest you start reading NWN::Gff::Struct.
 
-=== Latest code & developer contact
-
 The latest source is available through git[https://github.com/elven/nwn-lib].
-
-All stable releases are tagged properly.

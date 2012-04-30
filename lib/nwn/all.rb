@@ -1,4 +1,5 @@
 require 'stringio'
+require 'nwn/version'
 require 'nwn/io'
 require 'nwn/twoda'
 require 'nwn/settings'
