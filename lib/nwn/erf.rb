@@ -133,12 +133,12 @@ module NWN
           [c.resref, @content.index(c), c.res_type, 0].pack("a#{fnlen} V v v")
         }.join("")
 
-        pre_offset = 160 + locstr.size + keylist.size + 8 * @content.size
+        offset = 160 + locstr.size + keylist.size + 8 * @content.size
 
         reslist = @content.map {|c|
-          offset = pre_offset +
-            @content[0, @content.index(c)].inject(0) {|sum,x| sum + x.size }
-          [offset, c.size].pack("V V")
+          r = [offset, c.size].pack("V V")
+          offset += c.size
+          r
         }.join("")
 
         offset_to_locstr = 160
