@@ -1,103 +1,61 @@
-# This file contains all YAML-specific loading and dumping code.
-require 'yaml'
-Psych::ENGINE.yamler = 'syck'
+require 'psych'
 
 module NWN::Gff::Handler::YAML
   # These field types can never be inlined in YAML.
   NonInlineableFields = [:struct, :list, :cexolocstr]
 
   # See http://www.taguri.org/ for the exact meaning of this.
-  Domain = "nwn-lib.elv.es,2008-12"
+  Domain = "nwn-lib.elv.es,2013-07"
 
   def self.load io
-    YAML.load(io)
+    Psych.load(io)
   end
+
   def self.dump data, io
-    d = data.to_yaml
-    io.puts d
-    d.size
+    str = Psych.dump(data)
+    io.write(str)
+    str.size
   end
 end
 
-#:stopdoc:
-class Array
-  attr_accessor :to_yaml_style
-end
-class Hash
-  attr_accessor :to_yaml_style
-end
-
-class Hash
-  # Replacing the to_yaml function so it'll serialize hashes sorted (by their keys)
-  # Original function is in /usr/lib/ruby/1.8/yaml/rubytypes.rb
-  def to_yaml(opts = {})
-    YAML::quick_emit(nil, opts) do |out|
-      out.map(taguri, to_yaml_style) do |map|
-        if keys.map {|v| v.class }.size > 0
-          each do |k, v|
-            map.add(k, v)
-          end
-        else
-          sort.each do |k, v|
-            map.add(k, v)
-          end
-        end
-      end
-    end
-  end
-end
+NWN::Gff::Handler.register :yaml, /^(y|yml|yaml)$/, NWN::Gff::Handler::YAML
 
 module NWN::Gff::Struct
-  def to_yaml_type
-    "!#{NWN::Gff::Handler::YAML::Domain}/struct"
-  end
+  def encode_with out
+    out.map("!#{NWN::Gff::Handler::YAML::Domain}:struct") do |map|
+      # Inline certain structs that are small enough.
+      map.style = Psych::Nodes::Mapping::FLOW if self.size <= 1 &&
+        self.values.select {|x|
+          NWN::Gff::Handler::YAML::NonInlineableFields.index(x['type'])
+        }.size == 0
 
-  def to_yaml(opts = {})
-    YAML::quick_emit(nil, opts) do |out|
-      out.map(taguri, to_yaml_style) do |map|
-        # Inline certain structs that are small enough.
-        map.style = :inline if self.size <= 1 &&
-          self.values.select {|x|
-            NWN::Gff::Handler::YAML::NonInlineableFields.index(x['type'])
-          }.size == 0
+      map.add('__' + 'data_type', @data_type) if @data_type
+      map.add('__' + 'data_version', @data_version) if
+        @data_version && @data_version != DEFAULT_DATA_VERSION
+      map.add('__' + 'struct_id', @struct_id) if @struct_id != nil
 
-        map.add('__' + 'data_type', @data_type) if @data_type
-        map.add('__' + 'data_version', @data_version) if @data_version && @data_version != DEFAULT_DATA_VERSION
-        map.add('__' + 'struct_id', @struct_id) if @struct_id
-
-        sort.each {|k,v|
-          map.add(k,v)
-        }
-      end
+      sort.each {|k, v|
+        map.add(k, v)
+      }
     end
   end
 end
 
 module NWN::Gff::Field
-
-  def to_yaml(opts = {})
-    YAML::quick_emit(nil, opts) do |out|
-      out.map(taguri, to_yaml_style) do |map|
-        map.style = :inline unless NWN::Gff::Handler::YAML::NonInlineableFields.index(self['type'])
-        map.add('type', self['type'])
-        map.add('str_ref', self['str_ref']) if has_str_ref?
-        map.add('value', case self['type']
-          when :resref, :cexostr
-            self['value'].encode('utf-8')
-          when :cexolocstr
-            Hash[self['value'].map {|lang,str|
-              [lang, str.encode('utf-8')]
-            }]
-          else
-            self['value']
-        end)
-      end
+  def encode_with out
+    out.map do |map|
+      map.tag = nil
+      map.style = Psych::Nodes::Mapping::FLOW unless
+        NWN::Gff::Handler::YAML::NonInlineableFields.index(self['type'])
+      map.add('type', self['type'].to_s)
+      map.add('str_ref', self['str_ref']) if has_str_ref?
+      map.add('value', self['value'])
     end
   end
 end
 
 # This parses the struct and extends all fields with their proper type.
-YAML.add_domain_type(NWN::Gff::Handler::YAML::Domain,'struct') {|t,hash|
+Psych.add_domain_type(NWN::Gff::Handler::YAML::Domain,'struct') {|t,hash|
   struct = {}
   struct.extend(NWN::Gff::Struct)
 
@@ -107,7 +65,8 @@ YAML.add_domain_type(NWN::Gff::Handler::YAML::Domain,'struct') {|t,hash|
   struct.data_version = hash.delete('__data_version')
   struct.data_version ||= NWN::Gff::Struct::DEFAULT_DATA_VERSION
 
-  raise NWN::Gff::GffError, "no struct_id set for struct at #{struct.path}." if struct.struct_id.nil?
+  raise NWN::Gff::GffError, "no struct_id set for struct at #{struct.path}." if
+    struct.struct_id.nil?
 
   hash.each {|label,element|
     label.freeze
@@ -115,11 +74,14 @@ YAML.add_domain_type(NWN::Gff::Handler::YAML::Domain,'struct') {|t,hash|
     element.extend(NWN::Gff::Field)
     element.field_label = label
     element.parent = struct
-    element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF if element.respond_to?('str_ref=')
+    element.str_ref ||= NWN::Gff::Field::DEFAULT_STR_REF if
+      element.respond_to?('str_ref=')
 
     element.extend_meta_classes
 
-    element.field_value.element = element if element.field_value.is_a?(NWN::Gff::Struct)
+    element.field_value.element = element if
+      element.field_value.is_a?(NWN::Gff::Struct)
+
     element.validate
 
     struct[label] = element
@@ -128,4 +90,3 @@ YAML.add_domain_type(NWN::Gff::Handler::YAML::Domain,'struct') {|t,hash|
   struct
 }
 
-NWN::Gff::Handler.register :yaml, /^(y|yml|yaml)$/, NWN::Gff::Handler::YAML
