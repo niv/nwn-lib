@@ -164,7 +164,7 @@ case $action
       puts File.basename(a) if $verbose
       raise ArgumentError, "#{File.basename(a)} already present in erf." if
         !$allow_duplicates && erf.has?(a)
-      erf.add_file a
+      erf.add_file File.basename(a), File.open(a, "r")
     }
     output {|f| erf.write_to(f) }
 
@@ -181,7 +181,7 @@ case $action
           when :a
             raise ArgumentError, "#{File.basename(arg)} already present in erf." if
               !$allow_duplicates && erf.has?(arg)
-            erf.add_file arg
+            erf.add_file File.basename(arg), File.open(arg, "r")
 
           when :r
             erf.content.reject! {|con|
