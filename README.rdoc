@@ -54,7 +54,7 @@ To use it, simply install the gem:
 
  gem install nwn-lib
 
-And do the following in a script of your own devising:
+And do the following in a script of your own devising (or just use bundler):
 
   require 'rubygems'
   require 'nwn/all'
@@ -65,4 +65,4 @@ For nwn-lib scripts, see {file:SCRIPTING}.
 
 For using the developer API, I suggest you start reading NWN::Gff::Struct.
 
-The latest source is available through git[https://github.com/elven/nwn-lib].
+The latest source is available through git[https://github.com/niv/nwn-lib].

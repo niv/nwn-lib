@@ -3,10 +3,10 @@ require File.expand_path('../lib/nwn/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Bernhard Stoeckner"]
-  gem.email         = ["le@e-ix.net"]
-  gem.description   = %q{}
+  gem.email         = ["n@e-ix.net"]
+  gem.description   = %q{Neverwinter Nights 1/2 file formats ruby library}
   gem.summary       = gem.description
-  gem.homepage      = "https://github.com/elven/nwn-lib"
+  gem.homepage      = "https://github.com/niv/nwn-lib"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
