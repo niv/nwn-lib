@@ -160,11 +160,13 @@ private
 
         when :resref
           fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
-          @field_data << [v.field_value.size, v.field_value].pack("Ca*")
+          fv = v.field_value.encode(NWN.setting :in_encoding)
+          @field_data << [fv.size, fv].pack("Ca*")
 
         when :cexostr
           fields_of_this_struct << add_data_field(v.field_type, k, @field_data.size)
-          @field_data << [v.field_value.size, v.field_value].pack("Va*")
+          fv = v.field_value.encode(NWN.setting :in_encoding)
+          @field_data << [fv.size, fv].pack("Va*")
 
         when :cexolocstr
           raise GffError, "type = cexolocstr, but value not a hash (#{v.field_value.class})" unless
@@ -184,7 +186,8 @@ private
           ].pack("VVV")
 
           v.field_value.each {|k,v|
-            @field_data << [k, v.size, v].pack("VVa*")
+            vn = v.encode(NWN.setting :in_encoding)
+            @field_data << [k, vn.size, vn].pack("VVa*")
           }
 
         else

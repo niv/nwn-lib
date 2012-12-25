@@ -81,7 +81,16 @@ module NWN::Gff::Field
         map.style = :inline unless NWN::Gff::Handler::YAML::NonInlineableFields.index(self['type'])
         map.add('type', self['type'])
         map.add('str_ref', self['str_ref']) if has_str_ref?
-        map.add('value', self['value'])
+        map.add('value', case self['type']
+          when :resref, :cexostr
+            self['value'].encode('utf-8')
+          when :cexolocstr
+            Hash[self['value'].map {|lang,str|
+              [lang, str.encode('utf-8')]
+            }]
+          else
+            self['value']
+        end)
       end
     end
   end

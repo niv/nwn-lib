@@ -14,6 +14,7 @@ class NWN::Gff::Reader
 
   def initialize io #:nodoc:
     @io = io
+    io.internal_encoding == nil or raise "passed io needs to be binary, is #{io.internal_encoding.inspect}"
     read_all
   end
 
@@ -47,7 +48,7 @@ class NWN::Gff::Reader
     @io.seek(label_offset)
     @labels  = @io.e_read(label_len, "labels")
     @labels = @labels.unpack("A16" * label_count)
-    @labels.map! {|l| l.encode("ASCII") }
+    @labels.map! {|l| l.force_encoding("ASCII") }
 
     @io.seek(field_data_offset)
     @field_data = @io.e_read(field_data_count, "field_data")
@@ -75,8 +76,8 @@ class NWN::Gff::Reader
     raise GffError, "struct index #{index} outside of struct_array" if
       index * 3 + 3 > @structs.size + 1
 
-    file_type = file_type.encode('ASCII') if file_type
-    file_version = file_version.encode('ASCII') if file_version
+    file_type = file_type.force_encoding('ASCII') if file_type
+    file_version = file_version.force_encoding('ASCII') if file_version
 
     struct.struct_id = type
     struct.data_type = file_type
@@ -159,11 +160,15 @@ class NWN::Gff::Reader
 
       when :cexostr
         len = @field_data[data_or_offset, 4].unpack("V")[0]
-        @field_data[data_or_offset + 4, len].encode(NWN.setting :in_encoding)
+        str = @field_data[data_or_offset + 4, len].force_encoding(NWN.setting :in_encoding)
+        str.valid_encoding? or raise "Invalid encoding bytes in cexostr: #{str.inspect}"
+        str
 
       when :resref
         len = @field_data[data_or_offset, 1].unpack("C")[0]
-        @field_data[data_or_offset + 1, len].encode(NWN.setting :in_encoding)
+        str = @field_data[data_or_offset + 1, len].force_encoding(NWN.setting :in_encoding)
+        str.valid_encoding? or raise "Invalid encoding bytes in resref: #{str.inspect}"
+        str
 
       when :cexolocstr
         exostr = {}
@@ -176,7 +181,8 @@ class NWN::Gff::Reader
 
         str_count.times {
           id, len = all.unpack("VV")
-          str = all[8, len].unpack("a*")[0].encode(NWN.setting :in_encoding)
+          str = all[8, len].unpack("a*")[0].force_encoding(NWN.setting :in_encoding)
+          str.valid_encoding? or raise "Invalid encoding bytes in cexolocstr: #{str.inspect}"
           all = all[(8 + len)..-1]
           exostr[id] = str
         }
@@ -185,7 +191,7 @@ class NWN::Gff::Reader
 
       when :void
         len = @field_data[data_or_offset, 4].unpack("V")[0]
-        @field_data[data_or_offset + 4, len].unpack("a*")[0]
+        @field_data[data_or_offset + 4, len].unpack("a*")[0].force_encoding("BINARY")
 
       when :struct
         read_struct data_or_offset, nil, field.parent.data_version

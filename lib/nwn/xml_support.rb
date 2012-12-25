@@ -152,10 +152,6 @@ public
   end
 
   def load io
-    old_encoding = NWN.setting(:out_encoding, 'UTF-8')
-    NWN.log_debug("Ignoring custom out_encoding for xml output, always UTF-8") if
-      old_encoding != 'UTF-8'
-
     doc = XML::Parser.io(io)
     root = doc.parse.root
     ret = case @format
@@ -168,15 +164,10 @@ public
         raise ArgumentError, "Unsupported XML format registered: #{@format.inspect}"
     end
 
-    NWN.setting(:out_encoding, old_encoding)
     ret
   end
 
   def dump data, io
-    old_encoding = NWN.setting(:out_encoding, 'UTF-8')
-    NWN.log_debug("Ignoring custom out_encoding for xml output, always UTF-8") if
-      old_encoding != 'UTF-8'
-
     doc = XML::Document.new
     doc.root = case @format
       when :nxml
@@ -193,7 +184,6 @@ public
     t = doc.to_s
     io.write(t)
 
-    NWN.setting(:out_encoding, old_encoding)
     t.size
   end
 end

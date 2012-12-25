@@ -1,7 +1,6 @@
 module NWN
   SETTING_DEFAULT_VALUES = {
-    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1',
-    'NWN_LIB_OUT_ENCODING' => 'UTF-8'
+    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1'
   }
 
   # This writes a internal warnings and debug messages to stderr.
@@ -49,7 +48,7 @@ module NWN
 
   # Converts text from native format (such as json) to Gff (required by NWN).
   def self.iconv_native_to_gff text
-    text.encode(NWN.setting(:out_encoding))
+    text.encode(NWN.setting(:in_encoding))
   end
 
   # Converts text from Gff format to native/external, such as json (usually UTF-8).
