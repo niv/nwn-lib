@@ -222,44 +222,4 @@ module NWN::Gff::Struct
   def / path
     by_path(path)
   end
-
-  # Deep-unboxes a Hash, e.g. iterating down, converting it to
-  # the native charset.
-  def self.unbox! o, parent = nil
-    o.extend(NWN::Gff::Struct)
-    o.element = parent if parent
-    o.struct_id = o.delete('__struct_id')
-    o.data_type = o.delete('__data_type')
-    o.data_version = o.delete('__data_version')
-    o.data_version ||= NWN::Gff::Struct::DEFAULT_DATA_VERSION
-
-    NWN.log_debug("Unboxed without a root data type") if
-      !parent && !o.data_type
-    NWN.log_debug("Unboxed with explicit data type #{o.data_type.inspect}") if
-      parent && o.data_type
-
-    o.each {|label,element|
-      o[label] = NWN::Gff::Field.unbox!(element, label, o)
-    }
-
-    o
-  end
-
-  # Returns a hash of this Struct without the API calls mixed in,
-  # converting it from the native charset.
-  def box
-    t = Hash[self]
-    t.merge!({
-      '__struct_id' => self.struct_id
-    })
-    t.merge!({
-      '__data_version' => self.data_version,
-    }) if self.data_version && self.data_version !=
-      NWN::Gff::Struct::DEFAULT_DATA_VERSION
-    t.merge!({
-      '__data_type' => self.data_type
-    }) if @data_type
-    t
-  end
-
 end

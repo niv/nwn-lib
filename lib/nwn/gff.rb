@@ -49,7 +49,7 @@ module NWN
       module Pretty
         def self.dump data, io
           old = $> ; $> = StringIO.new
-          pp data.box
+          pp data
           sz = $>.pos
           $>.seek(0)
           io.write $>.read
