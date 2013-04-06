@@ -1,6 +1,6 @@
 module NWN
   SETTING_DEFAULT_VALUES = {
-    'NWN_LIB_IN_ENCODING' => 'ISO-8859-1'
+    'NWN_LIB_IN_ENCODING' => 'windows-1252'
   }
 
   # This writes a internal warnings and debug messages to stderr.
