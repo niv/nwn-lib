@@ -1,3 +1,5 @@
+require 'base64'
+
 class NWN::Gff::Handler::XML
 
 private
@@ -65,6 +67,9 @@ private
           e << struct_to_xml(ee)
         }
 
+      when :void
+          e['value'] = Base64::strict_encode64(field.field_value)
+
       else
         e['value'] = field.field_value.to_s
     end
@@ -128,8 +133,10 @@ private
           v.to_i
         when :float, :double
           v.to_f
-        when :void, :resref
+        when :resref
           v
+        when :void
+          Base64::strict_decode64(v)
         else
           raise ArgumentError, "Invalid field type #{type.inspect}. Bug."
       end
