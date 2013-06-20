@@ -148,9 +148,9 @@ module NWN
   end
 end
 
-require 'nwn/gff/struct'
-require 'nwn/gff/cexolocstr'
-require 'nwn/gff/field'
-require 'nwn/gff/list'
-require 'nwn/gff/reader'
-require 'nwn/gff/writer'
+require_relative 'gff/struct'
+require_relative 'gff/cexolocstr'
+require_relative 'gff/field'
+require_relative 'gff/list'
+require_relative 'gff/reader'
+require_relative 'gff/writer'

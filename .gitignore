@@ -1,4 +1,4 @@
-doc
-pkg
-.yardoc
-Gemfile.lock
+/doc/
+/pkg/
+/.yardoc/
+/Gemfile.lock

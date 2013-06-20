@@ -23,10 +23,11 @@ describe "Gff::Field" do
 
   describe ":void" do
     it "stores data in binary" do
+      void = "\xde\xad\xbe\xef".force_encoding("ASCII-8BIT")
       gff = Gff::Struct.new do |root|
-        root.add_void 'Test', "\xde\xad\xbe\xef"
+        root.add_void 'Test', void
       end.to_gff
-      gff.index("\xde\xad\xbe\xef").should_not be_nil
+      gff.index(void).should_not be_nil
     end
   end
 end

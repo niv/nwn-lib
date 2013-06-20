@@ -1,4 +1,5 @@
-require 'rubygems'
+Bundler.setup(:default, :test)
+
 require 'tempfile'
 require 'fileutils'
 require 'open3'
@@ -206,29 +207,23 @@ module BinHelper
     old = Dir.pwd
     Dir.chdir(@tmpdir) if defined?(@tmpdir)
     begin
-    Open3.popen3(
-      "ruby", "-rubygems", "-I#{incl}",
-      binary,
-      *va
-    ) do |i,o,e|
-      yield i, o, e
-    end
+      return Open3.capture2e(
+        "ruby", "-rubygems", "-I#{incl}",
+        binary,
+        *va
+      )
     ensure
+      Dir.chdir(old)
     end
-    Dir.chdir(old)
   end
 
   def run *va
-    puts "run: #{va.inspect}"
-    run_bin *va do |i, o, e|
-      e = e.read
-      e.should == ""
-    end
+    stdout_str, ret = run_bin *va
+    ret.should == 0
   end
 
   def run_fail *va
-    run_bin *va do |i, o, e|
-      e.read.size.should > 0
-    end
+    stdout_str, ret = run_bin *va
+    ret.should_not == 0
   end
 end

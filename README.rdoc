@@ -1,13 +1,16 @@
 == A library for Neverwinter Nights 1/2 resource files
 
-This package provides a library for reading, changing, and writing common file formats that are found with NWN[http://nwn.bioware.com/], a Bioware game.
+This package provides a library for reading, changing, and writing common file
+formats that are found with NWN[http://nwn.bioware.com/], a Bioware game.
 
-They should work with NWN2 just as well, since the file format specifications did not change.
+They should work with NWN2 just as well, since the file format specifications
+did not change.
 
 
 === Features of nwn-lib
 
-==== nwn-lib reads and writes the following file formats (hopefully bug-free!), both with an API and useful command-line tools:
+==== nwn-lib reads and writes the following file formats (hopefully bug-free!),
+both with an API and useful command-line tools:
 
 * GFF 3.2 (are, git, gic, dlg, itp, ifo, jrl, fac, ssf, ut*, among others)
 * ERF (mod, hak, erf, among others)
@@ -31,36 +34,39 @@ They should work with NWN2 just as well, since the file format specifications di
 
 ==== Also in the box:
 
-* shell scripts and tools to simplify your life (see {file:BINARIES})
+* shell scripts and tools to simplify your life (see BINARIES)
 * extensive developer API
-* a powerful get-out-of-my-way scripting system for data transformation (see {file:SCRIPTING})
+* a powerful get-out-of-my-way scripting system for data transformation (see SCRIPTING)
 
 
 === Upgrade from 0.3.6 to 0.4.x
 
-With the release of 0.4.0, the API changed significantly. Previous yaml dumps made with 0.3.x are INCOMPATIBLE, and so are all scripts.
-I can't help you with your API bindings, but for your YAML dumps, a converter script has been provided (see {file:BINARIES}).
+With the release of 0.4.0, the API changed significantly. Previous yaml dumps
+made with 0.3.x are INCOMPATIBLE, and so are all scripts.
+I can't help you with your API bindings, but for your YAML dumps, a converter
+script has been provided (see BINARIES).
 
 
 === Upgrade from 0.4.x to 0.5.x
 
-All with version 0.4.x produced files should be compatible with 0.5.0. Your application might require some porting to ruby 1.9.
+All with version 0.4.x produced files should be compatible with 0.5.0.
+Your application might require some porting to ruby 1.9.
 
+=== Upgrade from 0.5.x to 0.6.x
+
+YAML dumps will need to be converted due to the internal parser/generator used
+by ruby being replaced (syck to psych).
+There is a converter packaged in tools/ along with the gem distribution.
 
 === Quickstart
 
-To use it, simply install the gem:
+To use it, simply add the following to your Gemfile:
 
- gem install nwn-lib
+ gem 'nwn-lib'
 
-And do the following in a script of your own devising (or just use bundler):
+Also, read BINARIES for the packaged executable scripts, and HOWTO.
 
-  require 'rubygems'
-  require 'nwn/all'
-
-Also, read {file:BINARIES} and {file:HOWTO}.
-
-For nwn-lib scripts, see {file:SCRIPTING}.
+For nwn-lib scripts, see SCRIPTING.
 
 For using the developer API, I suggest you start reading NWN::Gff::Struct.
 

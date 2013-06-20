@@ -13,5 +13,5 @@ Gem::Specification.new do |gem|
   gem.name          = "nwn-lib"
   gem.require_paths = ["lib"]
   gem.version       = "0.5.1"
-  gem.required_ruby_version = '>= 1.9.1'
+  gem.required_ruby_version = '>= 1.9.3'
 end

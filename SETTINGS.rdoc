@@ -8,8 +8,9 @@ Under linux, just add them to your shell environment (usually .bashrc), like so:
 
 == NWN_LIB_IN_ENCODING
 
-The character encoding your local data (gff) files are in. Defaults to ISO-8859-1.
-Extended dump formats like yaml, xml are always format-specific, usually UTF-8.
+The character encoding your local data (gff) files are in. Defaults to windows-1252.
+Extended dump formats like yaml, xml are always format-specific.
+YAML and json, for example, are always UTF-8.
 
 == NWN_LIB_PRETTY_JSON
 
