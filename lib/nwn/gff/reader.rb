@@ -18,9 +18,11 @@ class NWN::Gff::Reader
     read_all
   end
 
-  private
+private
 
   def read_all
+    initial_seek = @io.pos
+
     type, version,
     struct_offset, struct_count,
     field_offset, field_count,
@@ -37,27 +39,27 @@ class NWN::Gff::Reader
     field_len  = field_count * 16
     label_len  = label_count * 16
 
-    @io.seek(struct_offset)
+    @io.seek(initial_seek + struct_offset)
     @structs = @io.e_read(struct_len, "structs")
     @structs = @structs.unpack("V*")
 
-    @io.seek(field_offset)
+    @io.seek(initial_seek + field_offset)
     @fields  = @io.e_read(field_len, "fields")
     @fields  = @fields.unpack("V*")
 
-    @io.seek(label_offset)
+    @io.seek(initial_seek + label_offset)
     @labels  = @io.e_read(label_len, "labels")
     @labels = @labels.unpack("A16" * label_count)
     @labels.map! {|l| l.force_encoding("ASCII") }
 
-    @io.seek(field_data_offset)
+    @io.seek(initial_seek + field_data_offset)
     @field_data = @io.e_read(field_data_count, "field_data")
 
-    @io.seek(field_indices_offset)
+    @io.seek(initial_seek + field_indices_offset)
     @field_indices = @io.e_read(field_indices_count, "field_indices")
     @field_indices = @field_indices.unpack("V*")
 
-    @io.seek(list_indices_offset)
+    @io.seek(initial_seek + list_indices_offset)
     @list_indices = @io.e_read(list_indices_count, "list_indices")
     @list_indices = @list_indices.unpack("V*")
 

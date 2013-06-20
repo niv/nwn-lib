@@ -6,6 +6,12 @@ describe "Gff.read/write API" do
     g = Gff.read(i, :gff)
   end
 
+  it "reads from IO with offsets correctly" do
+    i = StringIO.new "a" + WELLFORMED_GFF
+    i.seek(1)
+    g = Gff.read(i, :gff)
+  end
+
   it "writes correctly" do
     i = StringIO.new WELLFORMED_GFF
     gff = Gff.read(i, :gff)
