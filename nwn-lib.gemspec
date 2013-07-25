@@ -12,6 +12,6 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "nwn-lib"
   gem.require_paths = ["lib"]
-  gem.version       = "0.5.1"
+  gem.version       = "0.6.0"
   gem.required_ruby_version = '>= 1.9.3'
 end
