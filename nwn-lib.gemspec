@@ -14,4 +14,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = "0.6.0"
   gem.required_ruby_version = '>= 1.9.3'
+  gem.license       = 'MIT'
 end
