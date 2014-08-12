@@ -1,5 +1,11 @@
 Bundler.setup(:default, :test)
 
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+end
+
 require 'tempfile'
 require 'fileutils'
 require 'open3'

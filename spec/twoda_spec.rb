@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe TwoDA::Table do
   it "parses wellformed files" do
-    proc { subject.parse(TWODA_WELLFORMED) }.should_not raise_error ArgumentError
+    proc { subject.parse(TWODA_WELLFORMED) }.should_not raise_error
   end
 
   it "parses misnumbered IDs as NWN does" do
