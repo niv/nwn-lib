@@ -118,9 +118,10 @@ module NWN
             oo, biff = @fn_to_co[o.filename]
             NWN.log_debug "#{o.filename} in #{biff.io.inspect} shadowed by file of same name in #{bif.io.inspect}"
             @content.delete(oo)
+            @content_by_filename.delete(oo.filename)
           end
           @fn_to_co[o.filename] = [o, bif, bif_index]
-          @content << o
+          add o
         }
       end
     end

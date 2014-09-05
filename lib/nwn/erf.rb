@@ -105,19 +105,21 @@ module NWN
         @io.seek(offset_to_keys)
         keylist = @io.e_read(keylist_entry_size * entry_count, "keylist")
         keylist = keylist.unpack("A#{fnlen} V v v" * entry_count)
-        keylist.each_slice(4) {|resref, res_id, res_type, unused|
-          @content << NWN::Resources::ContentObject.new(resref, res_type, @io)
-        }
 
         resourcelist_entry_size = 4 + 4
         @io.seek(offset_to_res)
         resourcelist = @io.e_read(resourcelist_entry_size * entry_count, "reslist")
         resourcelist = resourcelist.unpack("I I" * entry_count)
-        _index = -1
-        resourcelist.each_slice(2) {|offset, size|
+
+        _index = 0
+        keylist.each_slice(4) {|resref, res_id, res_type, unused|
+          co = NWN::Resources::ContentObject.new(resref, res_type, @io)
+          offset, size = resourcelist[_index * 2], resourcelist[_index * 2 + 1]
+          co.offset = offset
+          co.size_override = size
+          add co
+
           _index += 1
-          @content[_index].offset = offset
-          @content[_index].size_override = size
         }
       end
 

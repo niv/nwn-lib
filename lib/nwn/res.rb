@@ -33,7 +33,7 @@ module NWN
 
       # Get the size in bytes of this object.
       def size
-        @size_override || (@io.is_a?(IO) ? @io.stat.size : File.stat(@io).size)
+        @size ||= (@size_override || (@io.is_a?(IO) ? @io.stat.size : File.stat(@io).size))
       end
 
       # Get the contents of this object. This is a costly operation, loading
@@ -50,12 +50,12 @@ module NWN
 
       # Get the canonical filename of this object.
       def filename
-        @resref + "." + (self.extension || "unknown-#{@res_type}")
+        @filename ||= (@resref + "." + (self.extension || "unknown-#{@res_type}"))
       end
 
       # Get the extension of this object.
       def extension
-        NWN::Resources::Extensions.key(@res_type)
+        @extension ||= NWN::Resources::Extensions.key(@res_type)
       end
     end
 
@@ -64,9 +64,12 @@ module NWN
 
       # An array of all ContentObjects indexed by this Container.
       attr_reader :content
+      # A hash containing filename.downcase => ContentObject.
+      attr_reader :content_by_filename
 
       def initialize
         @content = []
+        @content_by_filename = {}
       end
 
       # Returns true if the given filename is contained herein.
@@ -78,28 +81,27 @@ module NWN
       # Add a content object giving a +filename+ and a optional
       # +io+.
       def add_file filename, io = nil
-        @content << ContentObject.new_from(filename, io)
+        co = ContentObject.new_from(filename, io)
+        content << @co
+        @content_by_filename[filename.downcase] = co
       end
 
       # Add a content object giving the ContentObject
       def add o
         @content << o
+        @content_by_filename[o.filename.downcase] = o
       end
 
       # Returns a list of filenames, all lowercase.
       def filenames
-        @content.map {|x| x.filename.downcase }
+        @filenames ||= @content_by_filename.keys #map {|k, v| x.filename }
       end
 
       # Get the ContentObject pointing to the given filename.
       # Raises ENOENT if not mapped.
       def get_content_object filename
-        filename = filename.downcase
-        ret = @content.select {|x| filename == x.filename }
-        raise Errno::ENOENT,
-          "No ContentObject with the given filename #{filename.inspect} found." if
-            ret.size == 0
-        ret[0]
+        @content_by_filename[filename.downcase] or raise Errno::ENOENT,
+          "No ContentObject with the given filename #{filename.inspect} found."
       end
 
       # Get the contents of the given filename.
