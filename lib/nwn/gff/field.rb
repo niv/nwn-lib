@@ -150,7 +150,7 @@ module NWN::Gff::Field
         value.is_a?(Integer) && value >= 0 && value <= 0xffffffffffffffff
 
       when :float, :double
-        value.is_a?(Float)
+        value.is_a?(Float) || value.is_a?(Integer)
 
       when :resref
         if !NWN.setting(:resref32) && value.is_a?(String) && value.size > 16
