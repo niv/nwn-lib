@@ -63,8 +63,11 @@ module NWN
     class Container
 
       # An array of all ContentObjects indexed by this Container.
+      # Do not modify, use add/remove instead.
       attr_reader :content
+
       # A hash containing filename.downcase => ContentObject.
+      # Do not modify, use add/remove instead.
       attr_reader :content_by_filename
 
       def initialize
@@ -81,20 +84,29 @@ module NWN
       # Add a content object giving a +filename+ and a optional
       # +io+.
       def add_file filename, io = nil
-        co = ContentObject.new_from(filename, io)
-        content << @co
-        @content_by_filename[filename.downcase] = co
+        add ContentObject.new_from(filename, io)
       end
 
       # Add a content object giving the ContentObject
       def add o
         @content << o
         @content_by_filename[o.filename.downcase] = o
+        @filenames = nil
+      end
+
+      def remove_file filename
+        remove @content_by_filename[filename.downcase]
+      end
+
+      def remove o
+        @content.delete(o)
+        @content_by_filename.delete(o.filename)
+        @filenames = nil
       end
 
       # Returns a list of filenames, all lowercase.
       def filenames
-        @filenames ||= @content_by_filename.keys #map {|k, v| x.filename }
+        @filenames ||= @content_by_filename.keys
       end
 
       # Get the ContentObject pointing to the given filename.
