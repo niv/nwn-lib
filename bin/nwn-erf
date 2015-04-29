@@ -35,7 +35,7 @@ begin OptionParser.new do |o|
   o.on "-x", "--extract", "Extract FILEs (or all) to current directory." do
     $action = :x
   end
-  o.on "-a", "--add", "Add files to the given archive.",
+  o.on "-a", "--add", "Add (or replace) files to the given archive.",
       "This is an expensive operation, a full archive rebuild is required." do
     $action = :a
   end
@@ -189,16 +189,15 @@ case $action
       end
 
       ARGV.each {|arg|
+        # Remove all (old) files.
+        erf.remove_file(arg)
+
         case $action
           when :a
-            raise ArgumentError, "#{File.basename(arg)} already present in erf." if
-              !$allow_duplicates && erf.has?(arg)
             erf.add_file File.basename(arg), File.open(arg, "r")
 
           when :r
-            erf.content.reject! {|con|
-              con.filename.downcase == arg.downcase
-            }
+            # Nothing to do.
         end
       }
 
