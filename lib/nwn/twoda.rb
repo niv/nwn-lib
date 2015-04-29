@@ -282,6 +282,7 @@ module NWN
           rv = []
           rv << row_idx.to_s + " " * (id_cell_size - row_idx.to_s.size)
           row.each_with_index {|cell, column_idx|
+            cell = cell ? 1 : 0 if cell.is_a?(TrueClass) || cell.is_a?(FalseClass)
             cell = "****" if cell == ""
             cell = '"%s"' % cell if cell =~ /\s/
             cell = cell.to_s
