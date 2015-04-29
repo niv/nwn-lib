@@ -7,6 +7,8 @@ $action = nil
 $verbose = false
 $type = 'ERF'
 $allow_duplicates = false
+$day_of_year = nil
+$year = nil
 $descriptions = {}
 $version = "V1.0"
 $file = nil
@@ -70,6 +72,12 @@ begin OptionParser.new do |o|
   end
   o.on "-1", "Create (only -c) V1.1 ERF, 32 byte resrefs. (NWN2)." do
     $version = "V1.1"
+  end
+  o.on "--day DAY", "Set the day_of_year header field when doing write operations" do |x|
+    $day_of_year = x
+  end
+  o.on "--year YEAR", "Set the year header field when doing write operations" do |x|
+    $year = x
   end
 
   o.separator " "
@@ -155,6 +163,8 @@ case $action
     erf = NWN::Erf::Erf.new
     erf.file_type = $type if $type
     erf.file_version = $version
+    erf.year = $year if $year
+    erf.day_of_year = $day_of_year if $day_of_year
 
     if $descriptions
       erf.localized_strings.merge! $descriptions
@@ -171,6 +181,8 @@ case $action
   when :a, :r
     input do |infile|
       erf = NWN::Erf::Erf.new(infile)
+      erf.year = $year if $year
+      erf.day_of_year = $day_of_year if $day_of_year
 
       if $descriptions
         erf.localized_strings.merge! $descriptions
