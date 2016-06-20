@@ -47,8 +47,7 @@ module NWN
           false
         end
 
-        if idx = @table.columns.index(col.downcase) ||
-            idx = @table.columns.index(col)
+        if idx = @table.column_name_to_id(col)
           if assignment
             self[idx] = args.shift or raise ArgumentError,
               "Need a paramenter for assignments .."
@@ -65,7 +64,11 @@ module NWN
       CELL_PAD_SPACES = 4
 
       # An array of all column names present in this 2da table.
-      attr_accessor :columns
+      def columns; @columns; end
+      def columns=(c)
+        @columns = c
+        @columns_lookup = @columns.map(&:downcase)
+      end
 
       # An array of row arrays, without headers.
       attr_accessor :rows
@@ -82,6 +85,7 @@ module NWN
       # Create a new, empty 2da table.
       def initialize
         @columns = []
+        @columns_lookup = []
         @rows = []
         @newline = "\r\n"
       end
@@ -180,7 +184,7 @@ module NWN
           k_row.pop while k_row.size > header.size
         }
 
-        @columns = header
+        self.columns = header
         @rows = new_row_data
       end
 
@@ -243,7 +247,8 @@ module NWN
       def column_name_to_id column
          case column
           when String
-            @columns.index(column) or raise ArgumentError, "Not a valid column name: #{column}"
+            @columns_lookup.index(column.to_s.downcase) or raise ArgumentError,
+              "Not a valid column name: #{column}"
           when Fixnum
             column
           when NilClass

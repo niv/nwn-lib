@@ -74,4 +74,13 @@ describe TwoDA::Table do
     ENV['NWN_LIB_2DA_NEWLINE'] = "2"
     subject.to_2da.should =~ /^2DA V2.0\r\r +C/
   end
+
+  it "should treat columns case-insensitive" do
+    subject.parse(TWODA_WELLFORMED)
+    subject[0].Col1.should == subject[0].col1
+    subject.column_name_to_id("Col2").should == 1
+    subject.column_name_to_id("Col1").should == 0
+    subject.column_name_to_id("COL2").should == 1
+    subject.column_name_to_id("COL1").should == 0
+  end
 end
