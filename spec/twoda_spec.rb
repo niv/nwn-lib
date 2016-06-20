@@ -83,4 +83,9 @@ describe TwoDA::Table do
     subject.column_name_to_id("COL2").should == 1
     subject.column_name_to_id("COL1").should == 0
   end
+
+  it "should allow column lookups with symbols" do
+    subject.parse(TWODA_WELLFORMED)
+    subject.column_name_to_id(:Col2).should == 1
+  end
 end
