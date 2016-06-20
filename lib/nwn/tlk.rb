@@ -21,7 +21,7 @@ module NWN
       DATA_ELEMENT_SIZE = 4 + 16 + 4 + 4 + 4 + 4 + 4
 
       # The number of strings this Tlk holds.
-      # attr_reader :size
+      attr_reader :size
 
       # The language_id of this Tlk.
       attr_reader :language
@@ -59,7 +59,7 @@ module NWN
 
         return @cache[id] if @cache[id]
 
-        raise ArgumentError, "No such string ID: #{id.inspect}" if id > self.highest_id || id < 0
+        raise ArgumentError, "No such string ID: #{id.inspect} (size: #{@size})" if id > (self.size-1) || id < 0
         seek_to = HEADER_SIZE + (id) * DATA_ELEMENT_SIZE
         @io.seek(seek_to)
         data = @io.e_read(DATA_ELEMENT_SIZE, "tlk entry = #{id}")
@@ -84,55 +84,58 @@ module NWN
       # Add a new entry to this Tlk and return the strref given to it.
       # To override existing entries, use tlk[][:text] = ".."
       def add text, sound = "", sound_length = 0.0, v_variance = 0, p_variance = 0
-        next_id = self.highest_id + 1
+        next_id = self.size + 1
         $stderr.puts "put in cache: #{next_id}"
         @cache[next_id] = {:text => text, :sound => sound, :sound_length => 0.0, :volume_variance => v_variance, :pitch_variance => p_variance}
+        @size += 1
         next_id
-      end
-
-      # Return the highest ID in this Tlk table.
-      def highest_id
-        highest_cached = @cache.keys.sort[-1] || 0
-        @size - 1 > highest_cached ? @size - 1 : highest_cached
       end
 
       # Write this Tlk to +io+.
       # Take care not to write it to the same IO object you are reading from.
       def write_to io
-        text_block = []
+        header = [
+          @file_type,
+          @file_version,
+          @language,
+          self.size,
+          HEADER_SIZE + (self.size) * DATA_ELEMENT_SIZE
+        ].pack("A4 A4 I I I")
+        io.write(header)
+
         offsets = []
         offset = 0
-        for i in 0..self.highest_id do
+        for i in 0...@size do
           entry = self[i]
           offsets[i] = offset
-          text_block << entry[:text]
           offset += entry[:text].size
         end
-        text_block = text_block.join("")
-
-        header = [
-          @file_type, @file_version,
-          @language,
-          self.highest_id + 1, HEADER_SIZE + (self.highest_id + 1) * DATA_ELEMENT_SIZE
-        ].pack("A4 A4 I I I")
 
         entries = []
-        for i in 0..self.highest_id do
+        for i in 0...@size do
           entry = self[i]
           text, sound, sound_length = entry[:text], entry[:sound], entry[:sound_length]
           flags = 0
           flags |= 0x01 if text.size > 0
           flags |= 0x02 if sound.size > 0
           flags |= 0x04 if sound_length > 0.0
-          entries << [
-            flags, sound, entry[:volume_variance], entry[:pitch_variance], offsets[i], text.size, sound_length
-          ].pack("I a16 I I I I f")
-        end
-        entries = entries.join("")
 
-        io.write(header)
-        io.write(entries)
-        io.write(text_block)
+          ev_s = [
+            flags,
+            sound, #resref
+            entry[:volume_variance],
+            entry[:pitch_variance],
+            offsets[i],
+            text.size,
+            sound_length
+          ].pack("I a16 I I I I f")
+
+          io.write(ev_s)
+        end
+
+        for i in 0...@size do
+          io.write(self[i][:text])
+        end
       end
     end
 
