@@ -116,7 +116,7 @@ module NWN
           o = NWN::Resources::ContentObject.new(resref, res_type, bif.io, ofs, sz)
           if @fn_to_co[o.filename] && @fn_to_co[o.filename][2] < bif_index
             oo, biff = @fn_to_co[o.filename]
-            NWN.log_debug "#{o.filename} in #{biff.io.inspect} shadowed by file of same name in #{bif.io.inspect}"
+            # NWN.log_debug "#{o.filename} in #{biff.io.inspect} shadowed by file of same name in #{bif.io.inspect}"
             remove oo
           end
           @fn_to_co[o.filename] = [o, bif, bif_index]
