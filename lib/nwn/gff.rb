@@ -116,7 +116,7 @@ module NWN
     OutputFormats = {}
     FileFormatGuesses = {}
 
-    Handler.register :gff, /^(ut[cdeimpstw]|git|are|gic|mod|ifo|fac|ssf|dlg|itp|bic)$/, NWN::Gff::Handler::Gff
+    Handler.register :gff, /^(ut[cdeimpstw]|git|are|gic|mod|ifo|fac|ssf|dlg|itp|bic|jrl)$/, NWN::Gff::Handler::Gff
     Handler.register :marshal, /^marshal$/, NWN::Gff::Handler::Marshal
     Handler.register :pretty, /^$/, NWN::Gff::Handler::Pretty, false, true
 
