@@ -5,7 +5,7 @@ class StubContainer < Resources::Container
     super()
     files.each {|fn, content|
       io = StringIO.new(content)
-      @content << Resources::ContentObject.new_from(fn, io)
+      self.add_file fn, io
     }
   end
 end
