@@ -6,7 +6,7 @@ describe "Tlk::Tlk" do
     t = Tlk::Tlk.new(StringIO.new binary)
 
     t.language.should == 0
-    t.highest_id.should == 4
+    t.size.should == 5
     t[0].should == {:pitch_variance=>0, :text=>"1",     :sound=>"", :sound_length=>0.0, :volume_variance=>0}
     t[1].should == {:pitch_variance=>0, :text=>"22",    :sound=>"textsnd", :sound_length=>0.0, :volume_variance=>0}
     t[2].should == {:pitch_variance=>0, :text=>"333",   :sound=>"textsndlen", :sound_length=>2.0, :volume_variance=>0}
