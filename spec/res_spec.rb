@@ -34,6 +34,11 @@ describe "Resources::Container" do
     subject.get('CASE.txt').should == "case"
     subject.get('CASE.tXt').should == "case"
   end
+
+  it "returns proper values for has?" do
+    subject.has?('case.txt').should == true
+    subject.has?('invalid').should == false
+  end
 end
 
 describe Resources::Manager do

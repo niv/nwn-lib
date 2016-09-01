@@ -78,7 +78,7 @@ module NWN
       # Returns true if the given filename is contained herein.
       # Case-insensitive.
       def has?(filename)
-        filenames.index(filename.downcase) != nil
+        @content_by_filename[filename.downcase] != nil
       end
 
       # Add a content object giving a +filename+ and a optional
@@ -94,7 +94,12 @@ module NWN
         @filenames = nil
       end
 
+      # Removes a content object by filename.
+      # Raises ENOENT if no object by that name is contained.
       def remove_file filename
+        @content_by_filename[filename.downcase] or raise Errno::ENOENT,
+          "No ContentObject with the given filename #{filename.inspect} found."
+
         remove @content_by_filename[filename.downcase]
       end
 

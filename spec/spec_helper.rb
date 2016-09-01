@@ -225,11 +225,11 @@ module BinHelper
 
   def run *va
     stdout_str, ret = run_bin *va
-    ret.should == 0
+    raise "Error running command #{va.inspect}: #{stdout_str}" if ret != 0
   end
 
   def run_fail *va
     stdout_str, ret = run_bin *va
-    ret.should_not == 0
+    raise "No error running command #{va.inspect} (expected failure): #{stdout_str}" if ret == 0
   end
 end

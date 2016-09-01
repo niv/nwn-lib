@@ -190,7 +190,7 @@ case $action
 
       ARGV.each {|arg|
         # Remove all (old) files.
-        erf.remove_file(arg)
+        erf.remove_file(arg) if erf.has?(arg)
 
         case $action
           when :a
