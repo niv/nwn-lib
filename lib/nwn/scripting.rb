@@ -70,7 +70,7 @@ module NWN::Gff::Scripting
     end
     $stop_output = true
   end
-  
+
   def will_output?
     !$stop_output
   end
@@ -177,7 +177,7 @@ module NWN::Gff::Scripting
       when Array
         i = 0 ; Hash[match.map {|x| [i+=1, x]}]
 
-      when Hash, Regexp, Fixnum, Float
+      when Hash, Regexp, Integer, Float
         match
 
       else
@@ -201,7 +201,7 @@ module NWN::Gff::Scripting
           end
         when Regexp
           ret =~ match
-        when Fixnum
+        when Integer
           ret =~ /^\d+$/
         when Float
           ret =~ /^\d+(.\d+)?$/
@@ -210,7 +210,7 @@ module NWN::Gff::Scripting
 
     case match
       when Float; ret.to_f
-      when Fixnum; ret.to_i
+      when Integer; ret.to_i
       else; ret
     end
   end

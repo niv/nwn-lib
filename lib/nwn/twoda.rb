@@ -249,7 +249,7 @@ module NWN
           when String, Symbol
             @columns_lookup.index(column.to_s.downcase) or raise ArgumentError,
               "Not a valid column name: #{column}"
-          when Fixnum
+          when Integer
             column
           when NilClass
             nil

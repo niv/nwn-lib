@@ -169,7 +169,7 @@ module NWN::Gff::Field
 
       when :cexolocstr
         value.is_a?(Hash) &&
-          value.keys.reject {|x| x.is_a?(Fixnum) && x >= 0 }.size == 0 &&
+          value.keys.reject {|x| x.is_a?(Integer) && x >= 0 }.size == 0 &&
           value.values.reject {|x| x.is_a?(String) }.size == 0
 
       when :struct
